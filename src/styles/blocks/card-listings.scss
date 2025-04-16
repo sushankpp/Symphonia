@@ -1,0 +1,95 @@
+.music-items__wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows:auto auto;
+  gap: 2rem;
+  grid-template-areas:
+  "trending player"
+  "listings player"
+"recently-played player";
+}
+
+.trending {
+  grid-area: trending;
+}
+
+.card-listings {
+  grid-area: listings;
+}
+
+.music-player {
+  grid-area: player;
+}
+
+
+.card-listings__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.card-listings__title {
+  @include fsz(16px);
+  font-family: $secondary-bold-family;
+  color: $black-100;
+  text-transform: uppercase;
+}
+
+.card-listings__link {
+  @include fsz(12px);
+  font-family: $secondary-bold-family;
+  color: $black-100;
+  text-transform: capitalize;
+  text-decoration: underline;
+}
+
+.card-listings__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+
+.card-listings__item {
+  position: relative;
+
+  &:hover {
+    img {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.card-listings__media {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 50%;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    transition: all 0.3s ease-in-out;
+
+  }
+}
+
+.card-listings__item-title {
+  margin-top: 10px;
+  @include fsz(16px);
+  font-family: $primary-black-family;
+  color: $black-100;
+  text-transform: capitalize;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.card-listings__item-description {
+  @include fsz(13px);
+  font-family: $secondary-bold-family;
+  color: $black-100;
+  text-transform: capitalize;
+  line-height: 1.3;
+  text-align: center;
+}

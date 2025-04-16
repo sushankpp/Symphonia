@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <!-- Background circle -->
+  <circle cx="200" cy="150" r="120" fill="#2a2a42" />
+  
+  <!-- Sound wave circles -->
+  <circle cx="200" cy="150" r="100" fill="none" stroke="#7b68ee" stroke-width="3" stroke-dasharray="8,4" />
+  <circle cx="200" cy="150" r="80" fill="none" stroke="#9370db" stroke-width="2" stroke-dasharray="6,3" />
+  <circle cx="200" cy="150" r="60" fill="none" stroke="#ba55d3" stroke-width="2" stroke-dasharray="4,2" />
+  
+  <!-- Musical note -->
+  <path d="M240,160 Q240,180 220,180 Q200,180 200,160 Q200,140 220,140 Q230,140 235,145 L235,90 L240,90 L240,160" fill="#e6e6fa" />
+  <line x1="240" y1="90" x2="260" y2="80" stroke="#e6e6fa" stroke-width="3" />
+  
+  <!-- Smaller musical note -->
+  <path d="M180,140 Q180,155 165,155 Q150,155 150,140 Q150,125 165,125 Q172,125 175,128 L175,90 L180,90 L180,140" fill="#e6e6fa" />
+  <line x1="180" y1="90" x2="195" y2="82" stroke="#e6e6fa" stroke-width="2" />
+  
+  <!-- Text -->
+  <text x="200" y="220" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#e6e6fa">SYMPHONIA</text>
+  <text x="200" y="240" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ba55d3">MUSIC PROJECT</text>
+</svg>

@@ -1,0 +1,68 @@
+.music-player {
+  background-color: rgba($white-200, 1);
+  border-radius: 25px;
+  padding: 30px 20px;
+}
+
+.music-player__title {
+  display: flex;
+  align-items: center;
+  @include fsz(26px);
+  font-family: $primary-medium-family;
+  letter-spacing: .33px;
+  color: $black-200;
+  margin-bottom: 20px;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    color: $black-200;
+    margin-right: 10px;
+  }
+}
+
+.music-player__media {
+  width: 100%;
+  height: 250px;
+  overflow: hidden;
+  border-radius: 15px;
+  margin: 0 auto 20px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+}
+
+.music-player__suggested-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.music-player__suggested-banner {
+  display: flex;
+  gap: 10px;
+}
+
+.music-player__suggested-media {
+  width: 75px;
+  height: 75px;
+  overflow: hidden;
+  border-radius: 10px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+}
+
+.timeStamp {
+  align-content: center;
+  color: rgba($grey-100, .7);
+}
+

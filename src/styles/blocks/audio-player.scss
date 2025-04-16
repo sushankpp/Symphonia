@@ -1,0 +1,63 @@
+.custom-audio-player {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: $secondary-medium-family;
+  margin-bottom: 10px;
+}
+
+.controls {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+}
+
+.custom-audio-player input[type=range] {
+  flex-grow: 1;
+  height: 4px;
+  border-radius: 5px;
+  background: rgba($grey-100, .6);
+  appearance: none;
+  outline: none;
+  fill: $primary-color;
+
+  &::-webkit-slider-runnable-track {
+    height: 4px;
+    background: $primary-color;
+    border: 5px;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    background: $primary-color;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  &::-moz-range-track {
+    height: 4px;
+    background: rgba($grey-100,.6);
+    border: 5px;
+  }
+
+  &::-moz-range-progress {
+    background-color: $primary-color;
+    height: 4px;
+    border-radius: 5px;
+  }
+
+  &::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    background: $primary-color;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+
+}

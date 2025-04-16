@@ -1,0 +1,69 @@
+//recently played
+
+.recently-played {
+  grid-area: recently-played;
+}
+
+.recently-played__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.recently-played__title {
+  @include fsz(16px);
+  font-family: $secondary-bold-family;
+  color: $black-100;
+  text-transform: uppercase;
+}
+
+.recently-played__link {
+  @include fsz(12px);
+  font-family: $secondary-bold-family;
+  color: $black-100;
+  text-transform: capitalize;
+  text-decoration: underline;
+}
+
+.recently-played__item {
+  display: flex;
+  border-bottom: 1px solid $grey-100;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.recently-played__media {
+  width: 75px;
+  height: 75px;
+  overflow: hidden;
+  border-radius: 10px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+}
+
+.recently-played__meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recently-played__item-title {
+  @include fsz(20px);
+  font-family: $primary-black-family;
+  line-height: 1.3;
+  letter-spacing: -.12px;
+  color: $black-100;
+}
+
+.recently-played__item-subtitle {
+  @include fsz(16px);
+  font-family: $secondary-medium-family;
+  color: $black-100;
+  letter-spacing: -.12px;
+}

@@ -1,0 +1,91 @@
+.trending {
+  position: relative;
+  padding: 40px;
+  background: url("public/images/heroPattern.svg") no-repeat center center/cover, rgba($secondary-color, .8);
+  border-radius: 25px;
+  box-shadow: 0 10px 30px 0 $secondary-color;
+}
+
+.trending-wrapper {
+  display: grid;
+  gap: 15px;
+  grid-template-columns:400px 330px;
+}
+
+.trending-status {
+  @include fsz(16px);
+  color: $white-100;
+  font-family: $secondary-medium-family;
+  text-transform: capitalize;
+  line-height: 1.1;
+}
+
+.trending-title {
+  @include fsz(48px);
+  font-family: $primary-black-family;
+  color: $white;
+  text-transform: capitalize;
+  line-height: 1.1;
+}
+
+.trending-artist {
+  @include fsz(16px);
+  color: $white-100;
+  font-family: $secondary-medium-family;
+  margin-bottom: 11px;
+  text-transform: capitalize;
+  line-height: 1.1;
+}
+
+.trending-play {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.trending-play__song {
+  cursor: pointer;
+  border-radius: 10px;
+  @include fsz(20px);
+  color: $white;
+  font-family: $secondary-medium-family;
+  text-transform: capitalize;
+  line-height: 1.1;
+
+
+  .icon {
+    width: 24px;
+    height: 24px;
+    color: $white;
+    margin-right: 10px;
+    transition: all 0.3s ease-in-out;
+  }
+
+  &:hover {
+    background: $tertiary-color;
+  }
+}
+
+.trending-add__song {
+  border-radius: 10px;
+  cursor: pointer;
+  background: $primary-200;
+
+  .icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  &:hover {
+    background: $tertiary-color;
+  }
+}
+
+.trending-media {
+  height: 275px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: -40px;
+}
+
