@@ -9,6 +9,9 @@
 @import 'blocks/music-player';
 @import 'blocks/recently-played';
 @import 'blocks/audio-player';
+@import 'blocks/audio-wrapper';
+@import 'blocks/albums';
+@import 'blocks/dialog';
 
 #root {
   display: flex;
@@ -17,7 +20,7 @@
 
 .page__home {
   width: calc(100vw - 200px);
-  padding: 20px 0;
+  padding: 20px 0 0;
   background-color: $white;
   border-top-left-radius: 50px;
   border-bottom-left-radius: 50px;
@@ -26,3 +29,4 @@
     max-width: 1300px;
   }
 }
+

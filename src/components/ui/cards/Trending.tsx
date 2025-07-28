@@ -21,7 +21,7 @@ const Trending = ()=>{
                 </div>
                 <figure className="trending-media">
                             <span className="trending-media__item">
-                            <img src="public/uploads/pig-nobg.png" alt="trending artist image"/>
+                            <img src="../../../../public/uploads/pig-nobg.png" alt="trending artist image"/>
                             </span>
                 </figure>
             </div>

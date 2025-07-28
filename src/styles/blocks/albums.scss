@@ -1,0 +1,232 @@
+.album-list__wrapper {
+  display: grid;
+  grid-template-columns: 500px 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.album-page {
+  padding: 20px 0;
+
+  .album-header {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
+    align-items: flex-start;
+
+    .album-cover {
+      width: 300px;
+      height: 300px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .album-info {
+      flex: 1;
+      padding-top: 20px;
+
+      .album-title {
+        font-family: $primary-medium-family;
+        @include fsz(36px);
+        color: $black;
+        margin: 0 0 15px 0;
+        font-weight: 700;
+      }
+
+      .album-artist {
+        font-family: $secondary-medium-family;
+        @include fsz(20px);
+        color: $primary-color;
+        margin: 0 0 10px 0;
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: $primary-200;
+          text-decoration: underline;
+        }
+      }
+
+      .album-songs-count {
+        font-family: $secondary-medium-family;
+        @include fsz(16px);
+        color: rgba($black, 0.6);
+        margin: 0;
+      }
+    }
+  }
+
+  .album-songs {
+    h2 {
+      font-family: $primary-medium-family;
+      @include fsz(24px);
+      color: $black;
+      margin: 0 0 20px 0;
+      font-weight: 600;
+    }
+
+    .songs-list {
+      .song-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba($black, 0.05);
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.95);
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .song-number {
+          width: 40px;
+          font-family: $secondary-medium-family;
+          @include fsz(16px);
+          color: rgba($black, 0.5);
+          font-weight: 600;
+          text-align: center;
+        }
+
+        .song-cover {
+          width: 50px;
+          height: 50px;
+          border-radius: 8px;
+          overflow: hidden;
+          margin: 0 15px;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .song-info {
+          flex: 1;
+          min-width: 0;
+
+          .song-title {
+            font-family: $secondary-medium-family;
+            @include fsz(18px);
+            color: $black;
+            margin: 0 0 5px 0;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .song-artist {
+            font-family: $secondary-medium-family;
+            @include fsz(14px);
+            color: rgba($black, 0.6);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+
+        .song-actions {
+          .play-btn {
+            background: $primary-color;
+            color: $white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+
+            &:hover {
+              background: $primary-200;
+              transform: scale(1.1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .album-page {
+    .album-header {
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+
+      .album-cover {
+        width: 250px;
+        height: 250px;
+        margin: 0 auto;
+      }
+
+      .album-info {
+        padding-top: 0;
+
+        .album-title {
+          @include fsz(28px);
+        }
+
+        .album-artist {
+          @include fsz(18px);
+        }
+      }
+    }
+
+    .album-songs {
+      .songs-list {
+        .song-item {
+          padding: 12px 15px;
+
+          .song-number {
+            width: 30px;
+            @include fsz(14px);
+          }
+
+          .song-cover {
+            width: 40px;
+            height: 40px;
+            margin: 0 10px;
+          }
+
+          .song-info {
+            .song-title {
+              @include fsz(16px);
+            }
+
+            .song-artist {
+              @include fsz(12px);
+            }
+          }
+
+          .song-actions {
+            .play-btn {
+              width: 35px;
+              height: 35px;
+              font-size: 14px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

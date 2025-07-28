@@ -1,10 +1,12 @@
+import {Link} from "react-router-dom";
+
 const TopHeader = () => {
     return (
         <section className="main-header">
             <div className="main-header__nav">
                 <ul className="main-header__nav-items">
-                    <li><a href="">Music</a></li>
-                    <li><a href="">Upload Music</a></li>
+                    <li><Link to="/music">Music</Link></li>
+                    <li><Link to="/upload">Upload Music</Link></li>
                 </ul>
             </div>
             <div className="search-music">
@@ -17,21 +19,21 @@ const TopHeader = () => {
                 </button>
             </div>
             <div className="header__links">
-                <a href="#">
+                <Link to="/notification">
                     <svg className="icon icon-notification">
                         <use xlinkHref="#icon-notification"></use>
                     </svg>
-                </a>
-                <a href="#">
+                </Link>
+                <Link to="/settings">
                     <svg className="icon icon-settings">
                         <use xlinkHref="#icon-settings"></use>
                     </svg>
-                </a>
-                <a href="#" className="user__profile">
+                </Link>
+                <Link to="/profile" className="user__profile">
                     <figure className="header__media">
                         <img src="/uploads/pig.png" alt="user image"/>
                     </figure>
-                </a>
+                </Link>
             </div>
         </section>
     )
