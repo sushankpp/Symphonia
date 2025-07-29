@@ -1,17 +1,18 @@
-@import 'variables/fonts.scss';
-@import 'variables/colors.scss';
-@import 'mixins/mixins';
-@import 'core/global';
+@import "variables/fonts.scss";
+@import "variables/colors.scss";
+@import "mixins/mixins";
+@import "core/global";
 @import "core/fonts.scss";
-@import 'blocks/navigation';
-@import 'blocks/trending';
-@import 'blocks/card-listings';
-@import 'blocks/music-player';
-@import 'blocks/recently-played';
-@import 'blocks/audio-player';
-@import 'blocks/audio-wrapper';
-@import 'blocks/albums';
-@import 'blocks/dialog';
+@import "blocks/navigation";
+@import "blocks/trending";
+@import "blocks/card-listings";
+@import "blocks/music-player";
+@import "blocks/recently-played";
+@import "blocks/audio-player";
+@import "blocks/audio-wrapper";
+@import "blocks/albums";
+@import "blocks/dialog";
+@import "blocks/upload-music";
 
 #root {
   display: flex;
@@ -29,4 +30,3 @@
     max-width: 1300px;
   }
 }
-

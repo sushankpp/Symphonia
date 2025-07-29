@@ -1,5 +1,5 @@
 body {
-  background: rgba($grey-100, .8);
+  background: rgba($grey-100, 0.8);
 }
 
 .side-header {
@@ -25,7 +25,7 @@ body {
   font-family: $primary-black-family;
   color: $white;
   margin: 15px 0;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .header-navigation__items:not(:last-child) {
@@ -41,15 +41,14 @@ body {
     a {
       display: flex;
       align-items: center;
-      color: rgba($white-100, .7);
+      color: rgba($white-100, 0.7);
       @include fsz(16px);
       transition: all 0.3s ease-in-out;
-
 
       svg {
         width: 20px;
         height: 20px;
-        color: rgba($white-100, .7);
+        color: rgba($white-100, 0.7);
         margin-right: 10px;
         transition: all 0.3s ease-in-out;
       }
@@ -130,7 +129,6 @@ body {
   }
 }
 
-
 .header__links {
   display: flex;
   margin: auto 0;
@@ -141,7 +139,7 @@ body {
     svg {
       width: 24px;
       height: 24px;
-      color: rgba($grey-100, .7);
+      color: rgba($grey-100, 0.7);
       transition: all 0.3s ease-in-out;
 
       &:hover {
@@ -179,4 +177,3 @@ body {
     object-position: top;
   }
 }
-

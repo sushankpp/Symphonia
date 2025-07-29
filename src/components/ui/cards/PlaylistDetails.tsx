@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 type Song = {
@@ -26,7 +26,7 @@ type Playlist = {
 };
 
 type PlaylistDetailsProps = {
-  playlists: Playlist[];
+  playlists?: Playlist[];
 };
 
 export const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
@@ -86,13 +86,13 @@ export const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
 
   return (
     <div className="playlist-details">
-      {playlists.length === 0 ? (
+      {playlists?.length === 0 ? (
         <div className="no-playlists">
           <p>No playlists found. Create your first playlist above!</p>
         </div>
       ) : (
         <div className="playlists-grid">
-          {playlists.map((playlist) => (
+          {playlists?.map((playlist) => (
             <div key={playlist.id} className="playlist-card">
               <div
                 className="playlist-header"

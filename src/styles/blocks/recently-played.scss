@@ -57,7 +57,7 @@
   @include fsz(20px);
   font-family: $primary-black-family;
   line-height: 1.3;
-  letter-spacing: -.12px;
+  letter-spacing: -0.12px;
   color: $black-100;
 }
 
@@ -65,5 +65,5 @@
   @include fsz(16px);
   font-family: $secondary-medium-family;
   color: $black-100;
-  letter-spacing: -.12px;
+  letter-spacing: -0.12px;
 }

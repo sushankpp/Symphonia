@@ -20,7 +20,7 @@ type CreatePlaylistBoxProps = {
   onAddToPlaylist: (playlistId: number) => void;
   onCreatePlaylist: (playlistName: string) => void;
   className?: string;
-  showAddToPlaylist?: boolean; 
+  showAddToPlaylist?: boolean;
 };
 
 export const PlaylistLists: React.FC<CreatePlaylistBoxProps> = ({
@@ -28,7 +28,7 @@ export const PlaylistLists: React.FC<CreatePlaylistBoxProps> = ({
   onAddToPlaylist,
   onCreatePlaylist,
   className = "dialog",
-  showAddToPlaylist = true, 
+  showAddToPlaylist = true,
 }) => {
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(

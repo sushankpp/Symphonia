@@ -1,0 +1,597 @@
+.upload-music__wrapper {
+  margin-top: 30px;
+
+  h2 {
+    color: $black;
+    font-family: $primary-medium-family;
+    @include fsz(28px);
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  .upload-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 30px;
+
+    h3 {
+      color: $black;
+      font-family: $primary-medium-family;
+      @include fsz(24px);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .file-upload-area {
+      border: 2px dashed rgba($primary-color, 0.3);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.8);
+      position: relative;
+
+      &:hover {
+        border-color: $primary-color;
+        background: rgba($primary-color, 0.05);
+      }
+
+      &.drag-over {
+        border-color: $primary-color;
+        background: rgba($primary-color, 0.1);
+        transform: scale(1.02);
+      }
+
+      .upload-content {
+        .upload-icon {
+          color: $primary-color;
+          margin-bottom: 15px;
+        }
+
+        .upload-text {
+          font-family: $secondary-medium-family;
+          @include fsz(18px);
+          color: $black;
+          margin-bottom: 10px;
+          font-weight: 500;
+        }
+
+        .upload-hint {
+          font-family: $secondary-medium-family;
+          @include fsz(14px);
+          color: rgba($black, 0.6);
+          margin: 0;
+        }
+      }
+    }
+
+    .file-info {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba($primary-color, 0.05);
+      border-radius: 8px;
+      border-left: 4px solid $primary-color;
+
+      p {
+        font-family: $secondary-medium-family;
+        @include fsz(14px);
+        color: $black;
+        margin: 5px 0;
+
+        strong {
+          color: $primary-color;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .artist-form-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 30px;
+
+    h3 {
+      color: $black;
+      font-family: $primary-medium-family;
+      @include fsz(24px);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .form-description {
+      font-family: $secondary-medium-family;
+      @include fsz(14px);
+      color: rgba($black, 0.7);
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+
+      .form-group {
+        &.full-width {
+          grid-column: 1 / -1;
+        }
+
+        label {
+          display: block;
+          font-family: $secondary-medium-family;
+          @include fsz(14px);
+          color: $black;
+          margin-bottom: 8px;
+          font-weight: 600;
+
+          &::after {
+            content: " *";
+            color: $delete;
+          }
+        }
+
+        input,
+        select,
+        textarea {
+          width: 100%;
+          padding: 12px 16px;
+          border: 1px solid rgba($black, 0.1);
+          border-radius: 8px;
+          font-family: $secondary-medium-family;
+          @include fsz(16px);
+          background: rgba(255, 255, 255, 0.8);
+          transition: all 0.3s ease;
+          box-sizing: border-box;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+          }
+
+          &::placeholder {
+            color: rgba($black, 0.4);
+          }
+        }
+
+        textarea {
+          resize: vertical;
+          min-height: 80px;
+        }
+
+        select {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+
+  .song-details-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 30px;
+
+    h3 {
+      color: $black;
+      font-family: $primary-medium-family;
+      @include fsz(24px);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .form-description {
+      font-family: $secondary-medium-family;
+      @include fsz(14px);
+      color: rgba($black, 0.7);
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+
+      .form-group {
+        &.full-width {
+          grid-column: 1 / -1;
+        }
+
+        label {
+          display: block;
+          font-family: $secondary-medium-family;
+          @include fsz(14px);
+          color: $black;
+          margin-bottom: 8px;
+          font-weight: 600;
+
+          &::after {
+            content: " *";
+            color: $delete;
+          }
+        }
+
+        input,
+        select,
+        textarea {
+          width: 100%;
+          padding: 12px 16px;
+          border: 1px solid rgba($black, 0.1);
+          border-radius: 8px;
+          font-family: $secondary-medium-family;
+          @include fsz(16px);
+          background: rgba(255, 255, 255, 0.8);
+          transition: all 0.3s ease;
+          box-sizing: border-box;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+          }
+
+          &::placeholder {
+            color: rgba($black, 0.4);
+          }
+        }
+
+        textarea {
+          resize: vertical;
+          min-height: 80px;
+        }
+
+        select {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+
+  .cover-upload-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 30px;
+  }
+
+  .cover-upload-section h3 {
+    color: $black;
+    font-family: $primary-medium-family;
+    @include fsz(24px);
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .cover-upload-section .form-description {
+    font-family: $secondary-medium-family;
+    @include fsz(14px);
+    color: rgba($black, 0.7);
+    text-align: center;
+    margin-bottom: 25px;
+  }
+
+  .cover-upload-section .cover-upload-area {
+    border: 2px dashed rgba($primary-color, 0.3);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+    position: relative;
+  }
+
+  .cover-upload-section .cover-upload-area:hover {
+    border-color: $secondary-color;
+    background: rgba($secondary-color, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .cover-upload-section .cover-upload-area .cover-upload-content .upload-icon {
+    color: $primary-color;
+    margin-bottom: 15px;
+  }
+
+  .cover-upload-section .cover-upload-area .cover-upload-content .upload-text {
+    font-family: $secondary-medium-family;
+    @include fsz(18px);
+    color: $black;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .cover-upload-section .cover-upload-area .cover-upload-content .upload-hint {
+    font-family: $secondary-medium-family;
+    @include fsz(14px);
+    color: rgba($black, 0.6);
+    margin: 0;
+  }
+
+  .cover-upload-section
+    .cover-upload-area
+    .cover-upload-content
+    .cover-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .cover-upload-section
+    .cover-upload-area
+    .cover-upload-content
+    .cover-preview
+    .cover-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    object-fit: cover;
+    border: 2px solid rgba($primary-color, 0.2);
+  }
+
+  .cover-upload-section
+    .cover-upload-area
+    .cover-upload-content
+    .cover-preview
+    .cover-filename {
+    font-family: $secondary-medium-family;
+    @include fsz(14px);
+    color: $primary-color;
+    font-weight: 500;
+    margin: 0;
+    word-break: break-word;
+    max-width: 100%;
+  }
+
+  .upload-actions {
+    text-align: center;
+    margin-top: 30px;
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+      font-family: $secondary-medium-family;
+      @include fsz(14px);
+
+      &.success {
+        background: rgba($success, 0.1);
+        color: $success;
+        border: 1px solid rgba($success, 0.3);
+      }
+
+      &.error {
+        background: rgba($delete, 0.1);
+        color: $delete;
+        border: 1px solid rgba($delete, 0.3);
+      }
+    }
+
+    .upload-button {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, $primary-color 0%, $primary-200 100%);
+      color: $white;
+      border: none;
+      border-radius: 8px;
+      font-family: $secondary-medium-family;
+      @include fsz(18px);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 200px;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba($primary-color, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+// Recent Uploads Styles
+.recent-uploads__wrapper {
+  margin-top: 40px;
+
+  h2 {
+    color: $black;
+    font-family: $primary-medium-family;
+    @include fsz(28px);
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  .uploads-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .upload-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    border: 1px solid rgba($black, 0.05);
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      cursor: pointer;
+
+      .track-details {
+        flex: 1;
+
+        .track-title {
+          font-family: $primary-medium-family;
+          @include fsz(18px);
+          color: $black;
+          margin: 0 0 5px 0;
+          font-weight: 600;
+        }
+
+        .track-artist {
+          font-family: $secondary-medium-family;
+          @include fsz(14px);
+          color: rgba($black, 0.7);
+          margin: 0;
+        }
+      }
+
+      .track-meta {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+
+        span {
+          font-family: $secondary-medium-family;
+          @include fsz(12px);
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-weight: 500;
+
+          &.file-size {
+            background: rgba($primary-color, 0.1);
+            color: $primary-color;
+          }
+
+          &.duration {
+            background: rgba($secondary-color, 0.1);
+            color: $secondary-color;
+          }
+
+          &.upload-date {
+            background: rgba($grey, 0.1);
+            color: $grey-100;
+          }
+
+          &.status {
+            font-weight: 600;
+
+            &.status-uploaded {
+              background: rgba($success, 0.1);
+              color: $success;
+            }
+
+            &.status-processing {
+              background: rgba($secondary-color, 0.1);
+              color: $secondary-color;
+            }
+
+            &.status-pending {
+              background: rgba($grey, 0.1);
+              color: $grey-100;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .upload-music__wrapper {
+    .artist-form-section {
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+    }
+
+    .cover-upload-section .cover-upload-area {
+      padding: 30px 15px;
+    }
+
+    .cover-upload-section
+      .cover-upload-area
+      .cover-upload-content
+      .cover-preview
+      .cover-image {
+      max-width: 150px;
+      max-height: 150px;
+    }
+
+    .upload-actions {
+      .upload-button {
+        width: 100%;
+        min-width: auto;
+      }
+    }
+  }
+
+  .recent-uploads__wrapper {
+    .upload-item {
+      .upload-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+
+        .track-meta {
+          width: 100%;
+          justify-content: flex-start;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-music__wrapper {
+    .upload-section {
+      padding: 20px;
+
+      .file-upload-area {
+        padding: 30px 15px;
+
+        .upload-content {
+          .upload-text {
+            @include fsz(16px);
+          }
+
+          .upload-hint {
+            @include fsz(12px);
+          }
+        }
+      }
+    }
+
+    .artist-form-section {
+      padding: 20px;
+    }
+  }
+}

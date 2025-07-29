@@ -3,7 +3,7 @@
   padding: 15px;
   border-radius: 8px;
   font-family: $primary-family;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 .track-info {
@@ -23,14 +23,14 @@
 .progress-container {
   margin-bottom: 15px;
   font-family: $primary-family;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   @include fsz(16px);
   line-height: 1.4;
 }
 
 .progress-bar {
   height: 6px;
-  background-color: rgba($grey-100, .6);
+  background-color: rgba($grey-100, 0.6);
   border-radius: 3px;
   cursor: pointer;
   position: relative;
@@ -80,7 +80,7 @@
   flex-grow: 1;
   height: 4px;
   border-radius: 5px;
-  background: rgba($grey-100, .6);
+  background: rgba($grey-100, 0.6);
   appearance: none;
   outline: none;
 

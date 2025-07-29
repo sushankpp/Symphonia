@@ -42,7 +42,7 @@ export const CreatePlaylist = () => {
             {error ? (
               <p className="error">{error}</p>
             ) : (
-              <PlaylistDetails playlists={playlists} />
+              <PlaylistDetails playlists={playlists as any} />
             )}
           </div>
         </div>
