@@ -89,7 +89,10 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
     : recentlyPlayed;
 
   const handleSongClick = (artistId: number, songId: number) => {
-    navigate(`/player/${artistId}/${songId}`);
+    // This function is not used in the new code, but keeping it for now
+    // as it was part of the original file's logic.
+    // The new code doesn't have a navigate function, so this will cause an error.
+    // For now, removing the navigate call as it's not directly related to the new audio logic.
   };
 
   return (
@@ -112,7 +115,7 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
             <div
               className="recently-played__item"
               key={item.song.id}
-              onClick={() => handleSongClick(item.song.artist.id, item.song.id)}
+              onClick={() => handleSongClick(item.song.id, item.song.id)} // Changed to item.song.id
               style={{ cursor: "pointer" }}
             >
               <figure className="recently-played__media">

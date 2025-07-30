@@ -54,7 +54,6 @@ function MusicPlayer() {
 
     const fetchData = async () => {
       try {
-        // Fetch artist and song data
         const artistResponse = await fetch(
           `${apiURL}/api/artists/${artistId}/songs`
         );
@@ -69,7 +68,6 @@ function MusicPlayer() {
         if (foundSong) {
           setSong(foundSong);
 
-          // Get audio duration
           const audio = new Audio(foundSong.file_path);
           audio.addEventListener("loadedmetadata", () => {
             const minutes = Math.floor(audio.duration / 60);
@@ -77,7 +75,6 @@ function MusicPlayer() {
             setDuration(`${minutes}:${seconds < 10 ? "0" : ""}${seconds}`);
           });
 
-          // Fetch albums to find the album containing this song
           const albumsResponse = await fetch(`${apiURL}/api/albums`);
           if (albumsResponse.ok) {
             const albumsData = await albumsResponse.json();

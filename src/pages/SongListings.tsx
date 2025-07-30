@@ -1,7 +1,7 @@
-import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
-import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
+import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import OptionsMenu from "../components/ui/menus/OptionsMenu.tsx";
 import AddToPlaylistModal from "../utils/addToPlaylist";
 

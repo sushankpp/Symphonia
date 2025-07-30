@@ -9,20 +9,21 @@ import {
   UploadActions,
 } from "../components/ui/upload";
 
-interface UploadedTrack {
-  id: number;
-  title: string;
-  artist: string;
-  fileSize: string;
-  duration: string;
-  uploadDate: string;
-  status: "pending" | "uploaded" | "processing";
-}
-
 interface Artist {
   id: number;
   artist_name: string;
   email: string;
+}
+
+interface UploadedTrack {
+  id: number;
+  title: string;
+  artist: any;
+  file_path?: string;
+  song_cover?: string;
+  uploaded_at?: string;
+  status?: "pending" | "uploaded" | "processing";
+  fileSize?: string;
 }
 
 const UploadMusic: React.FC = () => {
@@ -61,45 +62,6 @@ const UploadMusic: React.FC = () => {
     website: "",
   });
 
-  const recentUploads: UploadedTrack[] = [
-    {
-      id: 1,
-      title: "Midnight Dreams",
-      artist: "Alex Johnson",
-      fileSize: "8.5 MB",
-      duration: "3:45",
-      uploadDate: "2024-01-15",
-      status: "uploaded",
-    },
-    {
-      id: 2,
-      title: "Ocean Waves",
-      artist: "Sarah Chen",
-      fileSize: "12.2 MB",
-      duration: "4:20",
-      uploadDate: "2024-01-14",
-      status: "uploaded",
-    },
-    {
-      id: 3,
-      title: "Urban Rhythm",
-      artist: "Mike Davis",
-      fileSize: "6.8 MB",
-      duration: "2:55",
-      uploadDate: "2024-01-13",
-      status: "processing",
-    },
-    {
-      id: 4,
-      title: "Sunset Vibes",
-      artist: "Emma Wilson",
-      fileSize: "9.1 MB",
-      duration: "3:30",
-      uploadDate: "2024-01-12",
-      status: "uploaded",
-    },
-  ];
-
   useEffect(() => {
     const fetchArtists = async () => {
       try {
@@ -107,7 +69,6 @@ const UploadMusic: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setArtists(data);
-          console.log(data);
         } else {
           console.error("Failed to fetch artists");
         }
@@ -195,6 +156,57 @@ const UploadMusic: React.FC = () => {
     }));
   };
 
+  // Helper to format bytes
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // Helper to fetch file size from URL
+  const fetchFileSize = async (url: string): Promise<number> => {
+    try {
+      const res = await fetch(url, { method: "HEAD" });
+      const size = res.headers.get("Content-Length");
+      return size ? parseInt(size, 10) : 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const [recentUploads, setRecentUploads] = useState<UploadedTrack[]>([]);
+
+  useEffect(() => {
+    const fetchUploads = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/uploaded-music`);
+        const data = await res.json();
+
+        // Calculate file sizes for each track
+        const uploadsWithSize = await Promise.all(
+          data.map(async (track: UploadedTrack) => {
+            let fileSize = "";
+            if (track.file_path) {
+              const size = await fetchFileSize(track.file_path);
+              fileSize = formatFileSize(size);
+              console.log(`File size for ${track.title}: ${fileSize}`);
+            }
+            return { ...track, fileSize };
+          })
+        );
+
+        setRecentUploads(uploadsWithSize);
+        console.log("Recent uploads fetched:", uploadsWithSize);
+      } catch (err) {
+        console.error("Failed to fetch recent uploads:", err);
+        setRecentUploads([]);
+      }
+    };
+    fetchUploads();
+  }, [API_URL]);
+
   const handleUpload = async () => {
     if (!selectedFile) {
       setUploadMessage("Please select a music file to upload");
@@ -226,20 +238,6 @@ const UploadMusic: React.FC = () => {
 
       if (selectedCoverImage) {
         formData.append("cover_image", selectedCoverImage);
-      }
-
-      console.log("Selected file details:", {
-        name: selectedFile.name,
-        size: selectedFile.size,
-        type: selectedFile.type,
-        lastModified: selectedFile.lastModified,
-      });
-
-      // ... existing FormData code ...
-
-      console.log("FormData entries:");
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
       }
 
       const response = await fetch(`${API_URL}/api/upload-music`, {
@@ -278,14 +276,6 @@ const UploadMusic: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
