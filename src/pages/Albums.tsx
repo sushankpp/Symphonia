@@ -3,7 +3,7 @@ import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import ArtistDetails from "../components/ui/layouts/ArtistDetails.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { useCallback, useEffect, useState } from "react";
-import { formatTime, getAudioDuration } from "../utils/audioDuration.tsx";
+import { formatTime, getAudioDuration, convertStorageUrl } from "../utils/audioDuration.tsx";
 import { useNavigate } from "react-router-dom";
 
 type Song = {
@@ -56,7 +56,8 @@ const Albums = () => {
     if (albums.length > 0) {
       albums.forEach((album) => {
         album.songs.forEach((song) => {
-          getAudioDuration(song.file_path)
+          const convertedUrl = convertStorageUrl(song.file_path, apiURL);
+          getAudioDuration(convertedUrl)
             .then((duration) => {
               const formattedDuration = formatTime(duration);
               setSongDurations((prev) => ({
@@ -73,7 +74,7 @@ const Albums = () => {
         });
       });
     }
-  }, [albums]);
+  }, [albums, apiURL]);
 
   const handleSongClick = (artistId: number, songId: number) => {
     navigate(`/player/${artistId}/${songId}`);
@@ -94,7 +95,7 @@ const Albums = () => {
               {albums.map((album) => (
                 <div className="album-list__wrapper" key={album.id}>
                   <ArtistDetails
-                    artistImage={album.cover_image}
+                    artistImage={convertStorageUrl(album.cover_image, apiURL)}
                     albumName={album.title}
                     artistName={album.artist_name}
                     songCount={album.songs.length}

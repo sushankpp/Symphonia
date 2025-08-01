@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
 
 type Song = {
   id: number;
@@ -142,7 +143,7 @@ export const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                           <div className="song-number">{index + 1}</div>
                           <figure className="song-cover">
                             <img
-                              src={`${song.song_cover_path}`}
+                              src={convertStorageUrl(song.song_cover_path, import.meta.env.VITE_API_URL)}
                               alt={`${song.title} cover`}
                             />
                           </figure>

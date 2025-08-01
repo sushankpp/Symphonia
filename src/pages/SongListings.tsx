@@ -4,6 +4,7 @@ import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import OptionsMenu from "../components/ui/menus/OptionsMenu.tsx";
 import AddToPlaylistModal from "../utils/addToPlaylist";
+import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 type Song = {
   id: number;
@@ -51,7 +52,8 @@ function SongListings() {
         const songsWithDuration = data.songs || [];
         const durationPromises = songsWithDuration.map((song: Song) => {
           return new Promise<Song>((resolve) => {
-            const audio = new Audio(song.file_path);
+            const audioUrl = convertStorageUrl(song.file_path, apiURL);
+            const audio = new Audio(audioUrl);
             audio.addEventListener("loadedmetadata", () => {
               const minutes = Math.floor(audio.duration / 60);
               const seconds = Math.floor(audio.duration % 60);
@@ -182,7 +184,7 @@ function SongListings() {
                       <div className="song-items" key={song.id}>
                         <figure className="song-cover">
                           <img
-                            src={song.song_cover || "/images/default-cover.jpg"}
+                            src={song.song_cover ? convertStorageUrl(song.song_cover, apiURL) : "/images/default-cover.jpg"}
                             alt={`${song.title} cover`}
                           />
                         </figure>

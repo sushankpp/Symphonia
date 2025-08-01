@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
 
 type Artist = {
   id: number;
@@ -45,7 +46,8 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
 
       const durationPromises = data.map((item: RecentlyPlayedItem) => {
         return new Promise<RecentlyPlayedItem>((resolve) => {
-          const audio = new Audio(item.song.file_path);
+          const audioUrl = convertStorageUrl(item.song.file_path, apiURL);
+          const audio = new Audio(audioUrl);
           audio.addEventListener("loadedmetadata", () => {
             const minutes = Math.floor(audio.duration / 60);
             const seconds = Math.floor(audio.duration % 60);
@@ -119,7 +121,7 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
               style={{ cursor: "pointer" }}
             >
               <figure className="recently-played__media">
-                <img src={item.song.song_cover_path} alt={item.song.title} />
+                <img src={convertStorageUrl(item.song.song_cover_path, apiURL)} alt={item.song.title} />
               </figure>
               <div className="recently-played__meta">
                 <h3 className="recently-played__item-title">

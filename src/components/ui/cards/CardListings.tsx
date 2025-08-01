@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
+import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
 
 interface Artist {
   id: number;
@@ -46,8 +47,13 @@ const CardListings: React.FC<CardListingsProps> = ({
 
               <figure className="card-listings__media">
                 <img
-                  src={artist.artist_image}
+                  src={convertStorageUrl(artist.artist_image, import.meta.env.VITE_API_URL)}
                   alt={`${artist.artist_name} image`}
+                  onError={(e) => {
+                    console.error("Failed to load artist image:", artist.artist_image);
+                    console.error("Converted URL:", convertStorageUrl(artist.artist_image, import.meta.env.VITE_API_URL));
+                    console.error("API URL:", import.meta.env.VITE_API_URL);
+                  }}
                 />
               </figure>
               <h2 className="card-listings__item-title">

@@ -26,7 +26,11 @@ export default function Home({ src }: MusicPlayerProps) {
   useEffect(() => {
     fetch(`${apiURL}/api/artists`)
       .then((response) => response.json())
-      .then((data) => setArtists(data))
+      .then((data) => {
+        console.log("Artists data:", data);
+        console.log("First artist image URL:", data[0]?.artist_image);
+        setArtists(data);
+      })
       .catch((error) => console.error("Error fetching artists:", error));
   }, []);
 

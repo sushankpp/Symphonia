@@ -8,6 +8,7 @@ import {
   RecentUploads,
   UploadActions,
 } from "../components/ui/upload";
+import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 interface Artist {
   id: number;
@@ -165,10 +166,10 @@ const UploadMusic: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  // Helper to fetch file size from URL
   const fetchFileSize = async (url: string): Promise<number> => {
     try {
-      const res = await fetch(url, { method: "HEAD" });
+      const convertedUrl = convertStorageUrl(url, API_URL);
+      const res = await fetch(convertedUrl, { method: "HEAD" });
       const size = res.headers.get("Content-Length");
       return size ? parseInt(size, 10) : 0;
     } catch {

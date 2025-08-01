@@ -6,6 +6,7 @@ import CustomAudioPlayer from "../components/ui/cards/CustomAudioPlayer.tsx";
 import { addToRecentlyPlayed } from "../utils/recentlyPlayed.tsx";
 import OptionsMenu from "../components/ui/menus/OptionsMenu.tsx";
 import AddToPlaylistModal from "../utils/addToPlaylist.tsx";
+import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 type Song = {
   id: number;
@@ -68,7 +69,8 @@ function MusicPlayer() {
         if (foundSong) {
           setSong(foundSong);
 
-          const audio = new Audio(foundSong.file_path);
+          const audioUrl = convertStorageUrl(foundSong.file_path, apiURL);
+          const audio = new Audio(audioUrl);
           audio.addEventListener("loadedmetadata", () => {
             const minutes = Math.floor(audio.duration / 60);
             const seconds = Math.floor(audio.duration % 60);
@@ -234,7 +236,7 @@ function MusicPlayer() {
             <div className="music-player-track-page">
               <div className="music-player__header">
                 <figure className="music-player__figure">
-                  <img src={song.song_cover} alt={song.song_cover} />
+                  <img src={convertStorageUrl(song.song_cover, apiURL)} alt={song.song_cover} />
                 </figure>
                 <div className="music-player__header-meta">
                   <p className="music-player__header-title">{song.title}</p>
@@ -256,7 +258,7 @@ function MusicPlayer() {
 
               <div className="music-player__audio-container">
                 <CustomAudioPlayer
-                  src={song.file_path}
+                  src={convertStorageUrl(song.file_path, apiURL)}
                   title={song.title}
                   artist={artist.artist_name}
                   autoPlay={false}
@@ -330,7 +332,7 @@ function MusicPlayer() {
                   </div>
                 </div>
                 <figure className="music-card__media">
-                  <img src={artist.artist_image} alt={`${song.title} cover`} />
+                  <img src={convertStorageUrl(artist.artist_image, apiURL)} alt={`${song.title} cover`} />
                 </figure>
                 <div className="music-card__meta">
                   <div className="music-card__meta-header">

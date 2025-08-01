@@ -4,7 +4,7 @@ import ArtistDetails from "../components/ui/layouts/ArtistDetails.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAudioDuration, formatTime } from "../utils/audioDuration.tsx";
+import { getAudioDuration, formatTime, convertStorageUrl } from "../utils/audioDuration.tsx";
 
 type Artist = {
   id: number;
@@ -82,7 +82,8 @@ function Music() {
     if (artistWithSongs.length > 0) {
       artistWithSongs.forEach((item) => {
         item.songs.forEach((currentSong) => {
-          getAudioDuration(currentSong.file_path)
+          const convertedUrl = convertStorageUrl(currentSong.file_path, import.meta.env.VITE_API_URL);
+          getAudioDuration(convertedUrl)
             .then((duration) => {
               const formattedDuration = formatTime(duration);
               setSongDurations((prev) => ({
@@ -119,7 +120,7 @@ function Music() {
                 artistWithSongs.map((item, index) => (
                   <div className="music-list__wrapper" key={index}>
                     <ArtistDetails
-                      artistImage={item.artist.artist_image}
+                      artistImage={convertStorageUrl(item.artist.artist_image, import.meta.env.VITE_API_URL)}
                       artistName={item.artist.artist_name}
                       songCount={item.artist.song_count}
                       onPlayAllClick={() =>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
 
 interface Artist {
   id: number;
@@ -26,7 +27,8 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
   useEffect(() => {
     uploads.forEach((track) => {
       if (track.file_path) {
-        const audio = new Audio(track.file_path);
+        const audioUrl = convertStorageUrl(track.file_path, import.meta.env.VITE_API_URL);
+        const audio = new Audio(audioUrl);
         audio.addEventListener("loadedmetadata", () => {
           const minutes = Math.floor(audio.duration / 60);
           const seconds = Math.floor(audio.duration % 60);
@@ -49,7 +51,7 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
               <div className="track-cover">
                 {track.song_cover && (
                   <img
-                    src={track.song_cover}
+                    src={convertStorageUrl(track.song_cover, import.meta.env.VITE_API_URL)}
                     alt="Song Cover"
                     style={{
                       width: 60,

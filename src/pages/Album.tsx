@@ -2,6 +2,7 @@ import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 type Song = {
   id: number;
@@ -111,7 +112,7 @@ function Album() {
           <div className="album-page">
             <div className="album-header">
               <figure className="album-cover">
-                <img src={album.cover_image} alt={`${album.title} cover`} />
+                <img src={convertStorageUrl(album.cover_image, apiURL)} alt={`${album.title} cover`} />
               </figure>
               <div className="album-info">
                 <h1 className="album-title">{album.title}</h1>
@@ -137,7 +138,7 @@ function Album() {
                   >
                     <div className="song-number">{index + 1}</div>
                     <figure className="song-cover">
-                      <img src={song.song_cover} alt={`${song.title} cover`} />
+                      <img src={convertStorageUrl(song.song_cover, apiURL)} alt={`${song.title} cover`} />
                     </figure>
                     <div className="song-info">
                       <h3 className="song-title">{song.title}</h3>
