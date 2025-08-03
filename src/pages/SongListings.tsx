@@ -2,8 +2,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
-import OptionsMenu from "../components/ui/menus/OptionsMenu.tsx";
-import AddToPlaylistModal from "../utils/addToPlaylist";
+import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 type Song = {
@@ -28,8 +27,6 @@ function SongListings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [currentSongId, setCurrentSongId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const apiURL = import.meta.env.VITE_API_URL;
@@ -84,74 +81,9 @@ function SongListings() {
       });
   }, [artistId, apiURL]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as HTMLElement;
-      if (!target.closest(".song-options")) {
-        setActiveMenuId(null);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const toggleMenu = (e: React.MouseEvent, songId: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setActiveMenuId(activeMenuId === songId ? null : songId);
-  };
-
   const playAudio = (songId: number) => {
     if (artist) {
       navigate(`/player/${artist.id}/${songId}`);
-    }
-  };
-
-  const handleAddToPlaylistClick = (songId: number) => {
-    setCurrentSongId(songId);
-    setShowModal(true);
-  };
-
-  const handleAddToPlaylist = async (playlistId: number, songId: number) => {
-    try {
-      const response = await fetch(
-        `${apiURL}/api/playlists/${playlistId}/songs`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ song_id: songId }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to add song to playlist");
-      console.log("Song added to playlist");
-    } catch (err) {
-      console.error("Error adding song to playlist:", err);
-    } finally {
-      setShowModal(false);
-    }
-  };
-
-  const handleCreatePlaylist = async (playlistName: string, songId: number) => {
-    try {
-      const response = await fetch(`${apiURL}/api/playlists`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ playlist_name: playlistName }),
-      });
-
-      if (!response.ok) throw new Error("Failed to create playlist");
-      const newPlaylist = await response.json();
-      await handleAddToPlaylist(newPlaylist.id, songId);
-    } catch (err) {
-      console.error("Error creating playlist:", err);
     }
   };
 
@@ -166,89 +98,41 @@ function SongListings() {
           ) : error ? (
             <p className="error">{error}</p>
           ) : (
-            <div className="songs-listings">
-              <div className="songs-listings__header">
-                <h2 className="songs-listings__title">
-                  Songs by {artist?.artist_name}
-                </h2>
-                <Link to="/artists" className="return-link">
-                  Go to Artist List
+            <div className="artist-songs-container">
+              <div className="artist-songs-header">
+                <div className="artist-info">
+                  <img 
+                    src={artist?.artist_image ? convertStorageUrl(artist.artist_image, apiURL) : "/images/default-cover.jpg"}
+                    alt={artist?.artist_name}
+                    className="artist-image"
+                  />
+                  <div className="artist-details">
+                    <h1 className="artist-name">{artist?.artist_name}</h1>
+                    <p className="artist-song-count">{songs.length} songs</p>
+                  </div>
+                </div>
+                <Link to="/artists" className="back-to-artists">
+                  ← Back to Artists
                 </Link>
               </div>
-              <div className="songs-listings__wrapper">
-                <div className="songs-list">
-                  {songs.length === 0 ? (
-                    <p>No songs found for this artist.</p>
-                  ) : (
-                    songs.map((song) => (
-                      <div className="song-items" key={song.id}>
-                        <figure className="song-cover">
-                          <img
-                            src={song.song_cover ? convertStorageUrl(song.song_cover, apiURL) : "/images/default-cover.jpg"}
-                            alt={`${song.title} cover`}
-                          />
-                        </figure>
-                        <h3 className="song-title">
-                          <Link
-                            to={`/player/${artistId}/${song.id}`}
-                            onClick={() => playAudio(song.id)}
-                          >
-                            {song.title}
-                          </Link>
-                        </h3>
-                        <div className="song-add-fav">
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleAddToPlaylistClick(song.id);
-                            }}
-                          >
-                            <img
-                              src="/images/add-plus.svg"
-                              alt="add-to-fav"
-                              title="add to playlist"
-                            />
-                          </a>
-                        </div>
-                        <p className="song-duration">
-                          {song.duration || "--:--"}
-                        </p>
-                        <div className="song-options" title="more options">
-                          <a href="#" onClick={(e) => toggleMenu(e, song.id)}>
-                            <img src="/images/options-icon.svg" alt="options" />
-                          </a>
-
-                          {activeMenuId === song.id && (
-                            <OptionsMenu
-                              onAddToPlaylist={() =>
-                                handleAddToPlaylistClick(song.id)
-                              }
-                              onGoToArtist={() =>
-                                navigate(`/artists/${artistId}`)
-                              }
-                              onGoToAlbum={() => console.log("Go to Album")}
-                              onShare={() => console.log("Share")}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+              
+              <SongsList
+                songs={songs.map((song) => ({
+                  id: song.id,
+                  title: song.title,
+                  duration: song.duration || "--:--",
+                  song_cover: song.song_cover ? convertStorageUrl(song.song_cover, apiURL) : "",
+                  artist_name: artist?.artist_name,
+                }))}
+                activeMenuId={activeMenuId}
+                onSongClick={playAudio}
+                artistName={artist?.artist_name}
+                artistImage={artist?.artist_image ? convertStorageUrl(artist.artist_image, apiURL) : ""}
+              />
             </div>
           )}
         </div>
       </main>
-      {showModal && currentSongId && (
-        <AddToPlaylistModal
-          songId={currentSongId}
-          onClose={() => setShowModal(false)}
-          onAddToPlaylist={handleAddToPlaylist}
-          onCreatePlaylist={handleCreatePlaylist}
-        />
-      )}
     </>
   );
 }

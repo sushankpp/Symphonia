@@ -6,4 +6,18 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   assetsInclude: ["**/*.html"],
+  build: {
+    sourcemap: true,
+  },
+  server: {
+    cors: true,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  },
+  define: {
+    global: "globalThis",
+  },
 });

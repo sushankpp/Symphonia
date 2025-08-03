@@ -14,19 +14,33 @@
 @import "blocks/dialog";
 @import "blocks/upload-music";
 
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 #root {
   display: flex;
-  width: 100vw;
+  width: 100%;
+  overflow-x: hidden;
+  position: relative;
 }
 
 .page__home {
   width: calc(100vw - 200px);
+  margin-left: 200px;
   padding: 20px 0 0;
   background-color: $white;
-  border-top-left-radius: 50px;
-  border-bottom-left-radius: 50px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
 
   .container {
     max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+    box-sizing: border-box;
   }
 }

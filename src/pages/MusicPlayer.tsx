@@ -6,7 +6,9 @@ import CustomAudioPlayer from "../components/ui/cards/CustomAudioPlayer.tsx";
 import { addToRecentlyPlayed } from "../utils/recentlyPlayed.tsx";
 import OptionsMenu from "../components/ui/menus/OptionsMenu.tsx";
 import AddToPlaylistModal from "../utils/addToPlaylist.tsx";
+import RatingPopup from "../components/ui/menus/RatingPopup.tsx";
 import { convertStorageUrl } from "../utils/audioDuration.tsx";
+import { sendRating } from "../utils/sendRating";
 
 type Song = {
   id: number;
@@ -42,6 +44,9 @@ function MusicPlayer() {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [currentSongId, setCurrentSongId] = useState<number | null>(null);
+  const [showRatingPopup, setShowRatingPopup] = useState(false);
+  const [ratingType, setRatingType] = useState<"artist" | "song">("song");
+  const [currentRating, setCurrentRating] = useState(0);
   const navigate = useNavigate();
 
   const apiURL = import.meta.env.VITE_API_URL;
@@ -203,6 +208,28 @@ function MusicPlayer() {
     console.log("Share clicked");
   };
 
+  const handleRate = (type: "artist" | "song") => {
+    setRatingType(type);
+    setShowRatingPopup(true);
+  };
+
+  const handleRatingSubmit = async (rating: number) => {
+    try {
+      const rateableId = ratingType === "artist" ? artistId : songId;
+      
+      await sendRating({
+        rateableId: rateableId,
+        rateableType: ratingType,
+        rating: rating
+      });
+      
+      console.log(`${ratingType} rated successfully:`, rating);
+      setCurrentRating(rating);
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+    }
+  };
+
   // Wrapper functions for OptionsMenu that don't expect parameters
   const handleAddToPlaylistWrapper = () => {
     handleAddToPlaylistClick();
@@ -216,6 +243,14 @@ function MusicPlayer() {
 
   const handleGoToAlbumWrapper = () => {
     handleGoToAlbum();
+  };
+
+  const handleRateSongWrapper = () => {
+    handleRate("song");
+  };
+
+  const handleRateArtistWrapper = () => {
+    handleRate("artist");
   };
 
   return (
@@ -298,6 +333,8 @@ function MusicPlayer() {
                         onGoToArtist={handleGoToArtistWrapper}
                         onGoToAlbum={handleGoToAlbumWrapper}
                         onShare={handleShare}
+                        onRate={handleRateSongWrapper}
+                        showRateOption={true}
                       />
                     )}
                   </div>
@@ -327,6 +364,8 @@ function MusicPlayer() {
                         onGoToArtist={handleGoToArtistWrapper}
                         onGoToAlbum={handleGoToAlbumWrapper}
                         onShare={handleShare}
+                        onRate={handleRateSongWrapper}
+                        showRateOption={true}
                       />
                     )}
                   </div>
@@ -377,6 +416,15 @@ function MusicPlayer() {
           onCreatePlaylist={handleCreatePlaylist}
         />
       )}
+      <RatingPopup
+        isOpen={showRatingPopup}
+        onClose={() => setShowRatingPopup(false)}
+        onRate={handleRatingSubmit}
+        title={ratingType === "artist" ? artist?.artist_name || "" : song?.title || ""}
+        currentRating={currentRating}
+        type={ratingType}
+        rateableId={ratingType === "artist" ? artistId : songId}
+      />
     </>
   );
 }

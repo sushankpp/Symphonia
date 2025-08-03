@@ -5,6 +5,8 @@ type OptionsMenuProps = {
   onGoToArtist: () => void;
   onGoToAlbum: () => void;
   onShare: () => void;
+  onRate?: () => void;
+  showRateOption?: boolean;
 };
 
 const OptionsMenu: React.FC<OptionsMenuProps> = ({
@@ -12,6 +14,8 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({
   onGoToArtist,
   onGoToAlbum,
   onShare,
+  onRate,
+  showRateOption = false,
 }) => {
   return (
     <div className="options-menu">
@@ -27,6 +31,19 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({
             Add to Playlist
           </a>
         </li>
+        {showRateOption && onRate && (
+          <li>
+            <a
+              href=""
+              onClick={(e) => {
+                e.preventDefault();
+                onRate();
+              }}
+            >
+              Rate
+            </a>
+          </li>
+        )}
         <li>
           <a
             href=""

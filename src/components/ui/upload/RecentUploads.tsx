@@ -6,6 +6,13 @@ interface Artist {
   artist_name: string;
 }
 
+interface CompressionStats {
+  original_size: string;
+  compressed_size: string;
+  compression_ratio: number;
+  space_saved: string;
+}
+
 interface UploadedTrack {
   id: number;
   title: string;
@@ -14,7 +21,8 @@ interface UploadedTrack {
   file_path?: string;
   uploaded_at?: string;
   status?: "pending" | "uploaded" | "processing";
-  fileSize?: string;
+  file_size?: string;
+  compression_stats?: CompressionStats;
 }
 
 interface RecentUploadsProps {
@@ -27,7 +35,10 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
   useEffect(() => {
     uploads.forEach((track) => {
       if (track.file_path) {
-        const audioUrl = convertStorageUrl(track.file_path, import.meta.env.VITE_API_URL);
+        const audioUrl = convertStorageUrl(
+          track.file_path,
+          import.meta.env.VITE_API_URL
+        );
         const audio = new Audio(audioUrl);
         audio.addEventListener("loadedmetadata", () => {
           const minutes = Math.floor(audio.duration / 60);
@@ -51,7 +62,10 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
               <div className="track-cover">
                 {track.song_cover && (
                   <img
-                    src={convertStorageUrl(track.song_cover, import.meta.env.VITE_API_URL)}
+                    src={convertStorageUrl(
+                      track.song_cover,
+                      import.meta.env.VITE_API_URL
+                    )}
                     alt="Song Cover"
                     style={{
                       width: 60,
@@ -70,12 +84,20 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
                 <span className="duration">
                   {durations[track.id] || "--:--"}
                 </span>
-                <span className="file-size">{track.fileSize || "--"}</span>
+                <span className="file-size">{track.file_size || "--"}</span>
                 <span className="upload-date">
                   {track.uploaded_at
                     ? new Date(track.uploaded_at).toLocaleString()
                     : ""}
                 </span>
+                {track.compression_stats && (
+                  <span
+                    className="compression-info"
+                    title={`Original: ${track.compression_stats.original_size} | Saved: ${track.compression_stats.space_saved}`}
+                  >
+                    {track.compression_stats.compression_ratio}% smaller
+                  </span>
+                )}
                 <span className={`status status-${track.status}`}>
                   {track.status === "uploaded"
                     ? "Uploaded"

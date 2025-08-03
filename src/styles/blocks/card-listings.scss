@@ -24,79 +24,225 @@
 .card-listings__header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 4px;
 }
 
 .card-listings__title {
-  @include fsz(16px);
+  @include fsz(20px);
   font-family: $secondary-bold-family;
-  color: $black-100;
+  color: #1f2937;
   text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 30px;
+    height: 3px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+    border-radius: 2px;
+  }
 }
 
 .card-listings__link {
-  @include fsz(12px);
+  @include fsz(14px);
   font-family: $secondary-bold-family;
-  color: $black-100;
+  color: #d97706;
   text-transform: capitalize;
-  text-decoration: underline;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(251, 191, 36, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(251, 191, 36, 0.2);
+    transform: translateY(-1px);
+    color: #b45309;
+  }
 }
 
 .card-listings__grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+  padding: 0;
 }
 
 .card-listings__item {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b, #d97706);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 
   &:hover {
-    img {
-      transform: scale(1.1);
+    transform: translateY(-4px);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      0 8px 24px rgba(0, 0, 0, 0.1);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .card-listings__media img {
+      transform: scale(1.05);
+    }
+
+    .card-listings__item-title {
+      color: #d97706;
+    }
+
+    .card-listings__options {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }
 
 .card-listings__media {
-  width: 100%;
   height: 140px;
+  border-radius: 8px;
   overflow: hidden;
-  border-radius: 50%;
+  margin-bottom: 12px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: top;
-    transition: all 0.3s ease-in-out;
+    transition: transform 0.3s ease;
   }
 }
 
 .card-listings__item-title {
-  margin-top: 10px;
-  @include fsz(16px);
-  font-family: $primary-black-family;
-  color: $black-100;
-  text-transform: capitalize;
+  color: #1f2937;
+  font-weight: 600;
+  margin: 8px 0 4px;
+  font-size: 16px;
   line-height: 1.3;
-  text-align: center;
+  transition: color 0.3s ease;
 }
 
 .card-listings__item-description {
-  @include fsz(13px);
-  font-family: $secondary-bold-family;
-  color: $black-100;
-  text-transform: capitalize;
-  line-height: 1.3;
-  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0 0 8px;
+  line-height: 1.4;
 }
 
 .card-listings__item-count {
-  @include fsz(13px);
-  font-family: $secondary-bold-family;
-  color: $black-100;
-  text-transform: capitalize;
-  line-height: 1.3;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(251, 191, 36, 0.1);
+  padding: 4px 8px;
+  border-radius: 8px;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
+}
+
+// Options menu for artist cards
+.card-listings__options {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 10;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    img {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover img {
+      opacity: 1;
+    }
+  }
+}
+
+// Responsive grid
+@media (max-width: 1200px) {
+  .card-listings__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .card-listings__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .card-listings__grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -1,6 +1,5 @@
 import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
-import ArtistDetails from "../components/ui/layouts/ArtistDetails.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,8 +7,8 @@ import { getAudioDuration, formatTime, convertStorageUrl } from "../utils/audioD
 
 type Artist = {
   id: number;
-  artist_image: string;
   artist_name: string;
+  artist_image: string;
   song_count: number;
 };
 
@@ -17,16 +16,14 @@ type Song = {
   id: number;
   title: string;
   file_path: string;
-};
-
-type ArtistWithSongs = {
-  artist: Artist;
-  songs: Song[];
+  song_cover?: string;
+  artist_name?: string;
+  artist_id?: number;
 };
 
 function Music() {
   const navigate = useNavigate();
-  const [artistWithSongs, setArtistWithSongs] = useState<ArtistWithSongs[]>([]);
+  const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
@@ -39,68 +36,74 @@ function Music() {
   useEffect(() => {
     setLoading(true);
 
+    // First fetch all artists
     fetch(`${apiURL}/api/artists`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch artists");
+        return res.json();
+      })
       .then((artists: Artist[]) => {
+        // Then fetch songs for each artist
         const promises = artists.map((artist) =>
           fetch(`${apiURL}/api/artists/${artist.id}/songs`)
             .then((res) => res.json())
-            .then((data) => ({
-              artist: data.artist,
-              songs: data.songs || [],
-            }))
+            .then((data) => {
+              const artistSongs = (data.songs || []).map((song: any) => ({
+                ...song,
+                artist_name: artist.artist_name,
+                artist_id: artist.id,
+              }));
+              return artistSongs;
+            })
             .catch((error) => {
-              console.error(
-                `Error fetching songs for artist ${artist.id}:`,
-                error
-              );
-              return {
-                artist: artist,
-                songs: [],
-              };
+              console.error(`Error fetching songs for artist ${artist.id}:`, error);
+              return [];
             })
         );
 
         return Promise.all(promises);
       })
-      .then((results) => {
-        setArtistWithSongs(results);
+      .then((allSongsArrays) => {
+        // Flatten all songs into a single array
+        const allSongs = allSongsArrays.flat();
+        setSongs(allSongs);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching artists:", error);
+        console.error("Error fetching songs:", error);
         setError("Failed to load music data");
         setLoading(false);
       });
-  }, []);
+  }, [apiURL]);
 
-  const handleSongClick = (artistId: number, songId: number) => {
-    navigate(`/player/${artistId}/${songId}`);
+  const handleSongClick = (songId: number) => {
+    const song = songs.find(s => s.id === songId);
+    if (song && song.artist_id) {
+      navigate(`/player/${song.artist_id}/${songId}`);
+    }
   };
 
   useEffect(() => {
-    if (artistWithSongs.length > 0) {
-      artistWithSongs.forEach((item) => {
-        item.songs.forEach((currentSong) => {
-          const convertedUrl = convertStorageUrl(currentSong.file_path, import.meta.env.VITE_API_URL);
-          getAudioDuration(convertedUrl)
-            .then((duration) => {
-              const formattedDuration = formatTime(duration);
-              setSongDurations((prev) => ({
-                ...prev,
-                [currentSong.id]: formattedDuration,
-              }));
-            })
-            .catch((error) => {
-              console.error(
-                `Error fetching duration for song ${currentSong.id}:`,
-                error
-              );
-            });
-        });
+    if (songs.length > 0) {
+      songs.forEach((song) => {
+        const convertedUrl = convertStorageUrl(song.file_path, import.meta.env.VITE_API_URL);
+        getAudioDuration(convertedUrl)
+          .then((duration) => {
+            const formattedDuration = formatTime(duration);
+            setSongDurations((prev) => ({
+              ...prev,
+              [song.id]: formattedDuration,
+            }));
+          })
+          .catch((error) => {
+            console.error(
+              `Error fetching duration for song ${song.id}:`,
+              error
+            );
+          });
       });
     }
-  }, [artistWithSongs]);
+  }, [songs]);
 
   return (
     <>
@@ -116,34 +119,20 @@ function Music() {
             <p className="error-message">{error}</p>
           ) : (
             <div className="music-list__container">
-              {artistWithSongs.length > 0 ? (
-                artistWithSongs.map((item, index) => (
-                  <div className="music-list__wrapper" key={index}>
-                    <ArtistDetails
-                      artistImage={convertStorageUrl(item.artist.artist_image, import.meta.env.VITE_API_URL)}
-                      artistName={item.artist.artist_name}
-                      songCount={item.artist.song_count}
-                      onPlayAllClick={() =>
-                        console.log(
-                          `Play all songs for ${item.artist.artist_name}`
-                        )
-                      }
-                    />
-                    <SongsList
-                      songs={item.songs.map((song) => ({
-                        id: song.id,
-                        title: song.title,
-                        duration: songDurations[song.id] || "--:--",
-                      }))}
-                      activeMenuId={activeMenuId}
-                      onSongClick={(songId) =>
-                        handleSongClick(item.artist.id, songId)
-                      }
-                    />
-                  </div>
-                ))
+              {songs.length > 0 ? (
+                <SongsList
+                  songs={songs.map((song) => ({
+                    id: song.id,
+                    title: song.title,
+                    duration: songDurations[song.id] || "--:--",
+                    song_cover: song.song_cover ? convertStorageUrl(song.song_cover, import.meta.env.VITE_API_URL) : "",
+                    artist_name: song.artist_name || "Unknown Artist",
+                  }))}
+                  activeMenuId={activeMenuId}
+                  onSongClick={handleSongClick}
+                />
               ) : (
-                <p className="info">No artists available</p>
+                <p className="info">No songs available</p>
               )}
             </div>
           )}

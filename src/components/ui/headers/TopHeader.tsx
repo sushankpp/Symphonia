@@ -1,15 +1,27 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const TopHeader = () => {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    if (path === "/" && location.pathname === "/") {
+      return true;
+    }
+    if (path !== "/" && location.pathname.startsWith(path)) {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <section className="main-header">
       <div className="main-header__nav">
         <ul className="main-header__nav-items">
           <li>
-            <Link to="/music">Music</Link>
+            <Link to="/music" className={isActive("/music") ? "active" : ""}>Music</Link>
           </li>
           <li>
-            <Link to="/upload">Upload Music</Link>
+            <Link to="/upload" className={isActive("/upload") ? "active" : ""}>Upload Music</Link>
           </li>
         </ul>
       </div>

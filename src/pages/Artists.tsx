@@ -59,6 +59,7 @@ function Artists() {
             title="Artists"
             style={{ fontSize: "1.3rem" }}
             onArtistClick={handleArtistClick}
+            showRatingOption={true}
           />
         </div>
       </main>

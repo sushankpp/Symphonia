@@ -595,3 +595,31 @@
     }
   }
 }
+
+.compression-info {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: help;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.compression-info:hover {
+  background: linear-gradient(135deg, #45a049, #4caf50);
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
+.track-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@import "rating-popup";
+@import "menus";

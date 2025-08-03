@@ -1,9 +1,21 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import svgSprite from "../../../templates/template-svg.html?raw";
 import MenuPlaylist from "../menus/MenuPlaylist.tsx";
 // import svgSprite from '@templates/template-svg.html?raw';
 
 const SidebarHeader = () => {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    if (path === "/" && location.pathname === "/") {
+      return true;
+    }
+    if (path !== "/" && location.pathname.startsWith(path)) {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <>
       <div
@@ -12,7 +24,7 @@ const SidebarHeader = () => {
       />
       <header className="side-header">
         <div className="header-logo">
-          <a href="/public">
+          <a href="/">
             <img src="/uploads/symphonia-logo.svg" alt="symphonia-logo" />
           </a>
         </div>
@@ -21,7 +33,7 @@ const SidebarHeader = () => {
             <h2 className="header-navigation__title">Menu</h2>
             <ul className="header-navigation__item">
               <li>
-                <Link to="/">
+                <Link to="/" className={isActive("/") ? "active" : ""}>
                   <svg className="icon icon-home">
                     <use xlinkHref="#icon-home"></use>
                   </svg>
@@ -29,7 +41,7 @@ const SidebarHeader = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/music">
+                <Link to="/music" className={isActive("/music") ? "active" : ""}>
                   <svg className="icon icon-music">
                     <use xlinkHref="#icon-music"></use>
                   </svg>
@@ -37,7 +49,7 @@ const SidebarHeader = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/artists">
+                <Link to="/artists" className={isActive("/artists") ? "active" : ""}>
                   <svg className="icon icon-artist">
                     <use xlinkHref="#icon-artist"></use>
                   </svg>
@@ -45,7 +57,7 @@ const SidebarHeader = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/record">
+                <Link to="/record" className={isActive("/record") ? "active" : ""}>
                   <svg className="icon icon-record">
                     <use xlinkHref="#icon-record"></use>
                   </svg>
@@ -58,7 +70,7 @@ const SidebarHeader = () => {
             <h2 className="header-navigation__title">Library</h2>
             <ul className="header-navigation__item">
               <li>
-                <Link to="/recent">
+                <Link to="/recent" className={isActive("/recent") ? "active" : ""}>
                   <svg className="icon icon-recent">
                     <use xlinkHref="#icon-recent"></use>
                   </svg>
@@ -66,7 +78,7 @@ const SidebarHeader = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/albums">
+                <Link to="/albums" className={isActive("/albums") ? "active" : ""}>
                   <svg className="icon icon-albums">
                     <use xlinkHref="#icon-albums"></use>
                   </svg>
@@ -74,7 +86,7 @@ const SidebarHeader = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/downloads">
+                <Link to="/downloads" className={isActive("/downloads") ? "active" : ""}>
                   <svg className="icon icon-download">
                     <use xlinkHref="#icon-download"></use>
                   </svg>

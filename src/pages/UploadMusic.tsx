@@ -8,12 +8,18 @@ import {
   RecentUploads,
   UploadActions,
 } from "../components/ui/upload";
-import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 interface Artist {
   id: number;
   artist_name: string;
   email: string;
+}
+
+interface CompressionStats {
+  original_size: string;
+  compressed_size: string;
+  compression_ratio: number;
+  space_saved: string;
 }
 
 interface UploadedTrack {
@@ -24,7 +30,8 @@ interface UploadedTrack {
   song_cover?: string;
   uploaded_at?: string;
   status?: "pending" | "uploaded" | "processing";
-  fileSize?: string;
+  file_size?: string;
+  compression_stats?: CompressionStats;
 }
 
 const UploadMusic: React.FC = () => {
@@ -157,24 +164,13 @@ const UploadMusic: React.FC = () => {
     }));
   };
 
-  // Helper to format bytes
+  // Helper to format bytes for display (only for selected file)
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
-  const fetchFileSize = async (url: string): Promise<number> => {
-    try {
-      const convertedUrl = convertStorageUrl(url, API_URL);
-      const res = await fetch(convertedUrl, { method: "HEAD" });
-      const size = res.headers.get("Content-Length");
-      return size ? parseInt(size, 10) : 0;
-    } catch {
-      return 0;
-    }
   };
 
   const [recentUploads, setRecentUploads] = useState<UploadedTrack[]>([]);
@@ -185,21 +181,8 @@ const UploadMusic: React.FC = () => {
         const res = await fetch(`${API_URL}/api/uploaded-music`);
         const data = await res.json();
 
-        // Calculate file sizes for each track
-        const uploadsWithSize = await Promise.all(
-          data.map(async (track: UploadedTrack) => {
-            let fileSize = "";
-            if (track.file_path) {
-              const size = await fetchFileSize(track.file_path);
-              fileSize = formatFileSize(size);
-              console.log(`File size for ${track.title}: ${fileSize}`);
-            }
-            return { ...track, fileSize };
-          })
-        );
-
-        setRecentUploads(uploadsWithSize);
-        console.log("Recent uploads fetched:", uploadsWithSize);
+        setRecentUploads(data);
+        console.log("Recent uploads fetched:", data);
       } catch (err) {
         console.error("Failed to fetch recent uploads:", err);
         setRecentUploads([]);
@@ -252,7 +235,15 @@ const UploadMusic: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setUploadMessage("Music uploaded successfully!");
+
+        // Show compression statistics
+        const stats = result.compression_stats;
+        const compressionMessage = `Music uploaded successfully! 
+          Original: ${stats.original_size} → Compressed: ${stats.compressed_size} 
+          (${stats.compression_ratio}% smaller, saved ${stats.space_saved})`;
+
+        setUploadMessage(compressionMessage);
+        console.log(compressionMessage);
 
         setSelectedFile(null);
         setSelectedCoverImage(null);

@@ -1,6 +1,5 @@
 import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
-import ArtistDetails from "../components/ui/layouts/ArtistDetails.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { useCallback, useEffect, useState } from "react";
 import { formatTime, getAudioDuration, convertStorageUrl } from "../utils/audioDuration.tsx";
@@ -39,7 +38,6 @@ const Albums = () => {
       if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
       setAlbums(data);
-      console.log("Fetched albums:", data);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch albums:", error);
@@ -62,7 +60,7 @@ const Albums = () => {
               const formattedDuration = formatTime(duration);
               setSongDurations((prev) => ({
                 ...prev,
-                [String(song.id)]: formattedDuration, // Ensure song.id is a string
+                [String(song.id)]: formattedDuration,
               }));
             })
             .catch((error) => {
@@ -83,33 +81,50 @@ const Albums = () => {
   return (
     <>
       <SidebarHeader />
-      <main className="page__home">
-        <TopHeader />
+      <main className="page__home" id="primary">
         <div className="container">
+          <TopHeader />
           {loading ? (
             <p className="loading">Loading albums...</p>
           ) : error ? (
             <p className="error">{error}</p>
           ) : (
-            <div className="albums-list__container">
+            <div className="albums-container">
               {albums.map((album) => (
-                <div className="album-list__wrapper" key={album.id}>
-                  <ArtistDetails
-                    artistImage={convertStorageUrl(album.cover_image, apiURL)}
-                    albumName={album.title}
-                    artistName={album.artist_name}
-                    songCount={album.songs.length}
-                    onPlayAllClick={() => console.log()}
-                  />
+                <div className="album-card" key={album.id}>
+                  <div className="album-header">
+                    <div className="album-info">
+                      <img 
+                        src={album.cover_image ? convertStorageUrl(album.cover_image, apiURL) : "/images/default-cover.jpg"}
+                        alt={album.title}
+                        className="album-image"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/default-cover.jpg";
+                        }}
+                      />
+                      <div className="album-details">
+                        <h1 className="album-name">{album.title}</h1>
+                        <p className="album-artist">{album.artist_name}</p>
+                        <p className="album-song-count">{album.songs.length} songs</p>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <SongsList
                     songs={album.songs.map((song) => ({
                       id: song.id,
                       title: song.title,
                       duration: songDurations[String(song.id)] || "--:--",
+                      song_cover: song.song_cover ? convertStorageUrl(song.song_cover, apiURL) : "",
+                      artist_name: album.artist_name,
                     }))}
+                    activeMenuId={null}
                     onSongClick={(songId) =>
                       handleSongClick(album.artist_id, songId)
                     }
+                    artistName={album.artist_name}
+                    artistImage={album.cover_image ? convertStorageUrl(album.cover_image, apiURL) : ""}
                   />
                 </div>
               ))}
