@@ -4,6 +4,12 @@ type Song = {
   id: number;
   title: string;
   song_cover_path: string;
+  artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type Playlist = {

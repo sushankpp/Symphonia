@@ -2,6 +2,7 @@ import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { playSong } from "../utils/playSong";
 import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 type Song = {
@@ -9,6 +10,12 @@ type Song = {
   title: string;
   song_cover: string;
   file_path: string;
+  artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type Album = {
@@ -63,7 +70,7 @@ function Album() {
     fetchAlbum();
   }, [albumId, apiURL]);
 
-  const handleSongClick = (songId: number) => {
+  const handleSongClick = async (songId: number) => {
     if (album) {
       navigate(`/player/${album.artist_id}/${songId}`);
     }
@@ -112,7 +119,10 @@ function Album() {
           <div className="album-page">
             <div className="album-header">
               <figure className="album-cover">
-                <img src={convertStorageUrl(album.cover_image, apiURL)} alt={`${album.title} cover`} />
+                <img
+                  src={convertStorageUrl(album.cover_image, apiURL)}
+                  alt={`${album.title} cover`}
+                />
               </figure>
               <div className="album-info">
                 <h1 className="album-title">{album.title}</h1>
@@ -138,11 +148,26 @@ function Album() {
                   >
                     <div className="song-number">{index + 1}</div>
                     <figure className="song-cover">
-                      <img src={convertStorageUrl(song.song_cover, apiURL)} alt={`${song.title} cover`} />
+                      <img
+                        src={convertStorageUrl(song.song_cover, apiURL)}
+                        alt={`${song.title} cover`}
+                      />
                     </figure>
                     <div className="song-info">
                       <h3 className="song-title">{song.title}</h3>
                       <p className="song-artist">{album.artist_name}</p>
+                      {song.genre && (
+                        <span className="song-genre">{song.genre}</span>
+                      )}
+                      {song.views !== undefined && (
+                        <span className="song-views">{song.views} views</span>
+                      )}
+                      {song.released_date && (
+                        <span className="song-released">
+                          Released:{" "}
+                          {new Date(song.released_date).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
                     <div className="song-actions">
                       <button className="play-btn">▶</button>

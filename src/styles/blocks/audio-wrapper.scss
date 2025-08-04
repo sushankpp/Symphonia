@@ -78,7 +78,7 @@
   backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.1),
     0 4px 16px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -87,7 +87,7 @@
   width: 100%;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -128,7 +128,7 @@
   gap: 4px;
 
   &::before {
-    content: '🎵';
+    content: "🎵";
     font-size: 14px;
   }
 }
@@ -183,7 +183,7 @@
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     top: 0;
@@ -196,7 +196,7 @@
 
   &:hover {
     transform: translateX(4px);
-    box-shadow: 
+    box-shadow:
       0 8px 24px rgba(0, 0, 0, 0.1),
       0 4px 12px rgba(0, 0, 0, 0.05);
     background: rgba(255, 255, 255, 0.95);
@@ -279,6 +279,9 @@
 .song-card__info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .song-card__title {
@@ -312,6 +315,54 @@
   padding: 2px 8px;
   border-radius: 8px;
   display: inline-block;
+}
+
+.song-card__meta {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.song-card__views {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 400;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+.song-card__genre {
+  font-size: 11px;
+  color: #d97706;
+  font-weight: 500;
+  background: rgba(217, 119, 6, 0.1);
+  padding: 2px 6px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.song-card__description {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-card__released {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 400;
+  margin-top: 4px;
+  display: block;
 }
 
 .song-card__actions {
@@ -418,21 +469,21 @@
   li {
     a {
       position: relative;
-      
+
       &.active {
         color: rgba(255, 255, 255, 1);
         background: rgba(251, 191, 36, 0.2);
-        
+
         &::before {
           width: 100%;
         }
-        
+
         svg {
           color: #fbbf24;
         }
-        
+
         &::after {
-          content: '';
+          content: "";
           position: absolute;
           right: 0;
           top: 50%;
@@ -517,7 +568,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(15px);
   border-radius: 12px;
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.08),
     0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -525,7 +576,7 @@
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;

@@ -9,12 +9,19 @@ import AddToPlaylistModal from "../utils/addToPlaylist.tsx";
 import RatingPopup from "../components/ui/menus/RatingPopup.tsx";
 import { convertStorageUrl } from "../utils/audioDuration.tsx";
 import { sendRating } from "../utils/sendRating";
+import { playSong } from "../utils/playSong";
 
 type Song = {
   id: number;
   title: string;
   song_cover: string;
   file_path: string;
+  artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type Artist = {
@@ -67,14 +74,19 @@ function MusicPlayer() {
         const artistData = await artistResponse.json();
 
         setArtist(artistData.artist);
-        const foundSong = artistData.songs.find(
-          (s: Song) => s.id === parseInt(songId)
-        );
+        const foundSong = artistData.songs.find((songData: any) => {
+          const song = songData.song || songData;
+          return song.id === parseInt(songId);
+        });
 
         if (foundSong) {
-          setSong(foundSong);
+          const song = foundSong.song || foundSong;
+          setSong({
+            ...song,
+            released_date: song.release_date,
+          });
 
-          const audioUrl = convertStorageUrl(foundSong.file_path, apiURL);
+          const audioUrl = convertStorageUrl(song.file_path, apiURL);
           const audio = new Audio(audioUrl);
           audio.addEventListener("loadedmetadata", () => {
             const minutes = Math.floor(audio.duration / 60);
@@ -127,10 +139,15 @@ function MusicPlayer() {
   const handleSongPlay = async () => {
     if (song?.id) {
       try {
+        // Call the play song API to increment views
+        await playSong(song.id);
+        console.log("Song views incremented", song.title);
+
+        // Add to recently played
         await addToRecentlyPlayed(song.id);
         console.log("Song added to recently played", song.title);
       } catch (error) {
-        console.error("Error adding song to recently played:", error);
+        console.error("Error handling song play:", error);
       }
     }
   };
@@ -216,13 +233,13 @@ function MusicPlayer() {
   const handleRatingSubmit = async (rating: number) => {
     try {
       const rateableId = ratingType === "artist" ? artistId : songId;
-      
+
       await sendRating({
         rateableId: rateableId,
         rateableType: ratingType,
-        rating: rating
+        rating: rating,
       });
-      
+
       console.log(`${ratingType} rated successfully:`, rating);
       setCurrentRating(rating);
     } catch (error) {
@@ -271,7 +288,10 @@ function MusicPlayer() {
             <div className="music-player-track-page">
               <div className="music-player__header">
                 <figure className="music-player__figure">
-                  <img src={convertStorageUrl(song.song_cover, apiURL)} alt={song.song_cover} />
+                  <img
+                    src={convertStorageUrl(song.song_cover, apiURL)}
+                    alt={song.song_cover}
+                  />
                 </figure>
                 <div className="music-player__header-meta">
                   <p className="music-player__header-title">{song.title}</p>
@@ -283,9 +303,17 @@ function MusicPlayer() {
                       {album && (
                         <p className="music-player__album">{album.title}</p>
                       )}
-                      <p className="music-player__duration">{duration}</p>.
-                      <p className="music-player__released-year">2023</p>.
-                      <p className="music-player__played-data">0</p>
+                      <p className="music-player__duration">{duration}</p>
+                      {song.released_date && (
+                        <p className="music-player__released-year">
+                          {new Date(song.released_date).getFullYear()}
+                        </p>
+                      )}
+                      {song.views !== undefined && (
+                        <p className="music-player__played-data">
+                          {song.views} plays
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -371,7 +399,10 @@ function MusicPlayer() {
                   </div>
                 </div>
                 <figure className="music-card__media">
-                  <img src={convertStorageUrl(artist.artist_image, apiURL)} alt={`${song.title} cover`} />
+                  <img
+                    src={convertStorageUrl(artist.artist_image, apiURL)}
+                    alt={`${song.title} cover`}
+                  />
                 </figure>
                 <div className="music-card__meta">
                   <div className="music-card__meta-header">
@@ -382,6 +413,24 @@ function MusicPlayer() {
                     {album && (
                       <p className="music-card__meta-album">{album.title}</p>
                     )}
+                    <div className="music-card__meta-details">
+                      {song.genre && (
+                        <span className="music-card__meta-genre">
+                          {song.genre}
+                        </span>
+                      )}
+                      {song.views !== undefined && (
+                        <span className="music-card__meta-views">
+                          {song.views} views
+                        </span>
+                      )}
+                      {song.released_date && (
+                        <span className="music-card__meta-released">
+                          Released:{" "}
+                          {new Date(song.released_date).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="music-player__add-to-fav">
                     <a
@@ -420,7 +469,11 @@ function MusicPlayer() {
         isOpen={showRatingPopup}
         onClose={() => setShowRatingPopup(false)}
         onRate={handleRatingSubmit}
-        title={ratingType === "artist" ? artist?.artist_name || "" : song?.title || ""}
+        title={
+          ratingType === "artist"
+            ? artist?.artist_name || ""
+            : song?.title || ""
+        }
         currentRating={currentRating}
         type={ratingType}
         rateableId={ratingType === "artist" ? artistId : songId}

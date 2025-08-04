@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Plus, Music, ListMusic, Play } from "lucide-react";
 
 type Playlist = {
   id: number;
@@ -31,18 +32,14 @@ const MenuPlaylist = () => {
       <ul className="header-navigation__item">
         <li>
           <Link to="/create-playlist">
-            <svg className="icon icon-playlist">
-              <use xlinkHref="#icon-playlist"></use>
-            </svg>
+            <Plus size={20} />
             Create New Playlist
           </Link>
         </li>
         {playlists.slice(0, 2).map((playlist) => (
           <li key={playlist.id}>
             <Link to={`/playlist/${playlist.id}`}>
-              <svg className="icon icon-playlist">
-                <use xlinkHref="#icon-playlist"></use>
-              </svg>
+              <ListMusic size={20} />
               {playlist.playlist_name}
             </Link>
           </li>

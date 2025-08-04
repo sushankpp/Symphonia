@@ -1,7 +1,28 @@
 import { Link, useLocation } from "react-router-dom";
+import { useState, useRef } from "react";
+import {
+  Search,
+  Upload,
+  Music,
+  LogIn,
+  User,
+  Bell,
+  Settings,
+} from "lucide-react";
+import LoginRegisterPopup from "../menus/LoginRegisterPopup";
+import UserDropdown from "../menus/UserDropdown";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const TopHeader = () => {
   const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userProfileRef = useRef<HTMLAnchorElement>(null);
+
+  // Debug logging
+  console.log("TopHeader - isAuthenticated:", isAuthenticated);
+  console.log("TopHeader - user:", user);
 
   const isActive = (path: string) => {
     if (path === "/" && location.pathname === "/") {
@@ -13,15 +34,35 @@ const TopHeader = () => {
     return false;
   };
 
+  const handleLoginSuccess = (userData: any) => {
+    console.log("Login success, userData:", userData);
+    setShowLoginPopup(false);
+  };
+
+  const handleUserProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowUserDropdown(!showUserDropdown);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <section className="main-header">
       <div className="main-header__nav">
         <ul className="main-header__nav-items">
           <li>
-            <Link to="/music" className={isActive("/music") ? "active" : ""}>Music</Link>
+            <Link to="/music" className={isActive("/music") ? "active" : ""}>
+              <Music size={18} />
+              Music
+            </Link>
           </li>
           <li>
-            <Link to="/upload" className={isActive("/upload") ? "active" : ""}>Upload Music</Link>
+            <Link to="/upload" className={isActive("/upload") ? "active" : ""}>
+              <Upload size={18} />
+              Upload Music
+            </Link>
           </li>
         </ul>
       </div>
@@ -34,28 +75,52 @@ const TopHeader = () => {
           placeholder="Search music name here"
         />
         <button className="search-music__btn">
-          <svg className="icon icon-search">
-            <use xlinkHref="#icon-search"></use>
-          </svg>
+          <Search size={18} />
         </button>
       </div>
       <div className="header__links">
-        <Link to="/notification">
-          <svg className="icon icon-notification">
-            <use xlinkHref="#icon-notification"></use>
-          </svg>
-        </Link>
-        <Link to="/settings">
-          <svg className="icon icon-settings">
-            <use xlinkHref="#icon-settings"></use>
-          </svg>
-        </Link>
-        <Link to="/profile" className="user__profile">
-          <figure className="header__media">
-            <img src="/uploads/pig.png" alt="user image" />
-          </figure>
-        </Link>
+        {!isAuthenticated ? (
+          <button
+            className="header__auth-btn"
+            onClick={() => setShowLoginPopup(true)}
+          >
+            <LogIn size={18} />
+            <span>Login / Register</span>
+          </button>
+        ) : (
+          <>
+            <Link to="/notification" className="header__link">
+              <Bell size={24} />
+            </Link>
+            <Link to="/settings" className="header__link">
+              <Settings size={24} />
+            </Link>
+            <a
+              href="#"
+              ref={userProfileRef}
+              onClick={handleUserProfileClick}
+              className="user__profile"
+            >
+              <figure className="header__media">
+                <img
+                  src={user?.profile_picture || "/uploads/pig.png"}
+                  alt={user?.name || "user image"}
+                />
+              </figure>
+            </a>
+          </>
+        )}
       </div>
+      <LoginRegisterPopup
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+      <UserDropdown
+        isOpen={showUserDropdown}
+        onClose={() => setShowUserDropdown(false)}
+        triggerRef={userProfileRef}
+      />
     </section>
   );
 };

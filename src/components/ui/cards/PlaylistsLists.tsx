@@ -1,9 +1,24 @@
 import React, { useState } from "react";
+import {
+  Plus,
+  Music,
+  Play,
+  Clock,
+  Calendar,
+  Check,
+  Loader2,
+} from "lucide-react";
 
 type Song = {
   id: number;
   title: string;
   song_cover_path: string;
+  artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type Playlist = {
@@ -116,8 +131,19 @@ export const PlaylistLists: React.FC<CreatePlaylistBoxProps> = ({
           <button
             onClick={handleAddToPlaylist}
             disabled={!selectedPlaylistId || isLoading}
+            className="add-to-playlist-btn"
           >
-            {isLoading ? "Adding..." : "Add to Playlist"}
+            {isLoading ? (
+              <>
+                <Loader2 size={16} className="spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <Plus size={16} />
+                Add to Playlist
+              </>
+            )}
           </button>
         </div>
       )}
@@ -134,8 +160,19 @@ export const PlaylistLists: React.FC<CreatePlaylistBoxProps> = ({
         <button
           onClick={handleCreatePlaylist}
           disabled={!newPlaylistName.trim() || isLoading}
+          className="create-playlist-btn"
         >
-          {isLoading ? "Creating..." : "Create Playlist"}
+          {isLoading ? (
+            <>
+              <Loader2 size={16} className="spin" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <Music size={16} />
+              Create Playlist
+            </>
+          )}
         </button>
       </div>
     </div>

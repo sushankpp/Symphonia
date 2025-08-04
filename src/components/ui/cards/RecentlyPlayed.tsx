@@ -15,6 +15,12 @@ type Song = {
   song_cover_path: string;
   duration?: string;
   artist: Artist;
+  artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type RecentlyPlayedItem = {
@@ -121,7 +127,10 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
               style={{ cursor: "pointer" }}
             >
               <figure className="recently-played__media">
-                <img src={convertStorageUrl(item.song.song_cover_path, apiURL)} alt={item.song.title} />
+                <img
+                  src={convertStorageUrl(item.song.song_cover_path, apiURL)}
+                  alt={item.song.title}
+                />
               </figure>
               <div className="recently-played__meta">
                 <h3 className="recently-played__item-title">

@@ -9,7 +9,7 @@ body {
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%);
   backdrop-filter: blur(20px);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     4px 0 20px rgba(0, 0, 0, 0.15),
     inset 1px 0 0 rgba(255, 255, 255, 0.05);
   position: fixed;
@@ -39,23 +39,33 @@ body {
   }
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
   }
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     right: 0;
     width: 1px;
     height: 100%;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent, rgba(255, 255, 255, 0.1));
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.1),
+      transparent,
+      rgba(255, 255, 255, 0.1)
+    );
   }
 }
 
@@ -200,7 +210,7 @@ body {
         }
 
         &::after {
-          content: '';
+          content: "";
           position: absolute;
           right: 12px;
           top: 50%;
@@ -278,6 +288,9 @@ body {
       font-weight: 600;
       position: relative;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
       &::before {
         content: "";
@@ -318,7 +331,7 @@ body {
         }
 
         &::after {
-          content: '';
+          content: "";
           position: absolute;
           bottom: -2px;
           left: 50%;
@@ -482,7 +495,7 @@ body {
       }
 
       &::after {
-        content: '';
+        content: "";
         position: absolute;
         bottom: -2px;
         left: 50%;
@@ -491,6 +504,156 @@ body {
         height: 2px;
         background: linear-gradient(90deg, #fbbf24, #f59e0b);
         border-radius: 1px;
+      }
+    }
+  }
+
+  // Auth button styles
+  .header__auth-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #f59e0b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #d97706;
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  // Header link styles (for authenticated users)
+  .header__link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: #374151;
+      background-color: #f3f4f6;
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  // Logout button styles
+  .header__logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: #dc2626;
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  // User section styles
+  .header__user-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header__user-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  // Responsive styles for auth button
+  @media (max-width: 768px) {
+    .header__auth-btn {
+      padding: 8px 12px;
+      font-size: 13px;
+
+      span {
+        display: none;
+      }
+    }
+
+    .header__link {
+      padding: 8px 12px;
+      font-size: 13px;
+
+      span {
+        display: none;
+      }
+    }
+
+    .header__logout-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+
+      span {
+        display: none;
+      }
+    }
+
+    .header__user-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+
+      span {
+        display: none;
       }
     }
   }
@@ -555,7 +718,7 @@ body {
   }
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -4px;
     left: 50%;

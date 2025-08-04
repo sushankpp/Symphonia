@@ -2,8 +2,13 @@ import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { useCallback, useEffect, useState } from "react";
-import { formatTime, getAudioDuration, convertStorageUrl } from "../utils/audioDuration.tsx";
+import {
+  formatTime,
+  getAudioDuration,
+  convertStorageUrl,
+} from "../utils/audioDuration.tsx";
 import { useNavigate } from "react-router-dom";
+import { playSong } from "../utils/playSong";
 
 type Song = {
   id: number;
@@ -11,6 +16,12 @@ type Song = {
   file_path: string;
   song_cover: string;
   duration?: string;
+  artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type Album = {
@@ -74,7 +85,7 @@ const Albums = () => {
     }
   }, [albums, apiURL]);
 
-  const handleSongClick = (artistId: number, songId: number) => {
+  const handleSongClick = async (artistId: number, songId: number) => {
     navigate(`/player/${artistId}/${songId}`);
   };
 
@@ -94,8 +105,12 @@ const Albums = () => {
                 <div className="album-card" key={album.id}>
                   <div className="album-header">
                     <div className="album-info">
-                      <img 
-                        src={album.cover_image ? convertStorageUrl(album.cover_image, apiURL) : "/images/default-cover.jpg"}
+                      <img
+                        src={
+                          album.cover_image
+                            ? convertStorageUrl(album.cover_image, apiURL)
+                            : "/images/default-cover.jpg"
+                        }
                         alt={album.title}
                         className="album-image"
                         onError={(e) => {
@@ -106,25 +121,39 @@ const Albums = () => {
                       <div className="album-details">
                         <h1 className="album-name">{album.title}</h1>
                         <p className="album-artist">{album.artist_name}</p>
-                        <p className="album-song-count">{album.songs.length} songs</p>
+                        <p className="album-song-count">
+                          {album.songs.length} songs
+                        </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <SongsList
                     songs={album.songs.map((song) => ({
                       id: song.id,
                       title: song.title,
                       duration: songDurations[String(song.id)] || "--:--",
-                      song_cover: song.song_cover ? convertStorageUrl(song.song_cover, apiURL) : "",
+                      song_cover: song.song_cover
+                        ? convertStorageUrl(song.song_cover, apiURL)
+                        : "",
                       artist_name: album.artist_name,
+                      artist_id: song.artist_id,
+                      album_id: song.album_id,
+                      genre: song.genre,
+                      description: song.description,
+                      views: song.views,
+                      released_date: song.released_date,
                     }))}
                     activeMenuId={null}
                     onSongClick={(songId) =>
                       handleSongClick(album.artist_id, songId)
                     }
                     artistName={album.artist_name}
-                    artistImage={album.cover_image ? convertStorageUrl(album.cover_image, apiURL) : ""}
+                    artistImage={
+                      album.cover_image
+                        ? convertStorageUrl(album.cover_image, apiURL)
+                        : ""
+                    }
                   />
                 </div>
               ))}

@@ -81,6 +81,19 @@
         opacity: 0.6;
         cursor: not-allowed;
       }
+
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     button {
@@ -96,6 +109,10 @@
       cursor: pointer;
       transition: all 0.3s ease;
       margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
@@ -202,34 +219,64 @@
 
       .playlist-info {
         flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
 
-        .playlist-name {
-          font-family: $primary-medium-family;
-          @include fsz(20px);
-          color: $black;
-          margin: 0 0 8px 0;
-          font-weight: 600;
+        .playlist-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          background: linear-gradient(
+            135deg,
+            $primary-color 0%,
+            $primary-200 100%
+          );
+          border-radius: 12px;
+          color: $white;
+          flex-shrink: 0;
         }
 
-        .playlist-meta {
-          display: flex;
-          gap: 15px;
-          align-items: center;
+        .playlist-details {
+          flex: 1;
+          min-width: 0;
 
-          .song-count {
-            font-family: $secondary-medium-family;
-            @include fsz(14px);
-            color: $primary-color;
+          .playlist-name {
+            font-family: $primary-medium-family;
+            @include fsz(20px);
+            color: $black;
+            margin: 0 0 8px 0;
             font-weight: 600;
-            background: rgba($primary-color, 0.1);
-            padding: 4px 8px;
-            border-radius: 12px;
           }
 
-          .created-date {
-            font-family: $secondary-medium-family;
-            @include fsz(12px);
-            color: rgba($black, 0.6);
+          .playlist-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+
+            .song-count {
+              font-family: $secondary-medium-family;
+              @include fsz(14px);
+              color: $primary-color;
+              font-weight: 600;
+              background: rgba($primary-color, 0.1);
+              padding: 4px 8px;
+              border-radius: 12px;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
+
+            .created-date {
+              font-family: $secondary-medium-family;
+              @include fsz(12px);
+              color: rgba($black, 0.6);
+              display: flex;
+              align-items: center;
+              gap: 4px;
+            }
           }
         }
       }
@@ -349,6 +396,33 @@
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
+            }
+
+            .song-genre {
+              font-size: 11px;
+              color: #d97706;
+              font-weight: 500;
+              background: rgba(217, 119, 6, 0.1);
+              padding: 2px 6px;
+              border-radius: 6px;
+              display: inline-block;
+              margin-top: 4px;
+            }
+
+            .song-views {
+              font-size: 11px;
+              color: #6b7280;
+              font-weight: 400;
+              margin-top: 4px;
+              display: block;
+            }
+
+            .song-released {
+              font-size: 11px;
+              color: #6b7280;
+              font-weight: 400;
+              margin-top: 4px;
+              display: block;
             }
           }
         }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
+import { playSong } from "../utils/playSong";
 import { convertStorageUrl } from "../utils/audioDuration.tsx";
 
 type Song = {
@@ -11,6 +12,12 @@ type Song = {
   file_path: string;
   song_cover: string;
   duration?: string;
+  artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type Artist = {
@@ -47,7 +54,9 @@ function SongListings() {
         setArtist(data.artist);
 
         const songsWithDuration = data.songs || [];
-        const durationPromises = songsWithDuration.map((song: Song) => {
+        const durationPromises = songsWithDuration.map((songData: any) => {
+          // Extract the actual song data from the nested structure
+          const song = songData.song || songData;
           return new Promise<Song>((resolve) => {
             const audioUrl = convertStorageUrl(song.file_path, apiURL);
             const audio = new Audio(audioUrl);
@@ -57,6 +66,8 @@ function SongListings() {
               resolve({
                 ...song,
                 duration: `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`,
+                // Map release_date to released_date for consistency
+                released_date: song.release_date,
               });
             });
 
@@ -64,6 +75,8 @@ function SongListings() {
               resolve({
                 ...song,
                 duration: "--:--",
+                // Map release_date to released_date for consistency
+                released_date: song.release_date,
               });
             });
           });
@@ -81,7 +94,7 @@ function SongListings() {
       });
   }, [artistId, apiURL]);
 
-  const playAudio = (songId: number) => {
+  const playAudio = async (songId: number) => {
     if (artist) {
       navigate(`/player/${artist.id}/${songId}`);
     }
@@ -101,8 +114,12 @@ function SongListings() {
             <div className="artist-songs-container">
               <div className="artist-songs-header">
                 <div className="artist-info">
-                  <img 
-                    src={artist?.artist_image ? convertStorageUrl(artist.artist_image, apiURL) : "/images/default-cover.jpg"}
+                  <img
+                    src={
+                      artist?.artist_image
+                        ? convertStorageUrl(artist.artist_image, apiURL)
+                        : "/images/default-cover.jpg"
+                    }
                     alt={artist?.artist_name}
                     className="artist-image"
                   />
@@ -115,19 +132,31 @@ function SongListings() {
                   ← Back to Artists
                 </Link>
               </div>
-              
+
               <SongsList
                 songs={songs.map((song) => ({
                   id: song.id,
                   title: song.title,
                   duration: song.duration || "--:--",
-                  song_cover: song.song_cover ? convertStorageUrl(song.song_cover, apiURL) : "",
+                  song_cover: song.song_cover
+                    ? convertStorageUrl(song.song_cover, apiURL)
+                    : "",
                   artist_name: artist?.artist_name,
+                  artist_id: song.artist_id,
+                  album_id: song.album_id,
+                  genre: song.genre,
+                  description: song.description,
+                  views: song.views,
+                  released_date: song.released_date,
                 }))}
                 activeMenuId={activeMenuId}
                 onSongClick={playAudio}
                 artistName={artist?.artist_name}
-                artistImage={artist?.artist_image ? convertStorageUrl(artist.artist_image, apiURL) : ""}
+                artistImage={
+                  artist?.artist_image
+                    ? convertStorageUrl(artist.artist_image, apiURL)
+                    : ""
+                }
               />
             </div>
           )}

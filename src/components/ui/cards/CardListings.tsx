@@ -49,14 +49,14 @@ const CardListings: React.FC<CardListingsProps> = ({
 
   const handleRatingSubmit = async (rating: number) => {
     if (!selectedArtist) return;
-    
+
     try {
       await sendRating({
         rateableId: selectedArtist.id,
         rateableType: "artist",
-        rating: rating
+        rating: rating,
       });
-      
+
       console.log("Artist rated successfully:", rating);
       setCurrentRating(rating);
     } catch (error) {
@@ -77,7 +77,7 @@ const CardListings: React.FC<CardListingsProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-    return (
+  return (
     <>
       <section className="card-listings">
         <div className="card-listings__header">
@@ -101,11 +101,23 @@ const CardListings: React.FC<CardListingsProps> = ({
 
                 <figure className="card-listings__media">
                   <img
-                    src={convertStorageUrl(artist.artist_image, import.meta.env.VITE_API_URL)}
+                    src={convertStorageUrl(
+                      artist.artist_image,
+                      import.meta.env.VITE_API_URL
+                    )}
                     alt={`${artist.artist_name} image`}
                     onError={(e) => {
-                      console.error("Failed to load artist image:", artist.artist_image);
-                      console.error("Converted URL:", convertStorageUrl(artist.artist_image, import.meta.env.VITE_API_URL));
+                      console.error(
+                        "Failed to load artist image:",
+                        artist.artist_image
+                      );
+                      console.error(
+                        "Converted URL:",
+                        convertStorageUrl(
+                          artist.artist_image,
+                          import.meta.env.VITE_API_URL
+                        )
+                      );
                       console.error("API URL:", import.meta.env.VITE_API_URL);
                     }}
                   />
@@ -150,6 +162,6 @@ const CardListings: React.FC<CardListingsProps> = ({
       />
     </>
   );
-  };
+};
 
 export default CardListings;

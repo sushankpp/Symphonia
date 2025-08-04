@@ -13,6 +13,10 @@ type Song = {
   artist_name?: string;
   artist_id?: number;
   album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 type SongsListProps = {
@@ -30,14 +34,22 @@ const SongsList: React.FC<SongsListProps> = ({
   artistName,
   artistImage,
 }) => {
+  const handleSongClick = async (songId: number) => {
+    // Just call the original onSongClick handler
+    // The playSong API will be called in MusicPlayer when audio starts
+    onSongClick(songId);
+  };
   const navigate = useNavigate();
   const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [ratingType, setRatingType] = useState<"artist" | "song">("song");
   const [currentRating, setCurrentRating] = useState(0);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showAddToPlaylistModal, setShowAddToPlaylistModal] = useState(false);
-  const [selectedSongForPlaylist, setSelectedSongForPlaylist] = useState<Song | null>(null);
-  const [localActiveMenuId, setLocalActiveMenuId] = useState<number | null>(null);
+  const [selectedSongForPlaylist, setSelectedSongForPlaylist] =
+    useState<Song | null>(null);
+  const [localActiveMenuId, setLocalActiveMenuId] = useState<number | null>(
+    null
+  );
 
   const toggleMenu = (e: React.MouseEvent, songId: number) => {
     e.preventDefault();
@@ -46,7 +58,8 @@ const SongsList: React.FC<SongsListProps> = ({
   };
 
   // Use local state if no activeMenuId is passed from parent
-  const currentActiveMenuId = activeMenuId !== null ? activeMenuId : localActiveMenuId;
+  const currentActiveMenuId =
+    activeMenuId !== null ? activeMenuId : localActiveMenuId;
 
   // Handle clicking outside to close menu
   useEffect(() => {
@@ -71,14 +84,14 @@ const SongsList: React.FC<SongsListProps> = ({
 
   const handleRatingSubmit = async (rating: number) => {
     if (!selectedSong) return;
-    
+
     try {
       await sendRating({
         rateableId: selectedSong.id,
         rateableType: ratingType,
-        rating: rating
+        rating: rating,
       });
-      
+
       console.log("Song rated successfully:", rating);
       setCurrentRating(rating);
     } catch (error) {
@@ -91,16 +104,22 @@ const SongsList: React.FC<SongsListProps> = ({
     setShowAddToPlaylistModal(true);
   };
 
-  const handleAddToPlaylistSubmit = async (playlistId: number, songId: number) => {
+  const handleAddToPlaylistSubmit = async (
+    playlistId: number,
+    songId: number
+  ) => {
     try {
       const apiURL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${apiURL}/api/playlists/${playlistId}/songs`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ song_id: songId }),
-      });
+      const response = await fetch(
+        `${apiURL}/api/playlists/${playlistId}/songs`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ song_id: songId }),
+        }
+      );
 
       if (response.ok) {
         console.log("Song added to playlist successfully");
@@ -121,9 +140,9 @@ const SongsList: React.FC<SongsListProps> = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           playlist_name: playlistName,
-          song_id: songId 
+          song_id: songId,
         }),
       });
 
@@ -158,8 +177,8 @@ const SongsList: React.FC<SongsListProps> = ({
   return (
     <div className="songs-list">
       <div className="songs-list__header">
-          <h2 className="songs-list__title">Songs</h2>
-          <p className="songs-list__count">{songs.length} Songs</p>
+        <h2 className="songs-list__title">Songs</h2>
+        <p className="songs-list__count">{songs.length} Songs</p>
         {artistName && (
           <div className="songs-list__artist-info">
             <div className="artist-info__image">
@@ -169,71 +188,97 @@ const SongsList: React.FC<SongsListProps> = ({
           </div>
         )}
       </div>
-      
+
       <div className="songs-list__container">
         {songs.length > 0 ? (
           songs.map((song) => (
             <div className="song-card" key={song.id}>
               <div className="song-card__media">
                 <img
-                  src={song.song_cover || artistImage || "/images/default-cover.jpg"}
+                  src={
+                    song.song_cover ||
+                    artistImage ||
+                    "/images/default-cover.jpg"
+                  }
                   alt={`${song.title} cover`}
                   className="song-card__cover"
                 />
-                <button 
+                <button
                   className="song-card__play-btn"
-                  onClick={() => onSongClick(song.id)}
+                  onClick={() => handleSongClick(song.id)}
                   title="Play song"
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
+                    <path d="M8 5v14l11-7z" />
                   </svg>
                 </button>
               </div>
-              
+
               <div className="song-card__content">
                 <div className="song-card__info">
-                  <h3 className="song-card__title" onClick={() => onSongClick(song.id)}>
+                  <h3
+                    className="song-card__title"
+                    onClick={() => handleSongClick(song.id)}
+                  >
                     {song.title}
                   </h3>
                   {song.artist_name && (
                     <p className="song-card__artist">{song.artist_name}</p>
                   )}
-                  <span className="song-card__duration">{song.duration}</span>
+                  <div className="song-card__meta">
+                    <span className="song-card__duration">{song.duration}</span>
+                    {song.views !== undefined && (
+                      <span className="song-card__views">
+                        {song.views} views
+                      </span>
+                    )}
+                    {song.genre && (
+                      <span className="song-card__genre">{song.genre}</span>
+                    )}
+                    {song.released_date && (
+                      <span className="song-card__released">
+                        Released:{" "}
+                        {new Date(song.released_date).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                  {song.description && (
+                    <p className="song-card__description">{song.description}</p>
+                  )}
                 </div>
-                
+
                 <div className="song-card__actions">
-                  <button 
+                  <button
                     className="song-card__action-btn song-card__add-btn"
                     title="Add to playlist"
                     onClick={() => handleAddToPlaylist(song)}
                   >
                     <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                      <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                     </svg>
                   </button>
-                  
-                  <button 
+
+                  <button
                     className="song-card__action-btn song-card__rate-btn"
                     onClick={() => handleRate(song)}
                     title="Rate song"
                   >
                     <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
                   </button>
-                  
+
                   <div className="song-card__options">
-                    <button 
+                    <button
                       className="song-card__action-btn song-card__menu-btn"
                       onClick={(e) => toggleMenu(e, song.id)}
                       title="More options"
                     >
                       <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                        <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                       </svg>
                     </button>
-                    
+
                     {currentActiveMenuId === song.id && (
                       <OptionsMenu
                         onAddToPlaylist={() => handleAddToPlaylist(song)}
@@ -252,15 +297,19 @@ const SongsList: React.FC<SongsListProps> = ({
         ) : (
           <div className="songs-list__empty">
             <div className="empty-state">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="empty-state__icon">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="empty-state__icon"
+              >
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
               </svg>
               <p className="empty-state__text">No songs available</p>
             </div>
           </div>
         )}
       </div>
-      
+
       <RatingPopup
         isOpen={showRatingPopup}
         onClose={() => setShowRatingPopup(false)}

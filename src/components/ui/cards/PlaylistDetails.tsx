@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
+import {
+  Music,
+  ChevronDown,
+  ChevronUp,
+  Play,
+  Clock,
+  Calendar,
+  Users,
+} from "lucide-react";
 
 type Song = {
   id: number;
@@ -11,6 +20,10 @@ type Song = {
   album_id: number;
   created_at: string | null;
   updated_at: string | null;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
   pivot?: {
     playlist_id: number;
     song_id: number;
@@ -100,19 +113,30 @@ export const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                 onClick={() => togglePlaylist(playlist.id)}
               >
                 <div className="playlist-info">
-                  <h3 className="playlist-name">{playlist.playlist_name}</h3>
-                  <div className="playlist-meta">
-                    <span className="song-count">
-                      {playlist.songs.length} songs
-                    </span>
-                    <span className="created-date">
-                      Created: {formatDate(playlist.created_at)}
-                    </span>
+                  <div className="playlist-icon">
+                    <Music size={24} />
+                  </div>
+                  <div className="playlist-details">
+                    <h3 className="playlist-name">{playlist.playlist_name}</h3>
+                    <div className="playlist-meta">
+                      <span className="song-count">
+                        <Play size={14} />
+                        {playlist.songs.length} songs
+                      </span>
+                      <span className="created-date">
+                        <Calendar size={14} />
+                        Created: {formatDate(playlist.created_at)}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div className="playlist-actions">
                   <button className="expand-btn">
-                    {expandedPlaylist === playlist.id ? "−" : "+"}
+                    {expandedPlaylist === playlist.id ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -143,7 +167,10 @@ export const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
                           <div className="song-number">{index + 1}</div>
                           <figure className="song-cover">
                             <img
-                              src={convertStorageUrl(song.song_cover_path, import.meta.env.VITE_API_URL)}
+                              src={convertStorageUrl(
+                                song.song_cover_path,
+                                import.meta.env.VITE_API_URL
+                              )}
                               alt={`${song.title} cover`}
                             />
                           </figure>

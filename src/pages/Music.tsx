@@ -3,7 +3,12 @@ import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAudioDuration, formatTime, convertStorageUrl } from "../utils/audioDuration.tsx";
+import {
+  getAudioDuration,
+  formatTime,
+  convertStorageUrl,
+} from "../utils/audioDuration.tsx";
+import { playSong } from "../utils/playSong";
 
 type Artist = {
   id: number;
@@ -19,6 +24,11 @@ type Song = {
   song_cover?: string;
   artist_name?: string;
   artist_id?: number;
+  album_id?: number;
+  genre?: string;
+  description?: string;
+  views?: number;
+  released_date?: string;
 };
 
 function Music() {
@@ -36,27 +46,36 @@ function Music() {
   useEffect(() => {
     setLoading(true);
 
-    // First fetch all artists
     fetch(`${apiURL}/api/artists`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch artists");
         return res.json();
       })
       .then((artists: Artist[]) => {
-        // Then fetch songs for each artist
         const promises = artists.map((artist) =>
           fetch(`${apiURL}/api/artists/${artist.id}/songs`)
             .then((res) => res.json())
             .then((data) => {
-              const artistSongs = (data.songs || []).map((song: any) => ({
-                ...song,
-                artist_name: artist.artist_name,
-                artist_id: artist.id,
-              }));
+              console.log("Raw API response for artist", artist.id, ":", data);
+              const artistSongs = (data.songs || []).map((songData: any) => {
+                console.log("Processing songData:", songData);
+                const song = songData.song || songData;
+                console.log("Extracted song:", song);
+                const mappedSong = {
+                  ...song,
+                  artist_name: artist.artist_name,
+                  artist_id: artist.id,
+                  released_date: song.release_date,
+                };
+                return mappedSong;
+              });
               return artistSongs;
             })
             .catch((error) => {
-              console.error(`Error fetching songs for artist ${artist.id}:`, error);
+              console.error(
+                `Error fetching songs for artist ${artist.id}:`,
+                error
+              );
               return [];
             })
         );
@@ -64,7 +83,6 @@ function Music() {
         return Promise.all(promises);
       })
       .then((allSongsArrays) => {
-        // Flatten all songs into a single array
         const allSongs = allSongsArrays.flat();
         setSongs(allSongs);
         setLoading(false);
@@ -76,8 +94,8 @@ function Music() {
       });
   }, [apiURL]);
 
-  const handleSongClick = (songId: number) => {
-    const song = songs.find(s => s.id === songId);
+  const handleSongClick = async (songId: number) => {
+    const song = songs.find((s) => s.id === songId);
     if (song && song.artist_id) {
       navigate(`/player/${song.artist_id}/${songId}`);
     }
@@ -86,7 +104,10 @@ function Music() {
   useEffect(() => {
     if (songs.length > 0) {
       songs.forEach((song) => {
-        const convertedUrl = convertStorageUrl(song.file_path, import.meta.env.VITE_API_URL);
+        const convertedUrl = convertStorageUrl(
+          song.file_path,
+          import.meta.env.VITE_API_URL
+        );
         getAudioDuration(convertedUrl)
           .then((duration) => {
             const formattedDuration = formatTime(duration);
@@ -121,13 +142,28 @@ function Music() {
             <div className="music-list__container">
               {songs.length > 0 ? (
                 <SongsList
-                  songs={songs.map((song) => ({
-                    id: song.id,
-                    title: song.title,
-                    duration: songDurations[song.id] || "--:--",
-                    song_cover: song.song_cover ? convertStorageUrl(song.song_cover, import.meta.env.VITE_API_URL) : "",
-                    artist_name: song.artist_name || "Unknown Artist",
-                  }))}
+                  songs={songs.map((song) => {
+                    const mappedSong = {
+                      id: song.id,
+                      title: song.title,
+                      duration: songDurations[song.id] || "--:--",
+                      song_cover: song.song_cover
+                        ? convertStorageUrl(
+                            song.song_cover,
+                            import.meta.env.VITE_API_URL
+                          )
+                        : "",
+                      artist_name: song.artist_name || "Unknown Artist",
+                      artist_id: song.artist_id,
+                      album_id: song.album_id,
+                      genre: song.genre,
+                      description: song.description,
+                      views: song.views,
+                      released_date: song.released_date,
+                    };
+                    console.log("Mapped song data:", mappedSong);
+                    return mappedSong;
+                  })}
                   activeMenuId={activeMenuId}
                   onSongClick={handleSongClick}
                 />

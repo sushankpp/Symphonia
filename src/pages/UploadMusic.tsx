@@ -220,6 +220,15 @@ const UploadMusic: React.FC = () => {
       formData.append("release_date", songForm.releaseDate);
       formData.append("lyrics", songForm.lyrics);
 
+      console.log("Uploading with data:", {
+        song_title: songForm.songTitle,
+        artist_id: songForm.selectedArtistId,
+        genre: songForm.genre,
+        description: songForm.description,
+        release_date: songForm.releaseDate,
+        lyrics: songForm.lyrics,
+      });
+
       if (selectedCoverImage) {
         formData.append("cover_image", selectedCoverImage);
       }
@@ -235,6 +244,7 @@ const UploadMusic: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log("Upload response:", result);
 
         // Show compression statistics
         const stats = result.compression_stats;
