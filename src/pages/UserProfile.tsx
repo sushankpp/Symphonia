@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import TopHeader from "../components/ui/headers/TopHeader";
 import SidebarHeader from "../components/ui/headers/SidebarHeader";
+import { authService } from "../services/authService";
 
 interface UserProfileData {
   id: number;
@@ -20,7 +21,7 @@ interface UserProfileData {
   email: string;
   profile_picture?: string;
   role: string;
-  is_email_verified: boolean;
+  is_email_verified?: boolean;
   created_at: string;
   gender?: string;
   dob?: string;
@@ -35,7 +36,9 @@ const UserProfile = () => {
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,9 +48,9 @@ const UserProfile = () => {
     phone: "",
     bio: "",
     address: "",
+    gender: "",
+    dob: "",
   });
-
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     fetchUserProfile();
@@ -55,34 +58,39 @@ const UserProfile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        setError("No authentication token found");
-        setIsLoading(false);
-        return;
+      console.log("🔄 Fetching user profile from API...");
+      const userData = await authService.getUserData();
+      
+      console.log("📥 API Response - userData:", userData);
+      console.log("📥 API Response - userData type:", typeof userData);
+      console.log("📥 API Response - userData keys:", userData ? Object.keys(userData) : "null");
+      
+      if (userData) {
+        console.log("✅ Setting profile data:", userData);
+        setProfileData(userData);
+        setEditForm({
+          name: userData.name || "",
+          phone: userData.phone || "",
+          bio: userData.bio || "",
+          address: userData.address || "",
+          gender: userData.gender || "",
+          dob: userData.dob || "",
+        });
+        console.log("✅ Form data set:", {
+          name: userData.name || "",
+          phone: userData.phone || "",
+          bio: userData.bio || "",
+          address: userData.address || "",
+          gender: userData.gender || "",
+          dob: userData.dob || "",
+        });
+      } else {
+        console.error("❌ No user data received from API");
+        throw new Error("Failed to fetch user profile - no user data received");
       }
-
-      const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch user profile");
-      }
-
-      const data = await response.json();
-      setProfileData(data);
-      setEditForm({
-        name: data.name || "",
-        phone: data.phone || "",
-        bio: data.bio || "",
-        address: data.address || "",
-      });
     } catch (err: any) {
-      setError(err.message);
+      console.error("❌ fetchUserProfile error:", err);
+      setError(err.message || "Failed to fetch user profile");
     } finally {
       setIsLoading(false);
     }
@@ -99,6 +107,8 @@ const UserProfile = () => {
       phone: profileData?.phone || "",
       bio: profileData?.bio || "",
       address: profileData?.address || "",
+      gender: profileData?.gender || "",
+      dob: profileData?.dob || "",
     });
   };
 
@@ -120,44 +130,63 @@ const UserProfile = () => {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
+      setIsSaving(true);
+      setError("");
+      setSuccessMessage("");
 
-      // Create FormData for file upload
       const formData = new FormData();
-      formData.append("name", editForm.name);
-      formData.append("phone", editForm.phone);
-      formData.append("bio", editForm.bio);
-      formData.append("address", editForm.address);
+      
+      if (editForm.name && editForm.name.trim()) {
+        formData.append("name", editForm.name.trim());
+      }
+      
+      if (editForm.phone && editForm.phone.trim()) {
+        formData.append("phone", editForm.phone.trim());
+      }
+      
+      if (editForm.bio && editForm.bio.trim()) {
+        formData.append("bio", editForm.bio.trim());
+      }
+      
+      if (editForm.address && editForm.address.trim()) {
+        formData.append("address", editForm.address.trim());
+      }
+
+      if (editForm.gender && editForm.gender.trim()) {
+        formData.append("gender", editForm.gender.trim());
+      }
+
+      if (editForm.dob && editForm.dob.trim()) {
+        formData.append("dob", editForm.dob.trim());
+      }
 
       if (selectedImage) {
         formData.append("profile_picture", selectedImage);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
+      const result = await authService.updateProfile(formData);
+      
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
       }
-
-      const updatedData = await response.json();
-      setProfileData(updatedData);
+      
+      setProfileData(result.user || result);
       setIsEditing(false);
       setSelectedImage(null);
       setPreviewImage(null);
+      setSuccessMessage("Profile updated successfully!");
+      
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
-      setError(err.message);
+      console.error("❌ Profile update error:", err);
+      setError(err.message || "An error occurred while updating profile");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setEditForm((prev) => ({
@@ -203,11 +232,19 @@ const UserProfile = () => {
                       </button>
                     ) : (
                       <div className="edit-actions">
-                        <button onClick={handleSave} className="save-btn">
+                        <button 
+                          onClick={handleSave} 
+                          className="save-btn"
+                          disabled={isSaving}
+                        >
                           <Save size={16} />
-                          Save
+                          {isSaving ? "Saving..." : "Save"}
                         </button>
-                        <button onClick={handleCancel} className="cancel-btn">
+                        <button 
+                          onClick={handleCancel} 
+                          className="cancel-btn"
+                          disabled={isSaving}
+                        >
                           <X size={16} />
                           Cancel
                         </button>
@@ -215,6 +252,19 @@ const UserProfile = () => {
                     )}
                   </div>
                 </div>
+                
+                {/* Success and Error Messages */}
+                {successMessage && (
+                  <div className="profile-success">
+                    <p>{successMessage}</p>
+                  </div>
+                )}
+                
+                {error && (
+                  <div className="profile-error">
+                    <p>{error}</p>
+                  </div>
+                )}
                 <div className="profile-content">
                   <div className="profile-section">
                     <div className="profile-avatar">
@@ -257,11 +307,56 @@ const UserProfile = () => {
                             />
                           </div>
                           <div className="form-group">
+                            <label>Email (Read-only)</label>
+                            <input
+                              type="email"
+                              value={profileData?.email || ""}
+                              className="form-input"
+                              disabled
+                              style={{ backgroundColor: '#f5f5f5', color: '#666' }}
+                            />
+                          </div>
+                          <div className="form-group">
                             <label>Phone</label>
                             <input
                               type="tel"
                               name="phone"
                               value={editForm.phone}
+                              onChange={handleInputChange}
+                              className="form-input"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Date of Birth</label>
+                            <input
+                              type="date"
+                              name="dob"
+                              value={editForm.dob}
+                              onChange={handleInputChange}
+                              className="form-input"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>Gender</label>
+                            <select
+                              name="gender"
+                              value={editForm.gender}
+                              onChange={handleInputChange}
+                              className="form-input"
+                            >
+                              <option value="">Select Gender</option>
+                              <option value="male">Male</option>
+                              <option value="female">Female</option>
+                              <option value="other">Other</option>
+                              <option value="prefer-not-to-say">Prefer not to say</option>
+                            </select>
+                          </div>
+                          <div className="form-group">
+                            <label>Address</label>
+                            <input
+                              type="text"
+                              name="address"
+                              value={editForm.address}
                               onChange={handleInputChange}
                               className="form-input"
                             />
@@ -276,16 +371,6 @@ const UserProfile = () => {
                               rows={4}
                             />
                           </div>
-                          <div className="form-group">
-                            <label>Address</label>
-                            <input
-                              type="text"
-                              name="address"
-                              value={editForm.address}
-                              onChange={handleInputChange}
-                              className="form-input"
-                            />
-                          </div>
                         </div>
                       ) : (
                         <div className="profile-details">
@@ -293,7 +378,7 @@ const UserProfile = () => {
                             <User size={16} />
                             <span className="detail-label">Name:</span>
                             <span className="detail-value">
-                              {profileData?.name}
+                              {profileData?.name || "Not set"}
                             </span>
                           </div>
                           <div className="detail-item">
@@ -306,47 +391,50 @@ const UserProfile = () => {
                               <span className="verified-badge">✓ Verified</span>
                             )}
                           </div>
-                          {profileData?.phone && (
-                            <div className="detail-item">
-                              <Phone size={16} />
-                              <span className="detail-label">Phone:</span>
-                              <span className="detail-value">
-                                {profileData.phone}
-                              </span>
-                            </div>
-                          )}
-                          {profileData?.dob && (
-                            <div className="detail-item">
-                              <Calendar size={16} />
-                              <span className="detail-label">
-                                Date of Birth:
-                              </span>
-                              <span className="detail-value">
-                                {profileData.dob}
-                              </span>
-                            </div>
-                          )}
-                          {profileData?.address && (
-                            <div className="detail-item">
-                              <MapPin size={16} />
-                              <span className="detail-label">Address:</span>
-                              <span className="detail-value">
-                                {profileData.address}
-                              </span>
-                            </div>
-                          )}
-                          {profileData?.bio && (
-                            <div className="detail-item">
-                              <span className="detail-label">Bio:</span>
-                              <span className="detail-value">
-                                {profileData.bio}
-                              </span>
-                            </div>
-                          )}
+                          <div className="detail-item">
+                            <Phone size={16} />
+                            <span className="detail-label">Phone:</span>
+                            <span className={`detail-value ${!profileData?.phone ? 'empty' : ''}`}>
+                              {profileData?.phone || "Not set"}
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <Calendar size={16} />
+                            <span className="detail-label">Date of Birth:</span>
+                            <span className={`detail-value ${!profileData?.dob ? 'empty' : ''}`}>
+                              {profileData?.dob || "Not set"}
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <User size={16} />
+                            <span className="detail-label">Gender:</span>
+                            <span className={`detail-value ${!profileData?.gender ? 'empty' : ''}`}>
+                              {profileData?.gender || "Not set"}
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <MapPin size={16} />
+                            <span className="detail-label">Address:</span>
+                            <span className={`detail-value ${!profileData?.address ? 'empty' : ''}`}>
+                              {profileData?.address || "Not set"}
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="detail-label">Bio:</span>
+                            <span className={`detail-value ${!profileData?.bio ? 'empty' : ''}`}>
+                              {profileData?.bio || "No bio added yet"}
+                            </span>
+                          </div>
                           <div className="detail-item">
                             <span className="detail-label">Role:</span>
                             <span className="detail-value capitalize">
-                              {profileData?.role}
+                              {profileData?.role || "User"}
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="detail-label">Status:</span>
+                            <span className="detail-value capitalize">
+                              {profileData?.status || "Active"}
                             </span>
                           </div>
                           <div className="detail-item">

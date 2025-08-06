@@ -5,6 +5,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { authService } from "../services/authService";
 
 interface User {
   id: number;
@@ -26,7 +27,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (userData: User, token: string) => void;
+  login: (userData: User) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
 }
@@ -41,98 +42,67 @@ export const useAuth = () => {
   return context;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<User | null>(authService.getUser()); // Initialize from localStorage
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
+  useEffect(() => {
+    if (!user) { // Only check auth if user is not already in state (from localStorage)
+      checkAuth();
+    } else {
+      setIsLoading(false);
+    }
+  }, [user]); // Added user to dependency array to re-run if user changes
+
+  const login = (userData: User) => {
+    localStorage.setItem('user', JSON.stringify(userData)); // Store user data
+    setUser(userData);
+  };
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
+      const userData = await authService.checkSessionAuth(); // Using authService
+      if (userData) {
+        localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
       } else {
-        // Token is invalid, clear it
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("user");
+        localStorage.removeItem('user');
         setUser(null);
       }
     } catch (error) {
-      console.error("Auth check error:", error);
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user");
+      console.error("Session auth check failed:", error);
+      localStorage.removeItem('user');
       setUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = (userData: User, token: string) => {
-    console.log("AuthContext - login called with:", { userData, token });
-    localStorage.setItem("auth_token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
-    setIsLoading(false);
-    console.log("AuthContext - user state updated:", userData);
-  };
-
   const logout = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-      if (token) {
-        await fetch(`${API_BASE_URL}/api/auth/logout`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user");
+      const csrfToken = await authService.getCSRFToken(); // Get CSRF token for logout
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/session/logout`, { // Corrected endpoint
+        method: "POST",
+        headers: {
+          'Accept': 'application/json',
+          'X-XSRF-TOKEN': csrfToken // Use the obtained CSRF token
+        },
+        credentials: "include",
+      });
+      localStorage.removeItem('user');
       setUser(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  const isAuthenticated = !!user;
 
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    login,
-    logout,
-    checkAuth,
-  };
-
-  console.log("AuthContext - current state:", {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-  });
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, checkAuth }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

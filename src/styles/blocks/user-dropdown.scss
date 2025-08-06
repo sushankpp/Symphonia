@@ -77,6 +77,83 @@
   text-overflow: ellipsis;
 }
 
+.user-dropdown__role {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  width: fit-content;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.user-dropdown__role-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1d4ed8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.role-icon {
+  color: #1d4ed8;
+}
+
+.role-icon--admin {
+  color: #dc2626;
+}
+
+.role-icon--artist {
+  color: #059669;
+}
+
+.role-icon--moderator {
+  color: #d97706;
+}
+
+.role-icon--user {
+  color: #6b7280;
+}
+
+// Role-specific styling for the role container
+.user-dropdown__role--admin {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.2);
+  
+  .user-dropdown__role-text {
+    color: #dc2626;
+  }
+}
+
+.user-dropdown__role--artist {
+  background: rgba(5, 150, 105, 0.1);
+  border-color: rgba(5, 150, 105, 0.2);
+  
+  .user-dropdown__role-text {
+    color: #059669;
+  }
+}
+
+.user-dropdown__role--moderator {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.2);
+  
+  .user-dropdown__role-text {
+    color: #d97706;
+  }
+}
+
+.user-dropdown__role--user {
+  background: rgba(107, 114, 128, 0.1);
+  border-color: rgba(107, 114, 128, 0.2);
+  
+  .user-dropdown__role-text {
+    color: #6b7280;
+  }
+}
+
 .user-dropdown__menu {
   padding: 8px;
 }

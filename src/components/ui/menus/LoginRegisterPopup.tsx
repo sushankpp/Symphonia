@@ -14,6 +14,8 @@ import {
   FileText,
 } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
+import { authService } from "../../../services/authService";
+import { createAuthHeaders } from "../../../utils/csrf";
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -83,42 +85,30 @@ const LoginRegisterPopup = ({
 
     try {
       if (isLogin) {
-        // Handle Login
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-        });
+        // Handle Login with session-based authentication
+        const result = await authService.sessionLogin(formData.email, formData.password);
+        
+        console.log("✅ Login successful:", result);
 
-        const data = await response.json();
+        // Store user data in localStorage (matching your JS logic)
+        localStorage.setItem('user', JSON.stringify(result.user));
 
-        if (!response.ok) {
-          throw new Error(data.message || "Login failed");
-        }
-
-        // Use the auth context to login
-        login(data.user, data.access_token);
+        // Use the auth context to login (no token needed for session-based auth)
+        login(result.user);
 
         if (onLoginSuccess) {
-          onLoginSuccess(data.user);
+          onLoginSuccess(result.user);
         }
 
         // Close the popup after successful login
         onClose();
       } else {
         // Handle Register
+        const headers = await createAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
+          headers,
+          credentials: "include", // Include credentials for session
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -151,6 +141,9 @@ const LoginRegisterPopup = ({
   };
 
   const handleGoogleAuth = () => {
+    // Store current URL for redirect after OAuth
+    localStorage.setItem('oauth_redirect_url', window.location.href);
+    
     // Redirect to Laravel Google OAuth route
     window.location.href = `${API_BASE_URL}/api/auth/google`;
   };

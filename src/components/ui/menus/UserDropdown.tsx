@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { User, LogOut, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
+import { User, LogOut, Settings, Crown, Music, Shield } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 
 interface UserDropdownProps {
@@ -39,6 +40,36 @@ const UserDropdown = ({ isOpen, onClose, triggerRef }: UserDropdownProps) => {
     onClose();
   };
 
+  const handleNavigation = () => {
+    onClose();
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return <Crown size={16} className="role-icon role-icon--admin" />;
+      case 'artist':
+        return <Music size={16} className="role-icon role-icon--artist" />;
+      case 'moderator':
+        return <Shield size={16} className="role-icon role-icon--moderator" />;
+      default:
+        return <User size={16} className="role-icon role-icon--user" />;
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return 'Administrator';
+      case 'artist':
+        return 'Artist';
+      case 'moderator':
+        return 'Moderator';
+      default:
+        return 'User';
+    }
+  };
+
   if (!isOpen) return null;
 
   const dropdownContent = (
@@ -54,15 +85,25 @@ const UserDropdown = ({ isOpen, onClose, triggerRef }: UserDropdownProps) => {
             <div className="user-dropdown__details">
               <h4 className="user-dropdown__name">{user?.name || "User"}</h4>
               <p className="user-dropdown__email">{user?.email}</p>
+              <div className={`user-dropdown__role user-dropdown__role--${user?.role?.toLowerCase() || 'user'}`}>
+                {getRoleIcon(user?.role || 'user')}
+                <span className="user-dropdown__role-text">
+                  {getRoleLabel(user?.role || 'user')}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="user-dropdown__menu">
-          <a href="/profile" className="user-dropdown__item">
+          <Link to="/profile" className="user-dropdown__item" onClick={handleNavigation}>
             <User size={16} />
-            <span>User Profile</span>
-          </a>
+            <span>Profile</span>
+          </Link>
+          <Link to="/settings" className="user-dropdown__item" onClick={handleNavigation}>
+            <Settings size={16} />
+            <span>Settings</span>
+          </Link>
           <button
             onClick={handleLogout}
             className="user-dropdown__item user-dropdown__item--logout"

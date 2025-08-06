@@ -20,10 +20,6 @@ const TopHeader = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const userProfileRef = useRef<HTMLAnchorElement>(null);
 
-  // Debug logging
-  console.log("TopHeader - isAuthenticated:", isAuthenticated);
-  console.log("TopHeader - user:", user);
-
   const isActive = (path: string) => {
     if (path === "/" && location.pathname === "/") {
       return true;
@@ -35,7 +31,6 @@ const TopHeader = () => {
   };
 
   const handleLoginSuccess = (userData: any) => {
-    console.log("Login success, userData:", userData);
     setShowLoginPopup(false);
   };
 
@@ -58,12 +53,14 @@ const TopHeader = () => {
               Music
             </Link>
           </li>
-          <li>
-            <Link to="/upload" className={isActive("/upload") ? "active" : ""}>
-              <Upload size={18} />
-              Upload Music
-            </Link>
-          </li>
+          {isAuthenticated && (
+            <li>
+              <Link to="/upload" className={isActive("/upload") ? "active" : ""}>
+                <Upload size={18} />
+                Upload Music
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
       <div className="search-music">

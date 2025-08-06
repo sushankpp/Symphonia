@@ -12,6 +12,9 @@ import Album from "./pages/Album.tsx";
 import { CreatePlaylist } from "./pages/CreatePlaylist.tsx";
 import UploadMusic from "./pages/UploadMusic.tsx";
 import UserProfile from "./pages/UserProfile.tsx";
+import Settings from "./pages/Settings.tsx";
+import Notifications from "./pages/Notifications.tsx";
+import AuthCallback from "./pages/AuthCallback.tsx";
 
 function App() {
   return (
@@ -38,6 +41,11 @@ function App() {
           {/*top-header*/}
           <Route path="/upload" element={<UploadMusic />} />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/notification" element={<Notifications />} />
+          
+          {/*auth*/}
+          <Route path="/auth/callback" element={<AuthCallback />} />
         </Routes>
       </Router>
     </AuthProvider>

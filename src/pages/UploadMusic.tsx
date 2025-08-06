@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
+import { useAuth } from "../contexts/AuthContext";
 import {
   FileUpload,
   SongDetailsForm,
@@ -35,6 +36,7 @@ interface UploadedTrack {
 }
 
 const UploadMusic: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedCoverImage, setSelectedCoverImage] = useState<File | null>(
     null
@@ -48,6 +50,9 @@ const UploadMusic: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Check if user can upload music (artists and admins)
+  const canUploadMusic = user?.role === 'artist' || user?.role === 'admin';
 
   // Song details form state
   const [songForm, setSongForm] = useState({
@@ -87,8 +92,11 @@ const UploadMusic: React.FC = () => {
       }
     };
 
-    fetchArtists();
-  }, [API_URL]);
+    // Only fetch artists if user can upload music
+    if (canUploadMusic) {
+      fetchArtists();
+    }
+  }, [API_URL, canUploadMusic]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -290,44 +298,58 @@ const UploadMusic: React.FC = () => {
           <div className="upload-music__wrapper">
             <h2>Upload Music</h2>
 
-            <FileUpload
-              selectedFile={selectedFile}
-              isDragOver={isDragOver}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onFileSelect={handleFileSelect}
-              fileInputRef={fileInputRef}
-              formatFileSize={formatFileSize}
-            />
+            {!isAuthenticated ? (
+              <div className="access-denied">
+                <p>Please log in to view upload information.</p>
+              </div>
+            ) : canUploadMusic ? (
+              <>
+                <FileUpload
+                  selectedFile={selectedFile}
+                  isDragOver={isDragOver}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onFileSelect={handleFileSelect}
+                  fileInputRef={fileInputRef}
+                  formatFileSize={formatFileSize}
+                />
 
-            <SongDetailsForm
-              songForm={songForm}
-              onSongFormChange={handleSongFormChange}
-              artists={artists}
-              isLoadingArtists={isLoadingArtists}
-            />
+                <SongDetailsForm
+                  songForm={songForm}
+                  onSongFormChange={handleSongFormChange}
+                  artists={artists}
+                  isLoadingArtists={isLoadingArtists}
+                />
 
-            <CoverImageUpload
-              selectedCoverImage={selectedCoverImage}
-              onCoverImageSelect={handleCoverImageSelect}
-              coverInputRef={coverInputRef}
-            />
+                <CoverImageUpload
+                  selectedCoverImage={selectedCoverImage}
+                  onCoverImageSelect={handleCoverImageSelect}
+                  coverInputRef={coverInputRef}
+                />
 
-            <UploadActions
-              uploadMessage={uploadMessage}
-              onUpload={handleUpload}
-              isUploading={isUploading}
-              isDisabled={
-                !selectedFile ||
-                !songForm.songTitle ||
-                !songForm.selectedArtistId ||
-                isUploading
-              }
-            />
+                <UploadActions
+                  uploadMessage={uploadMessage}
+                  onUpload={handleUpload}
+                  isUploading={isUploading}
+                  isDisabled={
+                    !selectedFile ||
+                    !songForm.songTitle ||
+                    !songForm.selectedArtistId ||
+                    isUploading
+                  }
+                />
+              </>
+            ) : (
+              <div className="access-denied">
+                <p>You need to be an Artist or Administrator to upload music.</p>
+                <p>Current role: <strong>{user?.role || 'User'}</strong></p>
+              </div>
+            )}
           </div>
 
-          <RecentUploads uploads={recentUploads} />
+          {/* Recent Uploads - visible to all authenticated users */}
+          {isAuthenticated && <RecentUploads uploads={recentUploads} />}
         </div>
       </main>
     </>
