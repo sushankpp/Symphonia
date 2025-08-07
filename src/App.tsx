@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./styles/style.scss";
 import { AuthProvider } from "./contexts/AuthContext";
+import { RecommendationProvider } from "./contexts/RecommendationContext";
 import Music from "./pages/Music.tsx";
 import Artists from "./pages/Artists.tsx";
 import Home from "./pages/Home.tsx";
@@ -19,35 +20,37 @@ import AuthCallback from "./pages/AuthCallback.tsx";
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home src={""} />} />
-          <Route path="/music" element={<Music />} />
-          <Route path="/artists" element={<Artists />} />
-          <Route path="/artists/:id" element={<SongListings />} />
-          <Route path="/record" element={<Artists />} />
-          <Route path="/player/:artistId/:songId" element={<MusicPlayer />} />
+      <RecommendationProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home src={""} />} />
+            <Route path="/music" element={<Music />} />
+            <Route path="/artists" element={<Artists />} />
+            <Route path="/artists/:id" element={<SongListings />} />
+            <Route path="/record" element={<Artists />} />
+            <Route path="/player/:artistId/:songId" element={<MusicPlayer />} />
 
-          {/*library*/}
-          <Route path="/recent" element={<Recent />} />
-          <Route path="/albums" element={<Albums />} />
-          <Route path="/album/:albumId" element={<Album />} />
-          <Route path="/downloads" element={<Artists />} />
+            {/*library*/}
+            <Route path="/recent" element={<Recent />} />
+            <Route path="/albums" element={<Albums />} />
+            <Route path="/album/:albumId" element={<Album />} />
+            <Route path="/downloads" element={<Artists />} />
 
-          {/*playlists*/}
-          <Route path="/create-playlist" element={<CreatePlaylist />} />
-          <Route path="/playlist/1" element={<Artists />} />
+            {/*playlists*/}
+            <Route path="/create-playlist" element={<CreatePlaylist />} />
+            <Route path="/playlist/1" element={<Artists />} />
 
-          {/*top-header*/}
-          <Route path="/upload" element={<UploadMusic />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/notification" element={<Notifications />} />
-          
-          {/*auth*/}
-          <Route path="/auth/callback" element={<AuthCallback />} />
-        </Routes>
-      </Router>
+            {/*top-header*/}
+            <Route path="/upload" element={<UploadMusic />} />
+            <Route path="/profile" element={<UserProfile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/notification" element={<Notifications />} />
+            
+            {/*auth*/}
+            <Route path="/auth/callback" element={<AuthCallback />} />
+          </Routes>
+        </Router>
+      </RecommendationProvider>
     </AuthProvider>
   );
 }

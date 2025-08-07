@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { addToRecentlyPlayed } from "../../../utils/recentlyPlayed.tsx";
+import { useRecommendation } from "../../../contexts/RecommendationContext";
 
 type CustomAudioPlayerProps = {
   src: string;
@@ -50,6 +51,7 @@ function CustomAudioPlayer({
   const [isHovering, setIsHovering] = useState(false);
 
   const [metadataLoaded, setMetadataLoaded] = useState(false);
+  const { recordPlay } = useRecommendation();
 
   useEffect(() => {
     setIsLoading(true);
@@ -104,19 +106,18 @@ function CustomAudioPlayer({
     const onWaiting = () => setIsBuffering(true);
     const onPlaying = () => setIsBuffering(false);
     const onError = () => {
+      console.error("Audio error:", audio.error);
       setIsLoading(false);
-      console.error("Audio error occurred");
+      setIsPlaying(false);
     };
 
-    // Update progress bar
     const updateProgressBar = () => {
-      if (progressFillRef.current && audio.duration) {
-        const percentage = (audio.currentTime / audio.duration) * 100;
-        progressFillRef.current.style.width = `${percentage}%`;
+      if (progressFillRef.current && duration > 0) {
+        const progress = (currentTime / duration) * 100;
+        progressFillRef.current.style.width = `${progress}%`;
       }
     };
 
-    //event listeners
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("play", onPlay);
@@ -126,7 +127,6 @@ function CustomAudioPlayer({
     audio.addEventListener("playing", onPlaying);
     audio.addEventListener("error", onError);
 
-    //clear event listeners
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
@@ -139,12 +139,21 @@ function CustomAudioPlayer({
     };
   }, [volume, isMuted, playbackRate, autoPlay, onNextSong, hasPrevNext]);
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
     if (onPlay) {
       onPlay();
     }
 
     if (songId) {
+      try {
+        // Record play for recommendations
+        await recordPlay(songId);
+        console.log("Song play recorded for recommendations");
+      } catch (error) {
+        console.error("Failed to record play for recommendations:", error);
+      }
+
+      // Also add to recently played (existing functionality)
       addToRecentlyPlayed(songId)
         .then(() => console.log("Added to recently played"))
         .catch((error) =>

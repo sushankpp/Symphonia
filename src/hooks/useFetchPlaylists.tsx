@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useAuthHeaders } from "./useAuthHeaders";
 
 type Song = {
   id: number;
@@ -25,6 +26,7 @@ export const useFetchPlaylists = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { makeAuthenticatedRequest } = useAuthHeaders();
 
   const fetchPlaylists = useCallback(async () => {
     setIsLoading(true);
@@ -32,7 +34,7 @@ export const useFetchPlaylists = () => {
 
     try {
       const apiURL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${apiURL}/api/playlists`);
+      const response = await makeAuthenticatedRequest(`${apiURL}/api/playlists`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch playlists");
@@ -46,17 +48,14 @@ export const useFetchPlaylists = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [makeAuthenticatedRequest]);
 
   const createPlaylist = useCallback(
     async (playlistName: string) => {
       try {
         const apiURL = import.meta.env.VITE_API_URL;
-        const response = await fetch(`${apiURL}/api/playlists`, {
+        const response = await makeAuthenticatedRequest(`${apiURL}/api/playlists`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ playlist_name: playlistName }),
         });
 
@@ -75,20 +74,17 @@ export const useFetchPlaylists = () => {
         throw error;
       }
     },
-    [fetchPlaylists]
+    [fetchPlaylists, makeAuthenticatedRequest]
   );
 
   const addSongToPlaylist = useCallback(
     async (playlistId: number, songId: number) => {
       try {
         const apiURL = import.meta.env.VITE_API_URL;
-        const response = await fetch(
+        const response = await makeAuthenticatedRequest(
           `${apiURL}/api/playlists/${playlistId}/songs`,
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
             body: JSON.stringify({ song_id: songId }),
           }
         );
@@ -104,7 +100,7 @@ export const useFetchPlaylists = () => {
         throw error;
       }
     },
-    []
+    [makeAuthenticatedRequest]
   );
 
   useEffect(() => {

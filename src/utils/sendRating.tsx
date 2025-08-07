@@ -1,3 +1,5 @@
+import { authService } from "../services/authService";
+
 type RatingProps = {
   rateableId: number | string;
   rateableType: string;
@@ -39,14 +41,18 @@ export const sendRating = async ({
 
     console.log("Request body:", requestBody);
 
+    // Get authentication headers
+    const authHeaders = authService.getAuthHeaders();
+    console.log("🔐 Rating auth headers:", authHeaders);
+    
     const response = await fetch(`${API_URL}/api/ratings`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        ...authHeaders,
       },
       body: JSON.stringify(requestBody),
-      credentials: "include",
       mode: "cors",
     });
 

@@ -39,6 +39,41 @@
   line-height: 1.1;
 }
 
+.trending-details {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.trending-genre {
+  @include fsz(12px);
+  color: $white-100;
+  font-family: $secondary-medium-family;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.trending-year {
+  @include fsz(12px);
+  color: $white-100;
+  font-family: $secondary-medium-family;
+  opacity: 0.8;
+}
+
+.trending-duration {
+  @include fsz(12px);
+  color: $white-100;
+  font-family: $secondary-medium-family;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
 .trending-play {
   display: flex;
   gap: 15px;
@@ -85,7 +120,6 @@
 .trending-media {
   height: 275px;
   overflow: hidden;
-  position: absolute;
   right: 0;
   top: -40px;
 }

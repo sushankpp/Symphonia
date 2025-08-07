@@ -4,6 +4,7 @@ import OptionsMenu from "../menus/OptionsMenu";
 import RatingPopup from "../menus/RatingPopup";
 import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
 import { sendRating } from "../../../utils/sendRating";
+import { getRating } from "../../../utils/getRating";
 
 interface Artist {
   id: number;
@@ -19,6 +20,7 @@ interface CardListingsProps {
   style?: React.CSSProperties;
   onArtistClick: (artistId: number) => void;
   showRatingOption?: boolean;
+  columns?: number;
 }
 
 const CardListings: React.FC<CardListingsProps> = ({
@@ -28,10 +30,11 @@ const CardListings: React.FC<CardListingsProps> = ({
   style,
   onArtistClick,
   showRatingOption = false,
+  columns = 5,
 }) => {
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const [showRatingPopup, setShowRatingPopup] = useState(false);
-  const [currentRating, setCurrentRating] = useState(0);
+  const [artistRatings, setArtistRatings] = useState<Record<number, number>>({});
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
   const apiURL = import.meta.env.VITE_API_URL;
@@ -42,8 +45,29 @@ const CardListings: React.FC<CardListingsProps> = ({
     setActiveMenuId(activeMenuId === artistId ? null : artistId);
   };
 
-  const handleRate = (artist: Artist) => {
+  const handleRate = async (artist: Artist) => {
     setSelectedArtist(artist);
+    
+    // Fetch current rating for this artist if not already loaded
+    if (!artistRatings[artist.id]) {
+      try {
+        const rating = await getRating({
+          rateableId: artist.id,
+          rateableType: "artist",
+        });
+        setArtistRatings(prev => ({
+          ...prev,
+          [artist.id]: rating
+        }));
+      } catch (error) {
+        console.error("Error fetching artist rating:", error);
+        setArtistRatings(prev => ({
+          ...prev,
+          [artist.id]: 0
+        }));
+      }
+    }
+    
     setShowRatingPopup(true);
   };
 
@@ -58,10 +82,60 @@ const CardListings: React.FC<CardListingsProps> = ({
       });
 
       console.log("Artist rated successfully:", rating);
-      setCurrentRating(rating);
+      if (selectedArtist) {
+        setArtistRatings(prev => ({
+          ...prev,
+          [selectedArtist.id]: rating
+        }));
+      }
     } catch (error) {
       console.error("Error submitting rating:", error);
     }
+  };
+
+  // Helper function to safely get artist name
+  const getArtistName = (artist: Artist): string => {
+    if (!artist || !artist.artist_name) {
+      return 'Unknown Artist';
+    }
+    
+    if (typeof artist.artist_name === 'string') {
+      return artist.artist_name;
+    }
+    
+    if (typeof artist.artist_name === 'object' && artist.artist_name !== null) {
+      // If it's an object, try to get a string representation
+      try {
+        return JSON.stringify(artist.artist_name);
+      } catch (error) {
+        console.error('Error stringifying artist name:', error);
+        return 'Unknown Artist';
+      }
+    }
+    
+    return 'Unknown Artist';
+  };
+
+  // Helper function to safely render text content
+  const safeRenderText = (content: any): string => {
+    if (typeof content === 'string') {
+      return content;
+    }
+    if (typeof content === 'number') {
+      return content.toString();
+    }
+    if (content === null || content === undefined) {
+      return '';
+    }
+    if (typeof content === 'object') {
+      try {
+        return JSON.stringify(content);
+      } catch (error) {
+        console.error('Error stringifying content:', error);
+        return 'Unknown';
+      }
+    }
+    return String(content);
   };
 
   React.useEffect(() => {
@@ -77,6 +151,7 @@ const CardListings: React.FC<CardListingsProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   return (
     <>
       <section className="card-listings">
@@ -88,15 +163,19 @@ const CardListings: React.FC<CardListingsProps> = ({
             {linkText}
           </Link>
         </div>
-        <div className="card-listings__grid">
+        <div 
+          className="card-listings__grid"
+          style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+        >
           {artists.map((artist) => {
+            const artistName = getArtistName(artist);
             return (
               <div className="card-listings__item" key={artist.id}>
                 <button
                   className="screen-link"
                   onClick={() => onArtistClick(artist.id)}
                 >
-                  {artist.artist_name}
+                  {safeRenderText(artistName)}
                 </button>
 
                 <figure className="card-listings__media">
@@ -105,7 +184,7 @@ const CardListings: React.FC<CardListingsProps> = ({
                       artist.artist_image,
                       import.meta.env.VITE_API_URL
                     )}
-                    alt={`${artist.artist_name} image`}
+                    alt={`${safeRenderText(artistName)} image`}
                     onError={(e) => {
                       console.error(
                         "Failed to load artist image:",
@@ -123,10 +202,10 @@ const CardListings: React.FC<CardListingsProps> = ({
                   />
                 </figure>
                 <h2 className="card-listings__item-title">
-                  {artist.artist_name}
+                  {safeRenderText(artistName)}
                 </h2>
                 <p className="card-listings__item-count">
-                  <span>{artist.music_count} songs</span>
+                  <span>{safeRenderText(artist.music_count)} songs</span>
                 </p>
                 {showRatingOption && (
                   <div className="card-listings__options" title="more options">
@@ -155,8 +234,8 @@ const CardListings: React.FC<CardListingsProps> = ({
         isOpen={showRatingPopup}
         onClose={() => setShowRatingPopup(false)}
         onRate={handleRatingSubmit}
-        title={selectedArtist?.artist_name || ""}
-        currentRating={currentRating}
+        title={selectedArtist ? safeRenderText(getArtistName(selectedArtist)) : ""}
+                    currentRating={selectedArtist ? artistRatings[selectedArtist.id] || 0 : 0}
         type="artist"
         rateableId={selectedArtist?.id || 0}
       />

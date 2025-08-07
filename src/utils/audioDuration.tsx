@@ -27,12 +27,38 @@ export const convertStorageUrl = (url: string, apiUrl: string): string => {
     return url;
   }
 
+
+
+  // Handle audio files that start with "audios/" (from API response)
+  if (url.startsWith("audios/")) {
+    const filename = url.replace("audios/", "");
+    return `${apiUrl}/audio.php?file=${filename}&type=audio`;
+  }
+
   if (url.includes("/storage/audios/")) {
     const filename = url.split("/storage/audios/")[1];
     return `${apiUrl}/audio.php?file=${filename}&type=audio`;
   } else if (url.includes("/storage/audios/compressed/")) {
     const filename = url.split("/storage/audios/compressed/")[1];
     return `${apiUrl}/audio.php?file=${filename}&type=compressed`;
+  }
+
+  // Handle cover images that start with "songs_cover/" (from API response)
+  if (url.startsWith("songs_cover/")) {
+    const filename = url.replace("songs_cover/", "");
+    return `${apiUrl}/audio.php?file=${filename}&type=cover`;
+  }
+
+  // Handle artist images that start with "artist_image/" (from API response)
+  if (url.startsWith("artist_image/")) {
+    const filename = url.replace("artist_image/", "");
+    return `${apiUrl}/audio.php?file=${filename}&type=artist`;
+  }
+
+  // Handle album covers that start with "albums_cover/" (from API response)
+  if (url.startsWith("albums_cover/")) {
+    const filename = url.replace("albums_cover/", "");
+    return `${apiUrl}/audio.php?file=${filename}&type=album`;
   }
 
   // Handle cover images

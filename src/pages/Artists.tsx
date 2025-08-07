@@ -60,6 +60,7 @@ function Artists() {
             style={{ fontSize: "1.3rem" }}
             onArtistClick={handleArtistClick}
             showRatingOption={true}
+            columns={5}
           />
         </div>
       </main>

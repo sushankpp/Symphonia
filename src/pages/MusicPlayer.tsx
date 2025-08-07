@@ -9,7 +9,9 @@ import AddToPlaylistModal from "../utils/addToPlaylist.tsx";
 import RatingPopup from "../components/ui/menus/RatingPopup.tsx";
 import { convertStorageUrl } from "../utils/audioDuration.tsx";
 import { sendRating } from "../utils/sendRating";
+import { getRating } from "../utils/getRating";
 import { playSong } from "../utils/playSong";
+import { authService } from "../services/authService";
 
 type Song = {
   id: number;
@@ -53,7 +55,8 @@ function MusicPlayer() {
   const [currentSongId, setCurrentSongId] = useState<number | null>(null);
   const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [ratingType, setRatingType] = useState<"artist" | "song">("song");
-  const [currentRating, setCurrentRating] = useState(0);
+  const [songRating, setSongRating] = useState(0);
+  const [artistRating, setArtistRating] = useState(0);
   const navigate = useNavigate();
 
   const apiURL = import.meta.env.VITE_API_URL;
@@ -64,6 +67,10 @@ function MusicPlayer() {
       setLoading(false);
       return;
     }
+
+    // Reset ratings when song/artist changes
+    setSongRating(0);
+    setArtistRating(0);
 
     const fetchData = async () => {
       try {
@@ -118,6 +125,35 @@ function MusicPlayer() {
 
     fetchData();
   }, [artistId, songId, apiURL]);
+
+  // Fetch current ratings for this song and artist
+  useEffect(() => {
+    const fetchRatings = async () => {
+      if (!artistId || !songId) return;
+
+      try {
+        // Fetch song rating
+        const songRatingValue = await getRating({
+          rateableId: parseInt(songId),
+          rateableType: "song",
+        });
+        setSongRating(songRatingValue);
+
+        // Fetch artist rating
+        const artistRatingValue = await getRating({
+          rateableId: parseInt(artistId),
+          rateableType: "artist",
+        });
+        setArtistRating(artistRatingValue);
+      } catch (error) {
+        console.error("Error fetching ratings:", error);
+      }
+    };
+
+    // Fetch ratings after a short delay to ensure data is loaded
+    const timer = setTimeout(fetchRatings, 1000);
+    return () => clearTimeout(timer);
+  }, [artistId, songId]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -196,10 +232,14 @@ function MusicPlayer() {
 
   const handleCreatePlaylist = async (playlistName: string, songId: number) => {
     try {
+      // Get authentication headers
+      const authHeaders = authService.getAuthHeaders();
+      
       const response = await fetch(`${apiURL}/api/playlists`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...authHeaders,
         },
         body: JSON.stringify({ playlist_name: playlistName }),
       });
@@ -235,13 +275,17 @@ function MusicPlayer() {
       const rateableId = ratingType === "artist" ? artistId : songId;
 
       await sendRating({
-        rateableId: rateableId,
+        rateableId: parseInt(rateableId || "0"),
         rateableType: ratingType,
         rating: rating,
       });
 
       console.log(`${ratingType} rated successfully:`, rating);
-      setCurrentRating(rating);
+      if (ratingType === "song") {
+        setSongRating(rating);
+      } else {
+        setArtistRating(rating);
+      }
     } catch (error) {
       console.error("Error submitting rating:", error);
     }
@@ -297,7 +341,9 @@ function MusicPlayer() {
                   <p className="music-player__header-title">{song.title}</p>
                   <div className="music-player__header-meta-more">
                     <h2 className="music-player__header-artist">
-                      {artist.artist_name}
+                      {typeof artist.artist_name === 'string' 
+                        ? artist.artist_name 
+                        : JSON.stringify(artist.artist_name)}
                     </h2>
                     <div className="music-player__header-wrapper">
                       {album && (
@@ -323,7 +369,9 @@ function MusicPlayer() {
                 <CustomAudioPlayer
                   src={convertStorageUrl(song.file_path, apiURL)}
                   title={song.title}
-                  artist={artist.artist_name}
+                  artist={typeof artist.artist_name === 'string' 
+                    ? artist.artist_name 
+                    : JSON.stringify(artist.artist_name)}
                   autoPlay={false}
                   onPlay={handleSongPlay}
                   songId={song.id}
@@ -408,7 +456,9 @@ function MusicPlayer() {
                   <div className="music-card__meta-header">
                     <h2 className="music-card__meta-title">{song.title}</h2>
                     <p className="music-card__meta-artist">
-                      {artist.artist_name}
+                      {typeof artist.artist_name === 'string' 
+                        ? artist.artist_name 
+                        : JSON.stringify(artist.artist_name)}
                     </p>
                     {album && (
                       <p className="music-card__meta-album">{album.title}</p>
@@ -450,7 +500,9 @@ function MusicPlayer() {
                 </div>
               </div>
               <div className="sideplayer__artist-card">
-                <h3>More by {artist.artist_name}</h3>
+                <h3>More by {typeof artist.artist_name === 'string' 
+                  ? artist.artist_name 
+                  : JSON.stringify(artist.artist_name)}</h3>
                 <p>{artist.song_count} songs available</p>
               </div>
             </div>
@@ -471,12 +523,14 @@ function MusicPlayer() {
         onRate={handleRatingSubmit}
         title={
           ratingType === "artist"
-            ? artist?.artist_name || ""
+            ? (typeof artist?.artist_name === 'string' 
+                ? artist.artist_name 
+                : JSON.stringify(artist?.artist_name)) || ""
             : song?.title || ""
         }
-        currentRating={currentRating}
+                    currentRating={ratingType === "song" ? songRating : artistRating}
         type={ratingType}
-        rateableId={ratingType === "artist" ? artistId : songId}
+        rateableId={ratingType === "artist" ? parseInt(artistId || "0") : parseInt(songId || "0")}
       />
     </>
   );

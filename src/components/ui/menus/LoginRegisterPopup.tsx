@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { authService } from "../../../services/authService";
-import { createAuthHeaders } from "../../../utils/csrf";
+
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -85,15 +85,15 @@ const LoginRegisterPopup = ({
 
     try {
       if (isLogin) {
-        // Handle Login with session-based authentication
-        const result = await authService.sessionLogin(formData.email, formData.password);
+        // Handle Login with Bearer token authentication
+        const result = await authService.login(formData.email, formData.password);
         
         console.log("✅ Login successful:", result);
 
-        // Store user data in localStorage (matching your JS logic)
+        // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify(result.user));
 
-        // Use the auth context to login (no token needed for session-based auth)
+        // Use the auth context to login
         login(result.user);
 
         if (onLoginSuccess) {
@@ -104,11 +104,12 @@ const LoginRegisterPopup = ({
         onClose();
       } else {
         // Handle Register
-        const headers = await createAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: "POST",
-          headers,
-          credentials: "include", // Include credentials for session
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -145,7 +146,12 @@ const LoginRegisterPopup = ({
     localStorage.setItem('oauth_redirect_url', window.location.href);
     
     // Redirect to Laravel Google OAuth route
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
+    // Make sure your Laravel route redirects back to your frontend callback URL
+    const callbackUrl = `${window.location.origin}/auth/callback`;
+    const googleAuthUrl = `${API_BASE_URL}/api/auth/google?redirect_uri=${encodeURIComponent(callbackUrl)}`;
+    
+    console.log('Redirecting to Google OAuth:', googleAuthUrl);
+    window.location.href = googleAuthUrl;
   };
 
   const handleInputChange = (

@@ -78,7 +78,11 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
               </div>
               <div className="track-details">
                 <h4 className="track-title">{track.title}</h4>
-                <p className="track-artist">{track.artist.artist_name}</p>
+                <p className="track-artist">
+                  {typeof track.artist.artist_name === 'string' 
+                    ? track.artist.artist_name 
+                    : JSON.stringify(track.artist.artist_name)}
+                </p>
               </div>
               <div className="track-meta">
                 <span className="duration">

@@ -4,6 +4,8 @@ import OptionsMenu from "../menus/OptionsMenu";
 import RatingPopup from "../menus/RatingPopup";
 import AddToPlaylist from "../../../utils/addToPlaylist";
 import { sendRating } from "../../../utils/sendRating";
+import { getRating } from "../../../utils/getRating";
+import { authService } from "../../../services/authService";
 
 type Song = {
   id: number;
@@ -42,7 +44,7 @@ const SongsList: React.FC<SongsListProps> = ({
   const navigate = useNavigate();
   const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [ratingType, setRatingType] = useState<"artist" | "song">("song");
-  const [currentRating, setCurrentRating] = useState(0);
+  const [songRatings, setSongRatings] = useState<Record<number, number>>({});
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [showAddToPlaylistModal, setShowAddToPlaylistModal] = useState(false);
   const [selectedSongForPlaylist, setSelectedSongForPlaylist] =
@@ -76,9 +78,30 @@ const SongsList: React.FC<SongsListProps> = ({
     };
   }, []);
 
-  const handleRate = (song: Song) => {
+  const handleRate = async (song: Song) => {
     setSelectedSong(song);
     setRatingType("song");
+    
+    // Fetch current rating for this song if not already loaded
+    if (!songRatings[song.id]) {
+      try {
+        const rating = await getRating({
+          rateableId: song.id,
+          rateableType: "song",
+        });
+        setSongRatings(prev => ({
+          ...prev,
+          [song.id]: rating
+        }));
+      } catch (error) {
+        console.error("Error fetching song rating:", error);
+        setSongRatings(prev => ({
+          ...prev,
+          [song.id]: 0
+        }));
+      }
+    }
+    
     setShowRatingPopup(true);
   };
 
@@ -93,7 +116,12 @@ const SongsList: React.FC<SongsListProps> = ({
       });
 
       console.log("Song rated successfully:", rating);
-      setCurrentRating(rating);
+      if (selectedSong) {
+        setSongRatings(prev => ({
+          ...prev,
+          [selectedSong.id]: rating
+        }));
+      }
     } catch (error) {
       console.error("Error submitting rating:", error);
     }
@@ -110,12 +138,16 @@ const SongsList: React.FC<SongsListProps> = ({
   ) => {
     try {
       const apiURL = import.meta.env.VITE_API_URL;
+      // Get authentication headers
+      const authHeaders = authService.getAuthHeaders();
+      
       const response = await fetch(
         `${apiURL}/api/playlists/${playlistId}/songs`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...authHeaders,
           },
           body: JSON.stringify({ song_id: songId }),
         }
@@ -135,10 +167,14 @@ const SongsList: React.FC<SongsListProps> = ({
   const handleCreatePlaylist = async (playlistName: string, songId: number) => {
     try {
       const apiURL = import.meta.env.VITE_API_URL;
+      // Get authentication headers
+      const authHeaders = authService.getAuthHeaders();
+      
       const response = await fetch(`${apiURL}/api/playlists`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...authHeaders,
         },
         body: JSON.stringify({
           playlist_name: playlistName,
@@ -223,7 +259,11 @@ const SongsList: React.FC<SongsListProps> = ({
                     {song.title}
                   </h3>
                   {song.artist_name && (
-                    <p className="song-card__artist">{song.artist_name}</p>
+                    <p className="song-card__artist">
+                      {typeof song.artist_name === 'string' 
+                        ? song.artist_name 
+                        : JSON.stringify(song.artist_name)}
+                    </p>
                   )}
                   <div className="song-card__meta">
                     <span className="song-card__duration">{song.duration}</span>
@@ -315,7 +355,7 @@ const SongsList: React.FC<SongsListProps> = ({
         onClose={() => setShowRatingPopup(false)}
         onRate={handleRatingSubmit}
         title={selectedSong?.title || ""}
-        currentRating={currentRating}
+                    currentRating={selectedSong ? songRatings[selectedSong.id] || 0 : 0}
         type={ratingType}
         rateableId={selectedSong?.id || 0}
       />

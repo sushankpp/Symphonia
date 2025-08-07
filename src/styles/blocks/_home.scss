@@ -1,0 +1,26 @@
+.loading-section,
+.error-section {
+  padding: 2rem;
+  text-align: center;
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin: 1rem 0;
+  
+  p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+.error-section {
+  p {
+    color: var(--error-color, #ef4444);
+  }
+}
+
+.loading-section {
+  p {
+    color: var(--text-secondary);
+  }
+}

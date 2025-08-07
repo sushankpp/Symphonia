@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Plus, Music, ListMusic, Play } from "lucide-react";
+import { useAuthHeaders } from "../../../hooks/useAuthHeaders";
+import { useAuth } from "../../../contexts/AuthContext";
 
 type Playlist = {
   id: number;
@@ -9,12 +11,19 @@ type Playlist = {
 
 const MenuPlaylist = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const { makeAuthenticatedRequest } = useAuthHeaders();
+  const { isAuthenticated } = useAuth();
   const apiURL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchPlaylists = async () => {
+      // Only fetch if user is authenticated
+      if (!isAuthenticated) {
+        return;
+      }
+
       try {
-        const response = await fetch(`${apiURL}/api/playlists`);
+        const response = await makeAuthenticatedRequest(`${apiURL}/api/playlists`);
         if (!response.ok) throw new Error("Failed to fetch playlists");
         const data = await response.json();
         setPlaylists(data);
@@ -24,7 +33,7 @@ const MenuPlaylist = () => {
     };
 
     fetchPlaylists();
-  }, []);
+  }, [makeAuthenticatedRequest, apiURL, isAuthenticated]);
 
   return (
     <div className="header-navigation__items">
@@ -36,14 +45,22 @@ const MenuPlaylist = () => {
             Create New Playlist
           </Link>
         </li>
-        {playlists.slice(0, 2).map((playlist) => (
-          <li key={playlist.id}>
-            <Link to={`/playlist/${playlist.id}`}>
-              <ListMusic size={20} />
-              {playlist.playlist_name}
-            </Link>
+        {!isAuthenticated ? (
+          <li>
+            <span style={{ color: '#6b7280', fontSize: '14px' }}>
+              Please log in to view playlists
+            </span>
           </li>
-        ))}
+        ) : (
+          playlists.slice(0, 2).map((playlist) => (
+            <li key={playlist.id}>
+              <Link to={`/playlist/${playlist.id}`}>
+                <ListMusic size={20} />
+                {playlist.playlist_name}
+              </Link>
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );

@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  useRef,
 } from "react";
 import { authService } from "../services/authService";
 
@@ -45,25 +46,27 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(authService.getUser()); // Initialize from localStorage
+  const [user, setUser] = useState<User | null>(authService.getUser());
   const [isLoading, setIsLoading] = useState(true);
+  const hasCheckedAuth = useRef(false);
 
   useEffect(() => {
-    if (!user) { // Only check auth if user is not already in state (from localStorage)
+    if (!hasCheckedAuth.current) {
+      hasCheckedAuth.current = true;
       checkAuth();
     } else {
       setIsLoading(false);
     }
-  }, [user]); // Added user to dependency array to re-run if user changes
+  }, []);
 
   const login = (userData: User) => {
-    localStorage.setItem('user', JSON.stringify(userData)); // Store user data
+    localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
 
   const checkAuth = async () => {
     try {
-      const userData = await authService.checkSessionAuth(); // Using authService
+      const userData = await authService.checkAuth();
       if (userData) {
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
@@ -72,7 +75,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         setUser(null);
       }
     } catch (error) {
-      console.error("Session auth check failed:", error);
+      console.error("Auth check failed:", error);
       localStorage.removeItem('user');
       setUser(null);
     } finally {
@@ -82,15 +85,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const logout = async () => {
     try {
-      const csrfToken = await authService.getCSRFToken(); // Get CSRF token for logout
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/session/logout`, { // Corrected endpoint
-        method: "POST",
-        headers: {
-          'Accept': 'application/json',
-          'X-XSRF-TOKEN': csrfToken // Use the obtained CSRF token
-        },
-        credentials: "include",
-      });
+      await authService.logout();
       localStorage.removeItem('user');
       setUser(null);
     } catch (error) {
@@ -98,7 +93,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user && authService.isAuthenticated();
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, checkAuth }}>
