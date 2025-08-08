@@ -30,7 +30,7 @@ type Song = {
 
 function Music() {
   const navigate = useNavigate();
-  const { recommendations, recordPlay, testAuthentication } = useRecommendation();
+  const { recommendations, recordPlay } = useRecommendation();
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,25 +132,7 @@ function Music() {
         <div className="container">
           <TopHeader />
           
-          {/* Temporary Debug Button */}
-          <div style={{ margin: '10px', padding: '10px', background: '#f0f0f0', borderRadius: '5px' }}>
-            <button 
-              onClick={testAuthentication}
-              style={{ 
-                padding: '8px 16px', 
-                background: '#007bff', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              🔍 Test Authentication
-            </button>
-            <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#666' }}>
-              Click to debug authentication issues
-            </p>
-          </div>
+
           
           {/* Recommendations Section */}
           {recommendations.length > 0 && (

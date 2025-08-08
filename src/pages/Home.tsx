@@ -36,8 +36,11 @@ export default function Home({ src }: MusicPlayerProps) {
         setLoading(true);
         setError(null);
 
-        // Get authentication headers
-        const authHeaders = authService.getAuthHeaders();
+        // Get authentication headers - use empty headers for non-authenticated users
+        const authHeaders = isAuthenticated ? authService.getAuthHeaders() : {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        };
         
         // Fetch top artists (personalized if logged in, global if not)
         const topArtistsData = await musicService.getTopArtists(authHeaders);

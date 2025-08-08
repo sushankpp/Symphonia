@@ -3,25 +3,7 @@ import { authService } from './authService';
 class MusicService {
   private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-  // Debug function to test authentication
-  async debugAuthentication(): Promise<void> {
-    console.log('=== AUTHENTICATION DEBUG ===');
-    
-    // Check localStorage
-    const user = authService.getUser();
-    console.log('1. User in localStorage:', user ? user.name : 'No user');
-    
-    // Check token
-    const token = authService.getToken();
-    console.log('2. Bearer token:', token ? 'Present' : 'Missing');
-    console.log('3. Token value:', token ? token.substring(0, 20) + '...' : 'None');
-    
-    // Check auth headers
-    const headers = authService.getAuthHeaders();
-    console.log('4. Auth headers:', headers);
-    
-    console.log('=== END DEBUG ===');
-  }
+
 
   async getAllSongs(): Promise<any[]> {
     try {

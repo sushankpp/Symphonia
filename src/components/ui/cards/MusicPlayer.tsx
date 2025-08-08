@@ -60,37 +60,91 @@ const MusicPlayer = ({ src }: MusicPlayerProps) => {
         <svg className="icon icon-playlist">
           <use xlinkHref="#icon-playlist"></use>
         </svg>
-        Now Playing
+        {currentSong ? "Now Playing" : "Music Player"}
       </h2>
-      <figure className="music-player__media">
-        <img 
-          src={currentSong ? convertStorageUrl(currentSong.song_cover_path || currentSong.cover_image || "", apiURL) : "/uploads/pig.png"} 
-          alt={currentSong ? `${currentSong.title} cover` : "no song playing"}
-          onError={(e) => {
-            e.currentTarget.src = "/uploads/pig.png";
-          }}
-        />
-      </figure>
-      <div className="music-player__meta">
-        <h3 className="music-player__meta-title">
-          {currentSong ? currentSong.title : "No song playing"}
-        </h3>
-        <p className="music-player__meta-description">
-          {currentArtist ? 
-            (typeof currentArtist === 'string' ? currentArtist : currentArtist.artist_name || 'Unknown Artist')
-            : "Start playing a song"
-          }
-        </p>
-      </div>
-
-      <CustomAudioPlayer 
-        src={currentSong ? convertStorageUrl(currentSong.file_path || currentSong.audio_url || "", apiURL) : src} 
-      />
+      
+      {currentSong ? (
+        <>
+          <figure className="music-player__media">
+            <img 
+              src={convertStorageUrl(currentSong.song_cover_path || currentSong.cover_image || "", apiURL)} 
+              alt={`${currentSong.title} cover`}
+              onError={(e) => {
+                e.currentTarget.src = "/uploads/pig.png";
+              }}
+            />
+          </figure>
+          <div className="music-player__meta">
+            <h3 className="music-player__meta-title">
+              {currentSong.title}
+            </h3>
+            <p className="music-player__meta-description">
+              {typeof currentArtist === 'string' ? currentArtist : currentArtist?.artist_name || 'Unknown Artist'}
+            </p>
+          </div>
+          <CustomAudioPlayer 
+            src={convertStorageUrl(currentSong.file_path || currentSong.audio_url || "", apiURL)} 
+          />
+        </>
+      ) : (
+        <div className="music-player__idle-state">
+          <figure className="music-player__media music-player__idle-media">
+            <img 
+              src="/uploads/pig-nobg.png" 
+              alt="Music player idle"
+              className="idle-image"
+            />
+            <div className="idle-overlay">
+              <div className="idle-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="5,3 19,12 5,21 5,3"></polygon>
+                </svg>
+              </div>
+            </div>
+          </figure>
+          <div className="music-player__meta">
+            <h3 className="music-player__meta-title">
+              Ready to Play
+            </h3>
+            <p className="music-player__meta-description">
+              Select a song from the recommendations below or browse your music library
+            </p>
+            <div className="music-player__idle-actions">
+              <button 
+                className="music-player__idle-btn"
+                onClick={() => navigate('/music')}
+              >
+                Browse Music
+              </button>
+              <button 
+                className="music-player__idle-btn secondary"
+                onClick={() => navigate('/artists')}
+              >
+                Discover Artists
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="music-player__suggested">
         <h3 className="music-player__suggested-title">Recommended for You</h3>
         {!isAuthenticated ? (
           <div className="music-player__suggested-empty">
+            <div className="empty-state-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="m22 21-2-2"></path>
+                <path d="m16 16 4 4"></path>
+              </svg>
+            </div>
             <p>Please log in to see personalized recommendations</p>
+            <button 
+              className="music-player__suggested-login-btn"
+              onClick={() => navigate('/auth/callback')}
+            >
+              Sign In
+            </button>
           </div>
         ) : (
           recommendations.slice(0, 3).map((recommendation) => (
@@ -159,7 +213,19 @@ const MusicPlayer = ({ src }: MusicPlayerProps) => {
         )}
         {isAuthenticated && recommendations.length === 0 && (
           <div className="music-player__suggested-empty">
+            <div className="empty-state-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="10,8 16,12 10,16 10,8"></polygon>
+              </svg>
+            </div>
             <p>Start playing songs to get recommendations!</p>
+            <button 
+              className="music-player__suggested-browse-btn"
+              onClick={() => navigate('/music')}
+            >
+              Browse Music
+            </button>
           </div>
         )}
       </div>
