@@ -16,6 +16,20 @@ import UserProfile from "./pages/UserProfile.tsx";
 import Settings from "./pages/Settings.tsx";
 import Notifications from "./pages/Notifications.tsx";
 import AuthCallback from "./pages/AuthCallback.tsx";
+import AdminDashboard from "./pages/AdminDashboard.tsx";
+import AdminUsers from "./pages/AdminUsers.tsx";
+import AdminRoleRequests from "./pages/AdminRoleRequests.tsx";
+import ArtistDashboard from "./pages/ArtistDashboard.tsx";
+import ArtistMusic from "./pages/ArtistMusic.tsx";
+import ArtistSongStats from "./pages/ArtistSongStats.tsx";
+import RoleRequests from "./pages/RoleRequests.tsx";
+
+// Simple Login redirect component
+const LoginRedirect = () => {
+  // Redirect to home page where users can access the login popup
+  window.location.href = '/';
+  return null;
+};
 
 function App() {
   return (
@@ -24,6 +38,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Home src={""} />} />
+            <Route path="/login" element={<LoginRedirect />} />
             <Route path="/music" element={<Music />} />
             <Route path="/artists" element={<Artists />} />
             <Route path="/artists/:id" element={<SongListings />} />
@@ -48,6 +63,19 @@ function App() {
             
             {/*auth*/}
             <Route path="/auth/callback" element={<AuthCallback />} />
+            
+            {/*admin routes*/}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/role-requests" element={<AdminRoleRequests />} />
+            
+            {/*artist routes*/}
+            <Route path="/artist/dashboard" element={<ArtistDashboard />} />
+            <Route path="/artist/music" element={<ArtistMusic />} />
+            <Route path="/artist/music/:songId/stats" element={<ArtistSongStats />} />
+            
+            {/*role requests*/}
+            <Route path="/role-requests" element={<RoleRequests />} />
           </Routes>
         </Router>
       </RecommendationProvider>

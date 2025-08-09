@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { musicService } from '../services/musicService';
-import { useAuthHeaders } from '../hooks/useAuthHeaders';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
+import { musicService } from "../services/musicService";
+import { useAuthHeaders } from "../hooks/useAuthHeaders";
 
 interface Song {
   id: number;
@@ -32,54 +39,57 @@ interface RecommendationContextType {
   refreshRecommendations: () => Promise<void>;
   loadAllSongs: () => Promise<void>;
   loadRecentlyPlayed: () => Promise<void>;
-
 }
 
-const RecommendationContext = createContext<RecommendationContextType | undefined>(undefined);
+const RecommendationContext = createContext<
+  RecommendationContextType | undefined
+>(undefined);
 
 export const useRecommendation = () => {
   const context = useContext(RecommendationContext);
   if (context === undefined) {
-    throw new Error('useRecommendation must be used within a RecommendationProvider');
+    throw new Error(
+      "useRecommendation must be used within a RecommendationProvider"
+    );
   }
   return context;
 };
 
-// No fallback data - let APIs return empty arrays when not available
-
-export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [topRecommendations, setTopRecommendations] = useState<Recommendation[]>([]);
+  const [topRecommendations, setTopRecommendations] = useState<
+    Recommendation[]
+  >([]);
   const [recentlyPlayed, setRecentlyPlayed] = useState<Song[]>([]);
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { getAuthHeaders, isAuthenticated } = useAuthHeaders();
 
-
-
   const loadRecommendations = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       if (!isAuthenticated) {
-        console.log('User not authenticated, skipping recommendations');
+        console.log("User not authenticated, skipping recommendations");
         setRecommendations([]);
         return;
       }
 
       const { headers } = await getAuthHeaders();
       const data = await musicService.getRecommendations(headers);
-      
-      console.log('=== RECOMMENDATIONS API RESPONSE ===');
-      console.log('Raw recommendations data:', data);
-      console.log('First recommendation object:', data[0]);
-      console.log('First recommendation song object:', data[0]?.song);
-      console.log('First recommendation song file_path:', data[0]?.song?.file_path);
-      console.log('First recommendation song audio_url:', data[0]?.song?.audio_url);
-      console.log('=== END RECOMMENDATIONS API RESPONSE ===');
-      
+
+      // console.log('=== RECOMMENDATIONS API RESPONSE ===');
+      // console.log('Raw recommendations data:', data);
+      // console.log('First recommendation object:', data[0]);
+      // console.log('First recommendation song object:', data[0]?.song);
+      // console.log('First recommendation song file_path:', data[0]?.song?.file_path);
+      // console.log('First recommendation song audio_url:', data[0]?.song?.audio_url);
+      // console.log('=== END RECOMMENDATIONS API RESPONSE ===');
+
       if (data.length === 0) {
         // No recommendations from API
         setRecommendations([]);
@@ -87,8 +97,8 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ chil
         setRecommendations(data);
       }
     } catch (error) {
-      console.error('Error loading recommendations:', error);
-      setError('Failed to load recommendations');
+      console.error("Error loading recommendations:", error);
+      setError("Failed to load recommendations");
       // No fallback data
       setRecommendations([]);
     } finally {
@@ -98,22 +108,29 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const loadTopRecommendations = useCallback(async () => {
     try {
-      // For non-authenticated users, use empty headers since the API works for both auth and non-auth users
-      const headers = isAuthenticated ? (await getAuthHeaders()).headers : {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      };
-      
+      const headers = isAuthenticated
+        ? (await getAuthHeaders()).headers
+        : {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          };
+
       const data = await musicService.getTopRecommendations(headers, 5);
-      
-      console.log('=== TOP RECOMMENDATIONS API RESPONSE ===');
-      console.log('Raw top recommendations data:', data);
-      console.log('First top recommendation object:', data[0]);
-      console.log('First top recommendation song object:', data[0]?.song);
-      console.log('First top recommendation song file_path:', data[0]?.song?.file_path);
-      console.log('First top recommendation song audio_url:', data[0]?.song?.audio_url);
-      console.log('=== END TOP RECOMMENDATIONS API RESPONSE ===');
-      
+
+      // console.log("=== TOP RECOMMENDATIONS API RESPONSE ===");
+      // console.log("Raw top recommendations data:", data);
+      // console.log("First top recommendation object:", data[0]);
+      // console.log("First top recommendation song object:", data[0]?.song);
+      // console.log(
+      //   "First top recommendation song file_path:",
+      //   data[0]?.song?.file_path
+      // );
+      // console.log(
+      //   "First top recommendation song audio_url:",
+      //   data[0]?.song?.audio_url
+      // );
+      // console.log("=== END TOP RECOMMENDATIONS API RESPONSE ===");
+
       if (data.length === 0) {
         // No top recommendations from API
         setTopRecommendations([]);
@@ -121,59 +138,61 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ chil
         setTopRecommendations(data);
       }
     } catch (error) {
-      console.error('Error loading top recommendations:', error);
+      console.error("Error loading top recommendations:", error);
       // No fallback data
       setTopRecommendations([]);
     }
   }, [isAuthenticated, getAuthHeaders]);
 
-  const recordPlay = useCallback(async (songId: number) => {
-    try {
-      console.log('Recording play for song:', songId);
-      
-      if (!isAuthenticated) {
-        console.log('User not authenticated, skipping play recording');
-        return;
-      }
-
-      const { headers } = await getAuthHeaders();
-      await musicService.recordSongPlay(songId, headers);
-      console.log('Successfully recorded play');
-      
-      // Refresh recommendations after recording play
-      await Promise.all([
-        loadRecommendations(),
-        loadTopRecommendations()
-      ]);
-      // Refresh recently played - call the function directly without dependency
+  const recordPlay = useCallback(
+    async (songId: number) => {
       try {
-        console.log('Loading recently played...');
-        
-        if (isAuthenticated) {
-          const { headers } = await getAuthHeaders();
-          const data = await musicService.getRecentlyPlayed(headers);
-          console.log('Recently played data:', data);
-          
-          // Extract the song objects from the recently played items
-          const songs = data.map((item: any) => item.song || item);
-          console.log('Extracted songs:', songs);
-          setRecentlyPlayed(songs);
+        console.log("Recording play for song:", songId);
+
+        if (!isAuthenticated) {
+          console.log("User not authenticated, skipping play recording");
+          return;
+        }
+
+        const { headers } = await getAuthHeaders();
+        await musicService.recordSongPlay(songId, headers);
+        console.log("Successfully recorded play");
+
+        // Refresh recommendations after recording play
+        await Promise.all([loadRecommendations(), loadTopRecommendations()]);
+        // Refresh recently played - call the function directly without dependency
+        try {
+          console.log("Loading recently played...");
+
+          if (isAuthenticated) {
+            const { headers } = await getAuthHeaders();
+            const data = await musicService.getRecentlyPlayed(headers);
+            console.log("Recently played data:", data);
+
+            // Extract the song objects from the recently played items
+            const songs = data.map((item: any) => item.song || item);
+            console.log("Extracted songs:", songs);
+            setRecentlyPlayed(songs);
+          }
+        } catch (error) {
+          console.error("Error loading recently played:", error);
+          setRecentlyPlayed([]);
         }
       } catch (error) {
-        console.error('Error loading recently played:', error);
-        setRecentlyPlayed([]);
+        console.error("Error recording play:", error);
+        // Don't throw - just log the error
       }
-    } catch (error) {
-      console.error('Error recording play:', error);
-      // Don't throw - just log the error
-    }
-  }, [isAuthenticated, getAuthHeaders, loadRecommendations, loadTopRecommendations]);
+    },
+    [
+      isAuthenticated,
+      getAuthHeaders,
+      loadRecommendations,
+      loadTopRecommendations,
+    ]
+  );
 
   const refreshRecommendations = useCallback(async () => {
-    await Promise.all([
-      loadRecommendations(),
-      loadTopRecommendations()
-    ]);
+    await Promise.all([loadRecommendations(), loadTopRecommendations()]);
   }, [loadRecommendations, loadTopRecommendations]);
 
   const loadAllSongs = useCallback(async () => {
@@ -183,8 +202,8 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ chil
       const data = await musicService.getAllSongs();
       setAllSongs(data);
     } catch (error) {
-      console.error('Error loading all songs:', error);
-      setError('Failed to load songs');
+      console.error("Error loading all songs:", error);
+      setError("Failed to load songs");
       setAllSongs([]);
     } finally {
       setIsLoading(false);
@@ -193,24 +212,24 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ chil
 
   const loadRecentlyPlayed = useCallback(async () => {
     try {
-      console.log('Loading recently played...');
-      
+      console.log("Loading recently played...");
+
       if (!isAuthenticated) {
-        console.log('User not authenticated, returning empty recently played');
+        console.log("User not authenticated, returning empty recently played");
         setRecentlyPlayed([]);
         return;
       }
 
       const { headers } = await getAuthHeaders();
       const data = await musicService.getRecentlyPlayed(headers);
-      console.log('Recently played data:', data);
-      
+      console.log("Recently played data:", data);
+
       // Extract the song objects from the recently played items
       const songs = data.map((item: any) => item.song || item);
-      console.log('Extracted songs:', songs);
+      console.log("Extracted songs:", songs);
       setRecentlyPlayed(songs);
     } catch (error) {
-      console.error('Error loading recently played:', error);
+      console.error("Error loading recently played:", error);
       setRecentlyPlayed([]);
     }
   }, [isAuthenticated, getAuthHeaders]);
@@ -218,21 +237,34 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ chil
   // Load initial data only once when component mounts or auth state changes
   useEffect(() => {
     const loadInitialData = async () => {
-      await Promise.all([
-        loadRecommendations(),
-        loadTopRecommendations(),
-        loadAllSongs(),
-        loadRecentlyPlayed()
-      ]);
+      // Load songs that don't require authentication first
+      await loadAllSongs();
+      
+      // Load top recommendations (works for both authenticated and unauthenticated users)
+      await loadTopRecommendations();
+      
+      // Only load user-specific data if authenticated
+      if (isAuthenticated) {
+        await Promise.all([
+          loadRecommendations(),
+          loadRecentlyPlayed(),
+        ]);
+      }
     };
-    
+
     loadInitialData();
-  }, [isAuthenticated, loadRecommendations, loadTopRecommendations, loadAllSongs, loadRecentlyPlayed]); // Include all dependencies
+  }, [
+    isAuthenticated,
+    loadRecommendations,
+    loadTopRecommendations,
+    loadAllSongs,
+    loadRecentlyPlayed,
+  ]); // Include all dependencies
 
   // Refresh recently played data periodically only if authenticated
   useEffect(() => {
     if (!isAuthenticated) return; // Only refresh if authenticated
-    
+
     const interval = setInterval(() => {
       loadRecentlyPlayed();
     }, 30000); // Refresh every 30 seconds
@@ -260,4 +292,4 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({ chil
       {children}
     </RecommendationContext.Provider>
   );
-}; 
+};

@@ -9,12 +9,17 @@ import {
   Clock,
   Disc3,
   Download,
-  Library,
+  Shield,
+  Crown,
+  BarChart3,
+  FileText,
 } from "lucide-react";
+import { useAuth } from "../../../contexts/AuthContext";
 // import svgSprite from '@templates/template-svg.html?raw';
 
 const SidebarHeader = () => {
   const location = useLocation();
+  const { user } = useAuth();
 
   const isActive = (path: string) => {
     if (path === "/" && location.pathname === "/") {
@@ -109,6 +114,88 @@ const SidebarHeader = () => {
               </li>
             </ul>
           </div>
+          
+          {/* Artist Section */}
+          {user?.role === 'artist' && (
+            <div className="header-navigation__items">
+              <h2 className="header-navigation__title">Artist</h2>
+              <ul className="header-navigation__item">
+                <li>
+                  <Link
+                    to="/artist/dashboard"
+                    className={isActive("/artist/dashboard") ? "active" : ""}
+                  >
+                    <BarChart3 size={20} />
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/artist/music"
+                    className={isActive("/artist/music") ? "active" : ""}
+                  >
+                    <Music size={20} />
+                    My Music
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
+          
+          {/* Admin Section */}
+          {user?.role === 'admin' && (
+            <div className="header-navigation__items">
+              <h2 className="header-navigation__title">Admin</h2>
+              <ul className="header-navigation__item">
+                <li>
+                  <Link
+                    to="/admin/dashboard"
+                    className={isActive("/admin/dashboard") ? "active" : ""}
+                  >
+                    <Crown size={20} />
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/users"
+                    className={isActive("/admin/users") ? "active" : ""}
+                  >
+                    <Users size={20} />
+                    Users
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/role-requests"
+                    className={isActive("/admin/role-requests") ? "active" : ""}
+                  >
+                    <FileText size={20} />
+                    Role Requests
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
+          
+          {/* Role Request Section for Users */}
+          {user && user.role !== 'admin' && (
+            <div className="header-navigation__items">
+              <h2 className="header-navigation__title">Account</h2>
+              <ul className="header-navigation__item">
+                <li>
+                  <Link
+                    to="/role-requests"
+                    className={isActive("/role-requests") ? "active" : ""}
+                  >
+                    <Shield size={20} />
+                    Role Requests
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
+          
           <MenuPlaylist />
         </div>
       </header>

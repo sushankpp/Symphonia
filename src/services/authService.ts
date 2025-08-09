@@ -62,17 +62,31 @@ class AuthService {
     try {
       const token = this.getToken();
       if (token) {
-        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/logout`, {
+        console.log('🔄 Attempting logout...');
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
+            'Content-Type': 'application/json',
           },
         });
+        
+        console.log('Logout response status:', response.status);
+        
+        if (!response.ok) {
+          // Log the error but don't throw - we still want to clear local storage
+          const errorText = await response.text().catch(() => 'Unknown error');
+          console.warn('Logout API call failed:', response.status, errorText);
+        } else {
+          console.log('✅ Logout successful');
+        }
       }
     } catch (error) {
-      console.error('Logout request failed:', error);
+      console.error('❌ Logout request failed:', error);
+      // Don't throw - we still want to clear the token locally
     } finally {
+      console.log('🧹 Clearing local authentication data...');
       this.clearToken();
     }
   }
@@ -109,6 +123,71 @@ class AuthService {
       console.error('❌ Auth check failed:', error);
       this.clearToken();
       return null;
+    }
+  }
+
+  async getUserData() {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/user`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user data: ${response.status} ${response.statusText}`);
+      }
+
+      const userData = await response.json();
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      console.error('❌ Failed to get user data:', error);
+      throw error;
+    }
+  }
+
+  async updateProfile(formData: FormData) {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/user/profile`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        body: formData, // FormData sets its own Content-Type with boundary
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update profile: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      // Update localStorage with new user data
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+      } else if (result.data) {
+        localStorage.setItem('user', JSON.stringify(result.data));
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to update profile:', error);
+      throw error;
     }
   }
 }

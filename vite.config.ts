@@ -20,4 +20,11 @@ export default defineConfig({
   define: {
     global: "globalThis",
   },
+  // Better source map handling for development
+  css: {
+    devSourcemap: true,
+  },
+  esbuild: {
+    sourcemap: 'external',
+  },
 });

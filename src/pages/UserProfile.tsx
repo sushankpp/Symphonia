@@ -32,7 +32,7 @@ interface UserProfileData {
 }
 
 const UserProfile = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -59,13 +59,21 @@ const UserProfile = () => {
   const fetchUserProfile = async () => {
     try {
       console.log("🔄 Fetching user profile from API...");
-      const userData = await authService.getUserData();
+      const response = await authService.getUserData();
       
-      console.log("📥 API Response - userData:", userData);
-      console.log("📥 API Response - userData type:", typeof userData);
-      console.log("📥 API Response - userData keys:", userData ? Object.keys(userData) : "null");
+      console.log("📥 API Response - response:", response);
+      console.log("📥 API Response - response type:", typeof response);
+      console.log("📥 API Response - response keys:", response ? Object.keys(response) : "null");
       
-      if (userData) {
+      // Handle different response structures - sometimes the user data is nested
+      let userData = response;
+      if (response && response.user) {
+        userData = response.user;
+      } else if (response && response.data) {
+        userData = response.data;
+      }
+      
+      if (userData && typeof userData === 'object') {
         console.log("✅ Setting profile data:", userData);
         setProfileData(userData);
         setEditForm({
@@ -85,8 +93,9 @@ const UserProfile = () => {
           dob: userData.dob || "",
         });
       } else {
-        console.error("❌ No user data received from API");
-        throw new Error("Failed to fetch user profile - no user data received");
+        console.error("❌ No valid user data received from API");
+        console.error("❌ Expected object with user properties, got:", userData);
+        throw new Error("Failed to fetch user profile - no valid user data received");
       }
     } catch (err: any) {
       console.error("❌ fetchUserProfile error:", err);

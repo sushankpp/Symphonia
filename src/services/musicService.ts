@@ -1,4 +1,4 @@
-import { authService } from './authService';
+// import { authService } from './authService';
 
 class MusicService {
   private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -54,27 +54,46 @@ class MusicService {
 
   async getRecommendations(authHeaders: HeadersInit): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseURL}/api/recommendations`, {
-        method: 'GET',
-        headers: authHeaders,
-      });
+      // Add timeout and better error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      if (!response.ok) {
-        console.error('Recommendations response not ok:', response.status, response.statusText);
-        // Try to get error details
-        try {
-          const errorData = await response.text();
-          console.error('Recommendations error details:', errorData);
-        } catch (e) {
-          console.error('Could not read error response');
+      try {
+        const response = await fetch(`${this.baseURL}/api/recommendations`, {
+          method: 'GET',
+          headers: authHeaders,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.error('Recommendations response not ok:', response.status, response.statusText);
+          // Try to get error details
+          try {
+            const errorData = await response.text();
+            console.error('Recommendations error details:', errorData);
+          } catch (e) {
+            console.error('Could not read error response');
+          }
+          throw new Error('Failed to fetch recommendations');
         }
-        throw new Error('Failed to fetch recommendations');
-      }
 
-      const data = await response.json();
-      return data.recommendations || data;
+        const data = await response.json();
+        return data.recommendations || data;
+      } catch (fetchError: unknown) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.log('Recommendations request timed out');
+        }
+        throw fetchError;
+      }
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      if (error instanceof TypeError && error.message.includes('NetworkError')) {
+        console.log('Network error when fetching recommendations - API server may not be running');
+      } else {
+        console.error('Error fetching recommendations:', error);
+      }
       // Return empty array instead of throwing - API endpoint might not exist yet
       console.log('Recommendations API not available, returning empty array');
       return [];
@@ -83,31 +102,51 @@ class MusicService {
 
   async getTopRecommendations(authHeaders: HeadersInit, limit: number = 5): Promise<any[]> {
     try {
-      // Try the dedicated top-recommendations endpoint first
-      let response = await fetch(`${this.baseURL}/api/top-recommendations`, {
-        method: 'GET',
-        headers: authHeaders,
-      });
+      // Add timeout and better error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      // If that fails, try the recommendations endpoint with query params
-      if (!response.ok) {
-        console.log('Top recommendations endpoint not found, trying recommendations with query params...');
-        response = await fetch(`${this.baseURL}/api/recommendations?top=true&limit=${limit}`, {
+      try {
+        // Try the dedicated top-recommendations endpoint first
+        let response = await fetch(`${this.baseURL}/api/top-recommendations`, {
           method: 'GET',
           headers: authHeaders,
+          signal: controller.signal,
         });
-      }
 
-      if (!response.ok) {
-        console.error('Top recommendations response not ok:', response.status, response.statusText);
-        throw new Error('Failed to fetch top recommendations');
-      }
+        // If that fails, try the recommendations endpoint with query params
+        if (!response.ok) {
+          console.log('Top recommendations endpoint not found, trying recommendations with query params...');
+          response = await fetch(`${this.baseURL}/api/recommendations?top=true&limit=${limit}`, {
+            method: 'GET',
+            headers: authHeaders,
+            signal: controller.signal,
+          });
+        }
 
-      const data = await response.json();
-      // Handle both new structure (with top_recommendations property) and old structure
-      return data.top_recommendations || data.recommendations || data;
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.error('Top recommendations response not ok:', response.status, response.statusText);
+          throw new Error('Failed to fetch top recommendations');
+        }
+
+        const data = await response.json();
+        // Handle both new structure (with top_recommendations property) and old structure
+        return data.top_recommendations || data.recommendations || data;
+      } catch (fetchError: unknown) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.log('Top recommendations request timed out');
+        }
+        throw fetchError;
+      }
     } catch (error) {
-      console.error('Error fetching top recommendations:', error);
+      if (error instanceof TypeError && error.message.includes('NetworkError')) {
+        console.log('Network error when fetching top recommendations - API server may not be running');
+      } else {
+        console.error('Error fetching top recommendations:', error);
+      }
       // Return empty array instead of throwing - API endpoint might not exist yet
       console.log('Top recommendations API not available, returning empty array');
       return [];
