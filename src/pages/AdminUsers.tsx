@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { adminService, User, UsersResponse } from "../services/adminService";
+import { adminService } from "../services/adminService";
 import { useSearchParams } from "react-router-dom";
 import SidebarHeader from "../components/ui/headers/SidebarHeader";
 import TopHeader from "../components/ui/headers/TopHeader";
+import { convertProfilePictureUrl } from "../utils/audioDuration";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  created_at: string;
+  profile_picture?: string;
+  profile_picture_url?: string;
+  bio?: string;
+  ratings_given?: any[];
+  uploaded_music?: any[];
+}
 
 const AdminUsers: React.FC = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -39,21 +54,22 @@ const AdminUsers: React.FC = () => {
       if (roleFilter) params.role = roleFilter;
       if (searchQuery) params.search = searchQuery;
 
-      const response: UsersResponse = await adminService.getUsers(params);
+      const response = await adminService.getUsers(params);
       console.log("Full response:", response);
-      console.log("Response data:", response.data);
-      console.log("Response type:", typeof response);
       
-      // Handle different response structures
-      let userData = response.data;
-      if (!userData && response.users) {
-        userData = response.users; // Fallback if backend returns 'users' instead of 'data'
+      // Handle the actual API response structure
+      if (response.success && response.users) {
+        const users = response.users.data || [];
+        setUsers(users);
+        setCurrentPage(response.users.current_page || 1);
+        setTotalPages(response.users.last_page || 1);
+        setTotal(response.users.total || 0);
+      } else {
+        setUsers([]);
+        setCurrentPage(1);
+        setTotalPages(1);
+        setTotal(0);
       }
-      
-      setUsers(Array.isArray(userData) ? userData : []);
-      setCurrentPage(response.current_page || 1);
-      setTotalPages(response.last_page || 1);
-      setTotal(response.total || 0);
     } catch (err) {
       console.error("Error fetching users:", err);
       setError(err instanceof Error ? err.message : "Failed to load users");
@@ -234,19 +250,19 @@ const AdminUsers: React.FC = () => {
                   {users && users.length > 0
                     ? users.map((user) => (
                         <div key={user.id} className="table-row">
-                          <div className="cell user-cell">
-                            <div className="user-avatar">
-                              {user.profile_picture ? (
-                                <img
-                                  src={user.profile_picture}
-                                  alt={user.name}
-                                />
-                              ) : (
-                                <div className="avatar-placeholder">
-                                  {user.name.charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                            </div>
+                                                     <div className="cell user-cell">
+                             <div className="user-avatar">
+                               {user.profile_picture ? (
+                                 <img
+                                   src={convertProfilePictureUrl(user.profile_picture, import.meta.env.VITE_API_URL || 'http://localhost:8000')}
+                                   alt={user.name}
+                                 />
+                               ) : (
+                                 <div className="avatar-placeholder">
+                                   {user.name.charAt(0).toUpperCase()}
+                                 </div>
+                               )}
+                             </div>
                             <div className="user-info">
                               <h4>{user.name}</h4>
                               <p>{user.email}</p>

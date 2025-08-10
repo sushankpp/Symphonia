@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import { useAuth } from "../contexts/AuthContext";
@@ -31,7 +32,8 @@ interface UploadedTrack {
   file_path?: string;
   song_cover?: string;
   uploaded_at?: string;
-  status?: "pending" | "uploaded" | "processing";
+  status?: "pending" | "uploaded" | "processing" | "approved" | "rejected";
+  upload_status?: "pending" | "uploaded" | "processing" | "approved" | "rejected";
   file_size?: string;
   compression_stats?: CompressionStats;
 }
@@ -218,14 +220,61 @@ const UploadMusic: React.FC = () => {
         const res = await fetch(`${API_URL}/api/uploaded-music`);
         const data = await res.json();
 
-        setRecentUploads(data);
         console.log("Recent uploads fetched:", data);
+        console.log("First upload item structure:", data[0]);
+        
+        // Debug: Check what fields are available
+        if (data && data.length > 0) {
+          const firstItem = data[0];
+          console.log("Available fields in first item:", Object.keys(firstItem));
+          console.log("Status field value:", firstItem.status);
+          console.log("Upload status field value:", firstItem.upload_status);
+        }
+
+        // Filter to only show approved uploads
+        const approvedUploads = data.filter((upload: UploadedTrack) => {
+          const status = upload.status || upload.upload_status;
+          return status === 'approved' || status === 'uploaded';
+        });
+
+        console.log("Filtered approved uploads:", approvedUploads);
+        setRecentUploads(approvedUploads);
       } catch (err) {
         console.error("Failed to fetch recent uploads:", err);
         setRecentUploads([]);
       }
     };
     fetchUploads();
+  }, [API_URL]);
+
+  // Refresh recent uploads when the component becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        const fetchUploads = async () => {
+          try {
+            const res = await fetch(`${API_URL}/api/uploaded-music`);
+            const data = await res.json();
+            
+            // Filter to only show approved uploads
+            const approvedUploads = data.filter((upload: UploadedTrack) => {
+              const status = upload.status || upload.upload_status;
+              return status === 'approved' || status === 'uploaded';
+            });
+            
+            setRecentUploads(approvedUploads);
+          } catch (err) {
+            console.error("Failed to refresh recent uploads:", err);
+          }
+        };
+        fetchUploads();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [API_URL]);
 
   const handleUpload = async () => {
@@ -286,14 +335,11 @@ const UploadMusic: React.FC = () => {
         const result = await response.json();
         console.log("Upload response:", result);
 
-        // Show compression statistics
-        const stats = result.compression_stats;
-        const compressionMessage = `Music uploaded successfully! 
-          Original: ${stats.original_size} → Compressed: ${stats.compressed_size} 
-          (${stats.compression_ratio}% smaller, saved ${stats.space_saved})`;
+        // Show approval message instead of compression stats
+        const approvalMessage = `🎵 Music uploaded successfully! Your upload is now pending admin approval. You'll be notified once it's reviewed. You can track the status of your upload requests in your artist dashboard.`;
 
-        setUploadMessage(compressionMessage);
-        console.log(compressionMessage);
+        setUploadMessage(approvalMessage);
+        console.log(approvalMessage);
 
         setSelectedFile(null);
         setSelectedCoverImage(null);
@@ -308,6 +354,11 @@ const UploadMusic: React.FC = () => {
         if (fileInputRef.current) fileInputRef.current.value = "";
         if (coverInputRef.current) coverInputRef.current.value = "";
         console.log("Upload result:", result);
+
+        // Redirect to upload requests page after 3 seconds
+        setTimeout(() => {
+          window.location.href = '/artist/upload-requests';
+        }, 3000);
       } else {
         const error = await response.json();
         setUploadMessage(`Upload failed: ${error.message || "Unknown error"}`);
@@ -371,6 +422,17 @@ const UploadMusic: React.FC = () => {
                     isUploading
                   }
                 />
+
+                {uploadMessage && uploadMessage.includes('pending admin approval') && (
+                  <div className="upload-success-actions">
+                    <Link to="/artist/upload-requests" className="view-requests-btn">
+                      📋 View My Upload Requests
+                    </Link>
+                    <Link to="/artist/dashboard" className="dashboard-btn">
+                      📊 Go to Dashboard
+                    </Link>
+                  </div>
+                )}
               </>
             ) : (
               <div className="access-denied">
@@ -380,8 +442,28 @@ const UploadMusic: React.FC = () => {
             )}
           </div>
 
-          {/* Recent Uploads - visible to all authenticated users */}
-          {isAuthenticated && <RecentUploads uploads={recentUploads} />}
+                  {/* Recent Uploads - visible to all authenticated users */}
+        {isAuthenticated && (
+          <RecentUploads 
+            uploads={recentUploads} 
+            onRefresh={async () => {
+              try {
+                const res = await fetch(`${API_URL}/api/uploaded-music`);
+                const data = await res.json();
+                
+                // Filter to only show approved uploads
+                const approvedUploads = data.filter((upload: UploadedTrack) => {
+                  const status = upload.status || upload.upload_status;
+                  return status === 'approved' || status === 'uploaded';
+                });
+                
+                setRecentUploads(approvedUploads);
+              } catch (err) {
+                console.error("Failed to refresh recent uploads:", err);
+              }
+            }}
+          />
+        )}
         </div>
       </main>
     </>

@@ -1,0 +1,503 @@
+// Artist Upload Requests Styles
+
+.artist-upload-requests {
+  padding: 2rem 0;
+}
+
+.artist-upload-requests .page-header {
+  margin-bottom: 2rem;
+}
+
+.artist-upload-requests .page-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.artist-upload-requests .page-header p {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.artist-upload-requests .requests-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.artist-upload-requests .requests-stats .stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.artist-upload-requests .requests-stats .stat-item .stat-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 0.25rem;
+}
+
+.artist-upload-requests .requests-stats .stat-item .stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.artist-upload-requests .filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.artist-upload-requests .filter-controls span {
+  font-weight: 500;
+  color: #374151;
+  margin-right: 0.5rem;
+}
+
+.artist-upload-requests .filter-controls .filter-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.artist-upload-requests .filter-controls .filter-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.artist-upload-requests .filter-controls .filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.artist-upload-requests .error-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  color: #dc2626;
+}
+
+.artist-upload-requests .error-message button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #dc2626;
+  padding: 0;
+}
+
+.artist-upload-requests .loading-container {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.artist-upload-requests .loading-container .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.artist-upload-requests .requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.artist-upload-requests .request-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.artist-upload-requests .request-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.artist-upload-requests .request-card .request-cover {
+  position: relative;
+  height: 180px;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+
+.artist-upload-requests .request-card .request-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.artist-upload-requests .request-card .request-cover .placeholder-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 3rem;
+  color: #9ca3af;
+}
+
+.artist-upload-requests .request-card .request-info {
+  padding: 1.25rem;
+}
+
+.artist-upload-requests .request-card .request-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.artist-upload-requests .request-card .request-info .genre {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #f3f4f6;
+  color: #374151;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.artist-upload-requests .request-card .request-info .description {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.artist-upload-requests .request-card .request-info .request-meta {
+  margin-bottom: 1rem;
+}
+
+.artist-upload-requests .request-card .request-info .request-meta .request-date,
+.artist-upload-requests .request-card .request-info .request-meta .update-date {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-bottom: 0.25rem;
+}
+
+.artist-upload-requests .request-card .request-info .request-status {
+  margin-bottom: 1rem;
+}
+
+.artist-upload-requests .request-card .request-info .request-status .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.artist-upload-requests .request-card .request-info .request-status .status-badge.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.artist-upload-requests .request-card .request-info .request-status .status-badge.approved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.artist-upload-requests .request-card .request-info .request-status .status-badge.rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.artist-upload-requests .request-card .request-info .rejection-notes {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+}
+
+.artist-upload-requests .request-card .request-info .rejection-notes strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.artist-upload-requests .request-card .request-info .rejection-notes p {
+  margin: 0;
+  color: #991b1b;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.artist-upload-requests .request-card .request-info .request-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.artist-upload-requests .request-card .request-info .request-actions .action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artist-upload-requests .request-card .request-info .request-actions .action-btn.cancel-btn {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.artist-upload-requests .request-card .request-info .request-actions .action-btn.cancel-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.artist-upload-requests .request-card .request-info .request-actions .action-btn.view-btn {
+  background: #dbeafe;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.artist-upload-requests .request-card .request-info .request-actions .action-btn.view-btn:hover {
+  background: #bfdbfe;
+  border-color: #93c5fd;
+}
+
+.artist-upload-requests .no-requests {
+  text-align: center;
+  padding: 4rem 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.artist-upload-requests .no-requests .no-requests-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.artist-upload-requests .no-requests h3 {
+  margin: 0 0 0.75rem 0;
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.artist-upload-requests .no-requests p {
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+}
+
+.artist-upload-requests .no-requests .upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.artist-upload-requests .no-requests .upload-btn:hover {
+  background: #5a67d8;
+  transform: translateY(-1px);
+}
+
+.artist-upload-requests .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.artist-upload-requests .pagination .pagination-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.artist-upload-requests .pagination .pagination-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.artist-upload-requests .pagination .pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.artist-upload-requests .pagination .pagination-info {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.artist-upload-requests .quick-actions {
+  margin-top: 3rem;
+}
+
+.artist-upload-requests .quick-actions h3 {
+  margin: 0 0 1.5rem 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.artist-upload-requests .quick-actions .actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.artist-upload-requests .quick-actions .action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.artist-upload-requests .quick-actions .action-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  border-color: #667eea;
+}
+
+.artist-upload-requests .quick-actions .action-card .action-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.artist-upload-requests .quick-actions .action-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.artist-upload-requests .quick-actions .action-card p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .artist-upload-requests .requests-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .artist-upload-requests .requests-stats .stat-item {
+    flex: none;
+  }
+
+  .artist-upload-requests .filter-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .artist-upload-requests .requests-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .artist-upload-requests .quick-actions .actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .artist-upload-requests .pagination {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .artist-upload-requests .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .artist-upload-requests .request-card .request-info {
+    padding: 1rem;
+  }
+
+  .artist-upload-requests .request-card .request-info .request-actions {
+    flex-direction: column;
+  }
+
+  .artist-upload-requests .request-card .request-info .request-actions .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

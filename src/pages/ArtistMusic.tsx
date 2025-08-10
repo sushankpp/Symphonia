@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { artistService, ArtistMusic, MusicResponse } from '../services/artistService';
+import { artistService, MusicItem, MusicWithRequestsResponse } from '../services/artistService';
 import { Link } from 'react-router-dom';
 import SidebarHeader from '../components/ui/headers/SidebarHeader';
 import TopHeader from '../components/ui/headers/TopHeader';
 
+
 const ArtistMusicPage: React.FC = () => {
   const { user, logout } = useAuth();
-  const [music, setMusic] = useState<ArtistMusic[]>([]);
+  const [music, setMusic] = useState<MusicItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingTrack, setEditingTrack] = useState<ArtistMusic | null>(null);
+  const [editingTrack, setEditingTrack] = useState<MusicItem | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   
   // Pagination and sorting
@@ -20,19 +21,21 @@ const ArtistMusicPage: React.FC = () => {
   const [perPage] = useState(15);
   const [sortBy, setSortBy] = useState<'created_at' | 'views' | 'rating'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   useEffect(() => {
     fetchMusic();
-  }, [currentPage, sortBy, sortOrder]);
+  }, [currentPage, sortBy, sortOrder, statusFilter]);
 
   const fetchMusic = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response: MusicResponse = await artistService.getMusic({
+      const response: MusicWithRequestsResponse = await artistService.getMusicWithRequests({
         per_page: perPage,
         sort_by: sortBy,
         sort_order: sortOrder,
+        status: statusFilter,
       });
       
       console.log('Music API Response:', response);
@@ -60,7 +63,12 @@ const ArtistMusicPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleEditTrack = (track: ArtistMusic) => {
+  const handleEditTrack = (track: MusicItem) => {
+    // Only allow editing approved tracks
+    if (track.upload_status !== 'approved') {
+      setError('Only approved tracks can be edited');
+      return;
+    }
     setEditingTrack({ ...track });
     setShowEditModal(true);
   };
@@ -70,12 +78,15 @@ const ArtistMusicPage: React.FC = () => {
     if (!editingTrack) return;
 
     try {
-      const updatedTrack = await artistService.updateSong(editingTrack.id, {
-        title: editingTrack.title,
-        genre: editingTrack.genre,
-      });
-      
-      setMusic(music.map(track => track.id === updatedTrack.id ? updatedTrack : track));
+      // Only update if it's an approved track (has numeric ID)
+      if (typeof editingTrack.id === 'number') {
+        const updatedTrack = await artistService.updateSong(editingTrack.id, {
+          title: editingTrack.title,
+          genre: editingTrack.genre,
+        });
+        
+        setMusic(music.map(track => track.id === editingTrack.id ? { ...track, ...updatedTrack, id: editingTrack.id } : track));
+      }
       setEditingTrack(null);
       setShowEditModal(false);
     } catch (err) {
@@ -83,17 +94,34 @@ const ArtistMusicPage: React.FC = () => {
     }
   };
 
-  const handleDeleteTrack = async (trackId: number) => {
+  const handleDeleteTrack = async (trackId: string | number) => {
     if (!confirm('Are you sure you want to delete this track? This action cannot be undone.')) {
       return;
     }
 
     try {
-      await artistService.deleteSong(trackId);
+      // Only delete approved tracks (numeric ID)
+      if (typeof trackId === 'number') {
+        await artistService.deleteSong(trackId);
+      }
       setMusic(music.filter(track => track.id !== trackId));
       setTotal(total - 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete track');
+    }
+  };
+
+  const handleCancelRequest = async (requestId: number) => {
+    if (!confirm('Are you sure you want to cancel this upload request?')) {
+      return;
+    }
+
+    try {
+      await artistService.cancelUploadRequest(requestId);
+      setMusic(music.filter(track => track.request_id !== requestId));
+      setTotal(total - 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to cancel upload request');
     }
   };
 
@@ -157,8 +185,35 @@ const ArtistMusicPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Sort Controls */}
+      {/* Controls */}
       <div className="controls-section">
+        <div className="filter-controls">
+          <span>Filter by status:</span>
+          <button
+            className={`filter-btn ${statusFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('all')}
+          >
+            All
+          </button>
+          <button
+            className={`filter-btn ${statusFilter === 'pending' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('pending')}
+          >
+            Pending
+          </button>
+          <button
+            className={`filter-btn ${statusFilter === 'approved' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('approved')}
+          >
+            Approved
+          </button>
+          <button
+            className={`filter-btn ${statusFilter === 'rejected' ? 'active' : ''}`}
+            onClick={() => setStatusFilter('rejected')}
+          >
+            Rejected
+          </button>
+        </div>
         <div className="sort-controls">
           <span>Sort by:</span>
           <button
@@ -207,10 +262,13 @@ const ArtistMusicPage: React.FC = () => {
                       🎵
                     </div>
                   )}
+                  
                   <div className="music-overlay">
-                    <Link to={`/artist/music/${track.id}/stats`} className="stats-btn">
-                      📊 View Stats
-                    </Link>
+                    {track.upload_status === 'approved' && (
+                      <Link to={`/artist/music/${track.id}/stats`} className="stats-btn">
+                        📊 View Stats
+                      </Link>
+                    )}
                   </div>
                 </div>
 
@@ -218,45 +276,64 @@ const ArtistMusicPage: React.FC = () => {
                   <h3>{track.title}</h3>
                   <p className="genre">{track.genre}</p>
                   
-                  <div className="music-stats">
-                    <div className="stat-item">
-                      <span className="stat-icon">👀</span>
-                      <span>{formatNumber(track.views)} views</span>
+                  {track.upload_status === 'approved' && (
+                    <div className="music-stats">
+                      <div className="stat-item">
+                        <span className="stat-icon">👀</span>
+                        <span>{formatNumber(track.views)} views</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-icon">⭐</span>
+                        <span>
+                          {track.ratings_avg_rating ? track.ratings_avg_rating.toFixed(1) : '0.0'}/5 
+                          ({track.ratings_count || 0})
+                        </span>
+                      </div>
                     </div>
-                    <div className="stat-item">
-                      <span className="stat-icon">⭐</span>
-                      <span>
-                        {track.ratings_avg_rating ? track.ratings_avg_rating.toFixed(1) : '0.0'}/5 
-                        ({track.ratings_count || 0})
-                      </span>
-                    </div>
-                  </div>
+                  )}
 
                   <div className="music-meta">
                     <span className="upload-date">
-                      Uploaded: {new Date(track.created_at).toLocaleDateString()}
+                      {track.upload_status === 'pending' ? 'Requested' : 'Uploaded'}: {new Date(track.created_at).toLocaleDateString()}
                     </span>
                   </div>
 
                   <div className="music-actions">
-                    <button
-                      onClick={() => handleEditTrack(track)}
-                      className="action-btn edit-btn"
-                    >
-                      Edit
-                    </button>
-                    <Link
-                      to={`/artist/music/${track.id}/stats`}
-                      className="action-btn stats-btn"
-                    >
-                      Stats
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteTrack(track.id)}
-                      className="action-btn delete-btn"
-                    >
-                      Delete
-                    </button>
+                    {track.upload_status === 'approved' && (
+                      <>
+                        <button
+                          onClick={() => handleEditTrack(track)}
+                          className="action-btn edit-btn"
+                        >
+                          Edit
+                        </button>
+                        <Link
+                          to={`/artist/music/${track.id}/stats`}
+                          className="action-btn stats-btn"
+                        >
+                          Stats
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteTrack(track.id)}
+                          className="action-btn delete-btn"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                    {track.upload_status === 'pending' && track.request_id && (
+                      <button
+                        onClick={() => handleCancelRequest(track.request_id!)}
+                        className="action-btn cancel-btn"
+                      >
+                        Cancel Request
+                      </button>
+                    )}
+                    {track.upload_status === 'rejected' && (
+                      <div className="rejection-reason">
+                        <small>Rejection reason: {track.admin_notes}</small>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

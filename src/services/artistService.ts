@@ -16,20 +16,21 @@ export interface ArtistDashboardStats {
   }>;
   recent_activity: Array<{
     id: number;
-    user_id: number;
-    song_id: number;
+    type?: string;
+    rating?: number;
+    action?: string;
     created_at: string;
-    updated_at: string;
-    user: {
+    updated_at?: string;
+    user?: {
       id: number;
       name: string;
-      email: string;
+      email?: string;
     };
-    song: {
+    song?: {
       id: number;
       title: string;
-      artist_id: number;
-      views: number;
+      artist_id?: number;
+      views?: number;
     };
   }>;
   top_rated_tracks: Array<{
@@ -37,6 +38,11 @@ export interface ArtistDashboardStats {
     title: string;
     views: number;
     ratings_count: number;
+    avg_rating?: string;
+    rating_details?: {
+      count: number;
+      average: number;
+    };
     ratings: Array<{
       id: number;
       rating: number;
@@ -48,6 +54,11 @@ export interface ArtistDashboardStats {
     title: string;
     views: number;
     ratings_count: number;
+    avg_rating?: string;
+    rating_details?: {
+      count: number;
+      average: number;
+    };
   }>;
 }
 
@@ -69,6 +80,53 @@ export interface ArtistMusic {
   album?: {
     id: number;
     title: string;
+  };
+}
+
+// New interfaces for upload approval system
+export interface MusicUploadRequest {
+  id: number;
+  title: string;
+  song_title?: string;
+  genre: string;
+  description?: string;
+  lyrics?: string;
+  release_date?: string;
+  song_cover_url?: string;
+  song_cover_path?: string;
+  file_url: string;
+  file_path?: string;
+  upload_status: 'pending' | 'approved' | 'rejected';
+  status?: 'pending' | 'approved' | 'rejected';
+  admin_notes?: string;
+  created_at: string;
+  updated_at: string;
+  artist?: {
+    id: number;
+    artist_name: string;
+  };
+  song_artist?: {
+    id: number;
+    artist_name: string;
+  };
+}
+
+export interface MusicItem {
+  id: string; // "request_X" for requests, number for approved
+  title: string;
+  genre: string;
+  upload_status: 'pending' | 'approved' | 'rejected';
+  request_id?: number; // null for approved music
+  admin_notes?: string;
+  song_cover_url: string;
+  file_url: string;
+  views: number; // 0 for requests
+  ratings_count: number; // 0 for requests
+  ratings_avg_rating?: number;
+  created_at: string;
+  artist: {
+    id: number;
+    artist_name: string;
   };
 }
 
@@ -147,6 +205,39 @@ export interface SongStatsResponse {
   all_ratings: SongStats['all_ratings'];
 }
 
+// New response interfaces for upload approval system
+export interface UploadRequestsResponse {
+  success: boolean;
+  requests: {
+    current_page: number;
+    data: MusicUploadRequest[];
+    total: number;
+    per_page: number;
+    last_page: number;
+  };
+}
+
+export interface MusicWithRequestsResponse {
+  success: boolean;
+  music: {
+    current_page: number;
+    data: MusicItem[];
+    total: number;
+    per_page: number;
+  };
+}
+
+export interface AdminUploadRequestsResponse {
+  success: boolean;
+  requests: {
+    current_page: number;
+    data: MusicUploadRequest[];
+    total: number;
+    per_page: number;
+    last_page: number;
+  };
+}
+
 class ArtistService {
   // Dashboard
   async getDashboardStats(): Promise<DashboardResponse> {
@@ -180,6 +271,66 @@ class ArtistService {
     }
     
     return await response.json();
+  }
+
+  // New method to get music with upload requests
+  async getMusicWithRequests(params: {
+    per_page?: number;
+    sort_by?: 'created_at' | 'views' | 'rating';
+    sort_order?: 'asc' | 'desc';
+    status?: 'all' | 'pending' | 'approved' | 'rejected';
+  } = {}): Promise<MusicWithRequestsResponse> {
+    const queryParams = new URLSearchParams();
+    
+    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+    if (params.sort_by) queryParams.append('sort_by', params.sort_by);
+    if (params.sort_order) queryParams.append('sort_order', params.sort_order);
+    if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/artist/music?${queryParams.toString()}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch artist music with requests');
+    }
+    
+    return await response.json();
+  }
+
+  // Upload Requests Management
+  async getUploadRequests(params: {
+    per_page?: number;
+    status?: 'all' | 'pending' | 'approved' | 'rejected';
+  } = {}): Promise<UploadRequestsResponse> {
+    const queryParams = new URLSearchParams();
+    
+    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+    if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/music-upload-requests?${queryParams.toString()}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch upload requests');
+    }
+    
+    return await response.json();
+  }
+
+  async cancelUploadRequest(requestId: number): Promise<void> {
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/music-upload-requests/${requestId}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to cancel upload request');
+    }
   }
 
   async getSongStats(id: number): Promise<SongStatsResponse> {

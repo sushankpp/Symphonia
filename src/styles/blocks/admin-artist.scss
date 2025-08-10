@@ -1510,21 +1510,28 @@
 .month-values {
   margin-top: 0.5rem;
   text-align: center;
-  font-size: 0.7rem;
-  color: #888;
+  font-size: 0.75rem;
+  color: #b0b0b0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .month-values span {
   display: block;
-  margin-bottom: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
 }
 
 .month-values .plays {
   color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
 }
 
 .month-values .ratings {
   color: #00d4aa;
+  background: rgba(0, 212, 170, 0.1);
 }
 
 .chart-legend {
@@ -1605,6 +1612,29 @@
   display: flex;
   gap: 1rem;
   font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.track-stats .rating {
+  color: #ffb700;
+  background: rgba(255, 183, 0, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.track-stats .views {
+  color: #00d4aa;
+  background: rgba(0, 212, 170, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .rating {

@@ -90,6 +90,11 @@ export const convertStorageUrl = (url: string, apiUrl: string): string => {
     return `${apiUrl}/audio.php?file=${filename}&type=album`;
   }
 
+  // Handle temp uploads (for pending upload requests)
+  if (url.startsWith("temp_uploads/")) {
+    return `${apiUrl}/storage/${url}`;
+  }
+
   // Handle cover images
   if (url.includes("/storage/songs_cover/")) {
     const filename = url.split("/storage/songs_cover/")[1];

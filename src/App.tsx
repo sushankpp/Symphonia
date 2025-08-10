@@ -23,6 +23,7 @@ import ArtistDashboard from "./pages/ArtistDashboard.tsx";
 import ArtistMusic from "./pages/ArtistMusic.tsx";
 import ArtistSongStats from "./pages/ArtistSongStats.tsx";
 import RoleRequests from "./pages/RoleRequests.tsx";
+import ArtistUploadRequests from "./pages/ArtistUploadRequests.tsx";
 
 // Simple Login redirect component
 const LoginRedirect = () => {
@@ -73,6 +74,7 @@ function App() {
             <Route path="/artist/dashboard" element={<ArtistDashboard />} />
             <Route path="/artist/music" element={<ArtistMusic />} />
             <Route path="/artist/music/:songId/stats" element={<ArtistSongStats />} />
+            <Route path="/artist/upload-requests" element={<ArtistUploadRequests />} />
             
             {/*role requests*/}
             <Route path="/role-requests" element={<RoleRequests />} />

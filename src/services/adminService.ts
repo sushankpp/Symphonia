@@ -1,342 +1,240 @@
-import { makeAuthenticatedRequest } from "./apiService";
+import { makeAuthenticatedRequest } from './apiService';
+import { MusicUploadRequest, AdminUploadRequestsResponse } from './artistService';
 
-// Ensure API_BASE_URL always includes /api
-const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_BASE_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 
-export interface AdminDashboardStats {
-  total_users: number;
-  total_artists: number;
-  total_admins: number;
-  pending_role_requests: number;
-  recent_users: Array<{
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    created_at: string;
-    status: string;
-  }>;
-  recent_role_requests: Array<{
-    id: number;
-    user: {
-      id: number;
-      name: string;
-      email: string;
-    };
-    requested_role: string;
-    reason: string;
-    status: string;
-    created_at: string;
-  }>;
-}
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-  profile_picture?: string;
-  created_at: string;
-  email_verified_at?: string;
-  gender?: string;
-  dob?: string;
-  phone?: string;
-  bio?: string;
-  address?: string;
-  ratings_given?: Array<{
-    id: number;
-    rating: number;
-    comment?: string;
-    song: {
-      id: number;
-      title: string;
-      artist: {
-        name: string;
-      };
-    };
-    created_at: string;
-  }>;
-  uploaded_music?: Array<{
-    id: number;
-    title: string;
-    genre: string;
-    created_at: string;
-    total_plays: number;
-    average_rating: number;
-  }>;
-}
-
-export interface RoleChangeRequest {
-  id: number;
-  user_id: number;
-  requested_role: string;
-  current_role: string;
-  reason: string;
-  status: "pending" | "approved" | "rejected" | "cancelled";
-  admin_notes?: string;
-  created_at: string;
-  updated_at: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    profile_picture?: string;
-  };
-}
-
-export interface UsersResponse {
-  data?: User[];
-  users?: User[]; // Fallback property in case backend returns 'users' instead of 'data'
-  current_page: number;
-  per_page: number;
-  total: number;
-  last_page: number;
-}
-
-export interface RoleRequestsResponse {
-  data?: RoleChangeRequest[];
-  role_requests?: RoleChangeRequest[]; // Fallback property in case backend returns 'role_requests' instead of 'data'
-  current_page: number;
-  per_page: number;
-  total: number;
-  last_page: number;
-}
-
 class AdminService {
-  // Dashboard
-  async getDashboardStats(): Promise<AdminDashboardStats> {
+  // Dashboard Stats
+  async getDashboardStats(): Promise<any> {
     const response = await makeAuthenticatedRequest(
       `${API_BASE_URL}/admin/dashboard`
     );
-
+    
     if (!response.ok) {
-      throw new Error("Failed to fetch dashboard stats");
-    }
-
-    const result = await response.json();
-    console.log("Dashboard stats raw response:", result);
-    
-    // Handle the response structure based on what the backend actually returns
-    if (result.success && result.stats) {
-      return result.stats;
-    } else if (result.stats) {
-      return result.stats;
-    } else if (result.data) {
-      return result.data;
+      throw new Error('Failed to fetch dashboard stats');
     }
     
-    // If none of the above, return the whole result (fallback)
-    return result;
+    return await response.json();
   }
 
   // User Management
-  async getUsers(
-    params: {
-      page?: number;
-      per_page?: number;
-      role?: string;
-      search?: string;
-    } = {}
-  ): Promise<UsersResponse> {
+  async getUsers(params: {
+    per_page?: number;
+    search?: string;
+    role?: string;
+  } = {}): Promise<any> {
     const queryParams = new URLSearchParams();
-
-    if (params.page) queryParams.append("page", params.page.toString());
-    if (params.per_page)
-      queryParams.append("per_page", params.per_page.toString());
-    if (params.role) queryParams.append("role", params.role);
-    if (params.search) queryParams.append("search", params.search);
+    
+    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+    if (params.search) queryParams.append('search', params.search);
+    if (params.role) queryParams.append('role', params.role);
 
     const response = await makeAuthenticatedRequest(
       `${API_BASE_URL}/admin/users?${queryParams.toString()}`
     );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch users");
-    }
-
-    const result = await response.json();
-    console.log("Admin users raw response:", result);
     
-    // Handle different response structures
-    if (result.success && result.users) {
-      // If the response has { success: true, users: { data: [...], ... } }
-      return {
-        data: result.users.data || [],
-        current_page: result.users.current_page || 1,
-        per_page: result.users.per_page || 15,
-        total: result.users.total || 0,
-        last_page: result.users.last_page || 1,
-      };
+    if (!response.ok) {
+      throw new Error('Failed to fetch users');
     }
     
-    // If it's already in the expected format, return as is
-    return result;
+    return await response.json();
   }
 
-  async getUserById(id: number): Promise<User> {
+  async updateUserRole(userId: number, role: string): Promise<any> {
     const response = await makeAuthenticatedRequest(
-      `${API_BASE_URL}/admin/users/${id}`
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch user details");
-    }
-
-    const result = await response.json();
-    console.log("User: " + result.data);
-    return result.data;
-  }
-
-  async updateUser(
-    id: number,
-    data: {
-      name?: string;
-      email?: string;
-      role?: string;
-      status?: string;
-    }
-  ): Promise<User> {
-    const response = await makeAuthenticatedRequest(
-      `${API_BASE_URL}/admin/users/${id}`,
+      `${API_BASE_URL}/admin/users/${userId}/role`,
       {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ role }),
       }
     );
-
+    
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Failed to update user");
+      throw new Error(error.message || 'Failed to update user role');
     }
-
-    const result = await response.json();
-    return result.data;
+    
+    return await response.json();
   }
 
-  async deleteUser(id: number): Promise<void> {
+  async deleteUser(userId: number): Promise<void> {
     const response = await makeAuthenticatedRequest(
-      `${API_BASE_URL}/admin/users/${id}`,
+      `${API_BASE_URL}/admin/users/${userId}`,
       {
-        method: "DELETE",
+        method: 'DELETE',
       }
     );
-
+    
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Failed to delete user");
+      throw new Error(error.message || 'Failed to delete user');
     }
   }
 
-  // Role Change Requests
-  async getRoleRequests(
-    params: {
-      page?: number;
-      per_page?: number;
-      status?: string;
-    } = {}
-  ): Promise<RoleRequestsResponse> {
-    const queryParams = new URLSearchParams();
+  async getUserById(userId: number): Promise<any> {
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/admin/users/${userId}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch user details');
+    }
+    
+    return await response.json();
+  }
 
-    if (params.page) queryParams.append("page", params.page.toString());
-    if (params.per_page)
-      queryParams.append("per_page", params.per_page.toString());
-    if (params.status) queryParams.append("status", params.status);
+  async updateUser(userId: number, userData: any): Promise<any> {
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/admin/users/${userId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      }
+    );
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to update user');
+    }
+    
+    return await response.json();
+  }
+
+  // Role Requests Management
+  async getRoleRequests(params: {
+    per_page?: number;
+    status?: 'pending' | 'approved' | 'rejected';
+  } = {}): Promise<any> {
+    const queryParams = new URLSearchParams();
+    
+    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+    if (params.status) queryParams.append('status', params.status);
 
     const response = await makeAuthenticatedRequest(
       `${API_BASE_URL}/admin/role-requests?${queryParams.toString()}`
     );
-
+    
     if (!response.ok) {
-      throw new Error("Failed to fetch role requests");
-    }
-
-    const result = await response.json();
-    console.log("Admin role requests raw response:", result);
-    
-    // Handle the correct response structure: { success: true, requests: { data: [...], current_page: 1, ... } }
-    if (result.success && result.requests) {
-      return {
-        data: result.requests.data || [],
-        current_page: result.requests.current_page || 1,
-        per_page: result.requests.per_page || 15,
-        total: result.requests.total || 0,
-        last_page: result.requests.last_page || 1,
-      };
+      throw new Error('Failed to fetch role requests');
     }
     
-    // Fallback for other response structures
-    return result;
+    return await response.json();
   }
 
-  async approveRoleRequest(
-    id: number,
-    adminNotes?: string
-  ): Promise<RoleChangeRequest> {
+  async approveRoleRequest(requestId: number): Promise<any> {
     const response = await makeAuthenticatedRequest(
-      `${API_BASE_URL}/admin/role-requests/${id}/approve`,
+      `${API_BASE_URL}/admin/role-requests/${requestId}/approve`,
       {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ admin_notes: adminNotes }),
+        method: 'POST',
       }
     );
-
+    
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Failed to approve role request");
-    }
-
-    const result = await response.json();
-    console.log("Approve role request response:", result);
-    
-    // Handle different response structures
-    if (result.success && result.request) {
-      return result.request;
-    } else if (result.data) {
-      return result.data;
+      throw new Error(error.message || 'Failed to approve role request');
     }
     
-    return result;
+    return await response.json();
   }
 
-  async rejectRoleRequest(
-    id: number,
-    adminNotes?: string
-  ): Promise<RoleChangeRequest> {
+  async rejectRoleRequest(requestId: number, reason?: string): Promise<any> {
     const response = await makeAuthenticatedRequest(
-      `${API_BASE_URL}/admin/role-requests/${id}/reject`,
+      `${API_BASE_URL}/admin/role-requests/${requestId}/reject`,
       {
-        method: "PATCH",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ admin_notes: adminNotes }),
+        body: JSON.stringify({ reason }),
       }
     );
-
+    
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || "Failed to reject role request");
+      throw new Error(error.message || 'Failed to reject role request');
     }
+    
+    return await response.json();
+  }
 
-    const result = await response.json();
-    console.log("Reject role request response:", result);
+  // Music Upload Requests Management
+  async getUploadRequests(params: {
+    per_page?: number;
+    status?: 'all' | 'pending' | 'approved' | 'rejected';
+    search?: string;
+  } = {}): Promise<AdminUploadRequestsResponse> {
+    const queryParams = new URLSearchParams();
     
-    // Handle different response structures
-    if (result.success && result.request) {
-      return result.request;
-    } else if (result.data) {
-      return result.data;
+    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
+    if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+    if (params.search) queryParams.append('search', params.search);
+
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/admin/music-upload-requests?${queryParams.toString()}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch upload requests');
     }
     
-    return result;
+    return await response.json();
+  }
+
+  async approveUploadRequest(requestId: number): Promise<any> {
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/admin/music-upload-requests/${requestId}/approve`,
+      {
+        method: 'POST',
+      }
+    );
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to approve upload request');
+    }
+    
+    return await response.json();
+  }
+
+  async rejectUploadRequest(requestId: number, notes: string): Promise<any> {
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/admin/music-upload-requests/${requestId}/reject`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notes }),
+      }
+    );
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to reject upload request');
+    }
+    
+    return await response.json();
+  }
+
+  async getUploadRequestDetails(requestId: number): Promise<MusicUploadRequest> {
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/admin/music-upload-requests/${requestId}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch upload request details');
+    }
+    
+    const result = await response.json();
+    // Handle different possible response structures
+    return result.request || result.data || result;
   }
 }
 

@@ -141,7 +141,8 @@ const ArtistDashboard: React.FC = () => {
                           : "0.0"}
                         /5
                       </h3>
-                      <p>Average Rating</p>
+                      <p>Overall Average Rating</p>
+                      <small>Across all songs</small>
                     </div>
                   </div>
                 </div>
@@ -226,7 +227,9 @@ const ArtistDashboard: React.FC = () => {
                             <h4>{track.title}</h4>
                             <div className="track-stats">
                               <span className="rating">
-                                ⭐ {track.ratings_count} ratings
+                                ⭐ {track.avg_rating ? parseFloat(track.avg_rating).toFixed(1) : 
+                                    track.rating_details?.average ? track.rating_details.average.toFixed(1) : 
+                                    '0.0'}/5 ({track.ratings_count || 0} ratings)
                               </span>
                               <span className="views">
                                 👀 {formatNumber(track.views)} views
@@ -267,7 +270,9 @@ const ArtistDashboard: React.FC = () => {
                                   👀 {formatNumber(track.views)} views
                                 </span>
                                 <span className="rating">
-                                  ⭐ {track.ratings_count || 0} ratings
+                                  ⭐ {track.avg_rating ? parseFloat(track.avg_rating).toFixed(1) : 
+                                      track.rating_details?.average ? track.rating_details.average.toFixed(1) : 
+                                      '0.0'}/5 ({track.ratings_count || 0} ratings)
                                 </span>
                               </div>
                             </div>
@@ -292,11 +297,35 @@ const ArtistDashboard: React.FC = () => {
                   <div className="activity-list">
                     {dashboardData.recent_activity.map((activity) => (
                       <div key={activity.id} className="activity-item">
-                        <div className="activity-icon">👤</div>
+                        <div className="activity-icon">
+                          {activity.type === 'play' ? '▶️' : 
+                           activity.type === 'rating' ? '⭐' : 
+                           activity.type === 'artist_rating' ? '👤⭐' : '👤'}
+                        </div>
                         <div className="activity-content">
                           <div className="activity-description">
-                            <strong>{activity.user.name}</strong> played{" "}
-                            <strong>{activity.song.title}</strong>
+                            {activity.type === 'play' && activity.song && (
+                              <>
+                                <strong>{activity.user?.name || 'User'}</strong> played{" "}
+                                <strong>{activity.song.title}</strong>
+                              </>
+                            )}
+                            {activity.type === 'rating' && activity.song && (
+                              <>
+                                <strong>{activity.user?.name || 'User'}</strong> rated{" "}
+                                <strong>{activity.song.title}</strong> ⭐ {activity.rating}/5
+                              </>
+                            )}
+                            {activity.type === 'artist_rating' && (
+                              <>
+                                <strong>{activity.user?.name || 'User'}</strong> rated you ⭐ {activity.rating}/5
+                              </>
+                            )}
+                            {!activity.song && activity.type !== 'artist_rating' && (
+                              <>
+                                <strong>{activity.user?.name || 'User'}</strong> {activity.action || 'interacted'}
+                              </>
+                            )}
                           </div>
                           <div className="activity-time">
                             {new Date(activity.created_at).toLocaleString()}
@@ -315,6 +344,12 @@ const ArtistDashboard: React.FC = () => {
                       <div className="action-icon">⬆️</div>
                       <h4>Upload New Track</h4>
                       <p>Share your latest music with the world</p>
+                    </Link>
+
+                    <Link to="/artist/upload-requests" className="action-card">
+                      <div className="action-icon">📋</div>
+                      <h4>Upload Requests</h4>
+                      <p>Track the status of your upload requests</p>
                     </Link>
 
                     <Link to="/artist/music" className="action-card">

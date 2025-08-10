@@ -20,17 +20,32 @@ interface UploadedTrack {
   song_cover?: string;
   file_path?: string;
   uploaded_at?: string;
-  status?: "pending" | "uploaded" | "processing";
+  status?: "pending" | "uploaded" | "processing" | "approved" | "rejected";
+  upload_status?: "pending" | "uploaded" | "processing" | "approved" | "rejected";
   file_size?: string;
   compression_stats?: CompressionStats;
 }
 
 interface RecentUploadsProps {
   uploads: UploadedTrack[];
+  onRefresh?: () => void;
 }
 
-const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
+const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads, onRefresh }) => {
   const [durations, setDurations] = useState<{ [key: number]: string }>({});
+
+  // Debug: Log the uploads data to see what we're receiving
+  useEffect(() => {
+    console.log('RecentUploads received data:', uploads);
+    uploads.forEach((track, index) => {
+      console.log(`Track ${index}:`, {
+        id: track.id,
+        title: track.title,
+        status: track.status,
+        artist: track.artist
+      });
+    });
+  }, [uploads]);
 
   useEffect(() => {
     uploads.forEach((track) => {
@@ -54,9 +69,28 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
 
   return (
     <div className="recent-uploads__wrapper">
-      <h2>Recent Uploads</h2>
+      <div className="recent-uploads-header">
+        <h2>Approved Uploads</h2>
+        {onRefresh && (
+          <button 
+            onClick={onRefresh}
+            className="refresh-btn"
+            title="Refresh upload status"
+          >
+            🔄 Refresh
+          </button>
+        )}
+      </div>
       <div className="uploads-list">
-        {uploads.map((track) => (
+        {uploads.length === 0 ? (
+          <div className="no-uploads">
+            <div className="no-uploads-icon">🎵</div>
+            <h3>No Approved Uploads Yet</h3>
+            <p>Your approved music uploads will appear here once they've been reviewed by an admin.</p>
+            <p>Check your <strong>Upload Requests</strong> page to track the status of your submissions.</p>
+          </div>
+        ) : (
+          uploads.map((track) => (
           <div key={track.id} className="upload-item">
             <div className="upload-info">
               <div className="track-cover">
@@ -102,17 +136,21 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads }) => {
                     {track.compression_stats.compression_ratio}% smaller
                   </span>
                 )}
-                <span className={`status status-${track.status}`}>
-                  {track.status === "uploaded"
-                    ? "Uploaded"
-                    : track.status === "processing"
+                <span className={`status status-${track.status || track.upload_status || 'pending'}`}>
+                  {(track.status === "uploaded" || track.status === "approved" || 
+                    track.upload_status === "uploaded" || track.upload_status === "approved")
+                    ? "Approved"
+                    : (track.status === "processing" || track.upload_status === "processing")
                       ? "Processing"
-                      : "Pending"}
+                      : (track.status === "rejected" || track.upload_status === "rejected")
+                        ? "Rejected"
+                        : "Pending"}
                 </span>
               </div>
             </div>
           </div>
-        ))}
+        ))
+        )}
       </div>
     </div>
   );

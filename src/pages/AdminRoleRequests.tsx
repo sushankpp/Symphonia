@@ -1,8 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { adminService, RoleChangeRequest, RoleRequestsResponse } from '../services/adminService';
+import { adminService } from '../services/adminService';
 import SidebarHeader from '../components/ui/headers/SidebarHeader';
 import TopHeader from '../components/ui/headers/TopHeader';
+import { convertProfilePictureUrl } from '../utils/audioDuration';
+
+interface RoleChangeRequest {
+  id: number;
+  user_id: number;
+  current_role: string;
+  requested_role: string;
+  reason: string;
+  status: string;
+  admin_notes?: string;
+  created_at: string;
+  updated_at: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    profile_picture?: string;
+  };
+  reviewer?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
 
 const AdminRoleRequests: React.FC = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -36,20 +60,22 @@ const AdminRoleRequests: React.FC = () => {
       
       if (statusFilter) params.status = statusFilter;
       
-      const response: RoleRequestsResponse = await adminService.getRoleRequests(params);
+      const response = await adminService.getRoleRequests(params);
       console.log("Role requests response:", response);
-      console.log("Role requests data:", response.data);
       
-      // Handle different response structures
-      let requestData = response.data;
-      if (!requestData && response.role_requests) {
-        requestData = response.role_requests; // Fallback if backend returns 'role_requests' instead of 'data'
+      // Handle the correct API response structure
+      if (response.success && response.requests) {
+        const requests = response.requests.data || [];
+        setRequests(requests);
+        setCurrentPage(response.requests.current_page || 1);
+        setTotalPages(response.requests.last_page || 1);
+        setTotal(response.requests.total || 0);
+      } else {
+        setRequests([]);
+        setCurrentPage(1);
+        setTotalPages(1);
+        setTotal(0);
       }
-      
-      setRequests(Array.isArray(requestData) ? requestData : []);
-      setCurrentPage(response.current_page || 1);
-      setTotalPages(response.last_page || 1);
-      setTotal(response.total || 0);
     } catch (err) {
       console.error('Error fetching role requests:', err);
       setError(err instanceof Error ? err.message : 'Failed to load role requests');
@@ -73,9 +99,10 @@ const AdminRoleRequests: React.FC = () => {
   const handleApproveRequest = async (requestId: number, notes?: string) => {
     try {
       setProcessingRequest(requestId);
-      const updatedRequest = await adminService.approveRoleRequest(requestId, notes);
+      await adminService.approveRoleRequest(requestId);
       
-      setRequests(requests.map(r => r.id === updatedRequest.id ? updatedRequest : r));
+      // Refresh the requests list
+      fetchRequests();
       setShowRequestModal(false);
       setSelectedRequest(null);
       setAdminNotes('');
@@ -89,9 +116,10 @@ const AdminRoleRequests: React.FC = () => {
   const handleRejectRequest = async (requestId: number, notes?: string) => {
     try {
       setProcessingRequest(requestId);
-      const updatedRequest = await adminService.rejectRoleRequest(requestId, notes);
+      await adminService.rejectRoleRequest(requestId, notes);
       
-      setRequests(requests.map(r => r.id === updatedRequest.id ? updatedRequest : r));
+      // Refresh the requests list
+      fetchRequests();
       setShowRequestModal(false);
       setSelectedRequest(null);
       setAdminNotes('');
@@ -215,7 +243,10 @@ const AdminRoleRequests: React.FC = () => {
                 <div className="cell user-cell">
                   <div className="user-avatar">
                     {request.user.profile_picture ? (
-                      <img src={request.user.profile_picture} alt={request.user.name} />
+                      <img 
+                        src={convertProfilePictureUrl(request.user.profile_picture, import.meta.env.VITE_API_URL || 'http://localhost:8000')} 
+                        alt={request.user.name} 
+                      />
                     ) : (
                       <div className="avatar-placeholder">
                         {request.user.name.charAt(0).toUpperCase()}
