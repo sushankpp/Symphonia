@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { User, LogOut, Settings, Crown, Music, Shield } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
+import { User, Settings, LogOut, Crown, Music, Shield } from "lucide-react";
+import { convertProfilePictureUrl } from "../../../utils/audioDuration.tsx";
 
 interface UserDropdownProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface UserDropdownProps {
 const UserDropdown = ({ isOpen, onClose, triggerRef }: UserDropdownProps) => {
   const { user, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -78,7 +80,7 @@ const UserDropdown = ({ isOpen, onClose, triggerRef }: UserDropdownProps) => {
         <div className="user-dropdown__header">
           <div className="user-dropdown__user-info">
             <img
-              src={user?.profile_picture || "/uploads/pig.png"}
+              src={convertProfilePictureUrl(user?.profile_picture || "", apiURL)}
               alt={user?.name || "user"}
               className="user-dropdown__avatar"
             />

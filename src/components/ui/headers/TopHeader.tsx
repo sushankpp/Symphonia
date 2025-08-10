@@ -1,24 +1,18 @@
+import React, { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useState, useRef } from "react";
-import {
-  Search,
-  Upload,
-  Music,
-  LogIn,
-  User,
-  Bell,
-  Settings,
-} from "lucide-react";
+import { useAuth } from "../../../contexts/AuthContext";
+import { Music, Upload, Search, LogIn, Bell, Settings } from "lucide-react";
 import LoginRegisterPopup from "../menus/LoginRegisterPopup";
 import UserDropdown from "../menus/UserDropdown";
-import { useAuth } from "../../../contexts/AuthContext";
+import { convertProfilePictureUrl } from "../../../utils/audioDuration.tsx";
 
 const TopHeader = () => {
-  const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const userProfileRef = useRef<HTMLAnchorElement>(null);
+  const location = useLocation();
+  const apiURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const isActive = (path: string) => {
     if (path === "/" && location.pathname === "/") {
@@ -100,7 +94,7 @@ const TopHeader = () => {
             >
               <figure className="header__media">
                 <img
-                  src={user?.profile_picture || "/uploads/pig.png"}
+                  src={convertProfilePictureUrl(user?.profile_picture || "", apiURL)}
                   alt={user?.name || "user image"}
                 />
               </figure>

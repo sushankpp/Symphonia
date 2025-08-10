@@ -1,43 +1,53 @@
 import { makeAuthenticatedRequest } from './apiService';
 
-// Ensure API_BASE_URL always includes /api
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_BASE_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 
+// Updated interfaces to match the API response format
 export interface ArtistDashboardStats {
   total_tracks: number;
   total_views: number;
   total_ratings: number;
   average_rating: number;
-  monthly_analytics: Array<{
+  monthly_stats: Array<{
     month: string;
-    plays: number;
+    views: number;
     ratings: number;
   }>;
   recent_activity: Array<{
     id: number;
-    type: 'play' | 'rating' | 'upload';
+    user_id: number;
+    song_id: number;
+    created_at: string;
+    updated_at: string;
+    user: {
+      id: number;
+      name: string;
+      email: string;
+    };
     song: {
       id: number;
       title: string;
+      artist_id: number;
+      views: number;
     };
-    user?: {
-      id: number;
-      name: string;
-    };
-    created_at: string;
-    details?: any;
   }>;
   top_rated_tracks: Array<{
     id: number;
     title: string;
-    average_rating: number;
-    total_ratings: number;
+    views: number;
+    ratings_count: number;
+    ratings: Array<{
+      id: number;
+      rating: number;
+      user_id: number;
+    }>;
   }>;
   most_viewed_tracks: Array<{
     id: number;
     title: string;
-    total_plays: number;
+    views: number;
+    ratings_count: number;
   }>;
 }
 
@@ -45,84 +55,118 @@ export interface ArtistMusic {
   id: number;
   title: string;
   genre: string;
-  description?: string;
-  lyrics?: string;
-  release_date?: string;
+  views: number;
+  ratings_count: number;
+  ratings_avg_rating: number;
+  song_cover_url: string;
+  file_url: string;
+  recent_plays: number;
   created_at: string;
-  updated_at: string;
-  file_path: string;
-  cover_image?: string;
-  total_plays: number;
-  average_rating: number;
-  total_ratings: number;
   artist: {
     id: number;
-    name: string;
+    artist_name: string;
+  };
+  album?: {
+    id: number;
+    title: string;
   };
 }
 
 export interface SongStats {
-  song: ArtistMusic;
-  ratings_breakdown: {
-    [key: string]: number; // "1": 5, "2": 10, etc.
+  song: {
+    id: number;
+    title: string;
+    genre: string;
+    views: number;
+    ratings_count: number;
+    ratings_avg_rating: number;
+    song_cover_url: string;
+    file_url: string;
+    artist: {
+      id: number;
+      artist_name: string;
+    };
+    album?: {
+      id: number;
+      title: string;
+    };
   };
+  ratings_breakdown: Array<{
+    rating: number;
+    count: number;
+  }>;
+  recent_plays: Array<{
+    id: number;
+    user_id: number;
+    song_id: number;
+    created_at: string;
+    user: {
+      id: number;
+      name: string;
+    };
+  }>;
   daily_plays: Array<{
     date: string;
     plays: number;
   }>;
-  recent_plays: Array<{
-    id: number;
-    user: {
-      id: number;
-      name: string;
-      profile_picture?: string;
-    };
-    played_at: string;
-  }>;
   all_ratings: Array<{
     id: number;
     rating: number;
-    comment?: string;
+    created_at: string;
     user: {
       id: number;
       name: string;
-      profile_picture?: string;
     };
-    created_at: string;
   }>;
 }
 
 export interface MusicResponse {
-  data: ArtistMusic[];
-  current_page: number;
-  per_page: number;
-  total: number;
-  last_page: number;
+  success: boolean;
+  music: {
+    current_page: number;
+    data: ArtistMusic[];
+    total: number;
+    per_page: number;
+  };
+}
+
+export interface DashboardResponse {
+  success: boolean;
+  stats: ArtistDashboardStats;
+  recent_activity: ArtistDashboardStats['recent_activity'];
+  top_rated_tracks: ArtistDashboardStats['top_rated_tracks'];
+  most_viewed_tracks: ArtistDashboardStats['most_viewed_tracks'];
+}
+
+export interface SongStatsResponse {
+  success: boolean;
+  song: SongStats['song'];
+  ratings_breakdown: SongStats['ratings_breakdown'];
+  recent_plays: SongStats['recent_plays'];
+  daily_plays: SongStats['daily_plays'];
+  all_ratings: SongStats['all_ratings'];
 }
 
 class ArtistService {
   // Dashboard
-  async getDashboardStats(): Promise<ArtistDashboardStats> {
+  async getDashboardStats(): Promise<DashboardResponse> {
     const response = await makeAuthenticatedRequest(`${API_BASE_URL}/artist/dashboard`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch artist dashboard stats');
     }
     
-    const result = await response.json();
-    return result.data;
+    return await response.json();
   }
 
   // Music Management
   async getMusic(params: {
-    page?: number;
     per_page?: number;
-    sort_by?: 'views' | 'ratings' | 'created_at' | 'title';
+    sort_by?: 'created_at' | 'views' | 'rating';
     sort_order?: 'asc' | 'desc';
   } = {}): Promise<MusicResponse> {
     const queryParams = new URLSearchParams();
     
-    if (params.page) queryParams.append('page', params.page.toString());
     if (params.per_page) queryParams.append('per_page', params.per_page.toString());
     if (params.sort_by) queryParams.append('sort_by', params.sort_by);
     if (params.sort_order) queryParams.append('sort_order', params.sort_order);
@@ -138,15 +182,14 @@ class ArtistService {
     return await response.json();
   }
 
-  async getSongStats(id: number): Promise<SongStats> {
+  async getSongStats(id: number): Promise<SongStatsResponse> {
     const response = await makeAuthenticatedRequest(`${API_BASE_URL}/artist/music/${id}/stats`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch song statistics');
     }
     
-    const result = await response.json();
-    return result.data;
+    return await response.json();
   }
 
   async updateSong(id: number, data: {

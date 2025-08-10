@@ -25,6 +25,6 @@ export default defineConfig({
     devSourcemap: true,
   },
   esbuild: {
-    sourcemap: 'external',
+    sourcemap: "external",
   },
 });

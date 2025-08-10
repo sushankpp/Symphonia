@@ -6,7 +6,7 @@ import SidebarHeader from '../components/ui/headers/SidebarHeader';
 import TopHeader from '../components/ui/headers/TopHeader';
 
 const ArtistMusicPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [music, setMusic] = useState<ArtistMusic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +18,7 @@ const ArtistMusicPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [perPage] = useState(15);
-  const [sortBy, setSortBy] = useState<'views' | 'ratings' | 'created_at' | 'title'>('created_at');
+  const [sortBy, setSortBy] = useState<'created_at' | 'views' | 'rating'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
@@ -30,20 +30,21 @@ const ArtistMusicPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const response: MusicResponse = await artistService.getMusic({
-        page: currentPage,
         per_page: perPage,
         sort_by: sortBy,
         sort_order: sortOrder,
       });
       
-      setMusic(response.data || []);
-      setCurrentPage(response.current_page || 1);
-      setTotalPages(response.last_page || 1);
-      setTotal(response.total || 0);
+      console.log('Music API Response:', response);
+      
+      setMusic(response.music.data || []);
+      setCurrentPage(response.music.current_page || 1);
+      setTotalPages(Math.ceil(response.music.total / response.music.per_page) || 1);
+      setTotal(response.music.total || 0);
     } catch (err) {
-      console.error('Error fetching music:', err);
+      console.error('Music API Error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load music');
-      setMusic([]); // Ensure music is always an array
+      setMusic([])
     } finally {
       setLoading(false);
     }
@@ -72,9 +73,6 @@ const ArtistMusicPage: React.FC = () => {
       const updatedTrack = await artistService.updateSong(editingTrack.id, {
         title: editingTrack.title,
         genre: editingTrack.genre,
-        description: editingTrack.description,
-        lyrics: editingTrack.lyrics,
-        release_date: editingTrack.release_date,
       });
       
       setMusic(music.map(track => track.id === updatedTrack.id ? updatedTrack : track));
@@ -99,7 +97,8 @@ const ArtistMusicPage: React.FC = () => {
     }
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined) => {
+    if (num === undefined || num === null) return '0';
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
     }
@@ -114,14 +113,30 @@ const ArtistMusicPage: React.FC = () => {
     return sortOrder === 'asc' ? '↑' : '↓';
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Fallback: clear localStorage and redirect
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      window.location.href = '/';
+    }
+  };
+
   if (user?.role !== 'artist') {
     return (
       <div className="access-denied">
         <h2>Access Denied</h2>
         <p>You need to be an artist to access this page.</p>
-        <Link to="/profile" className="role-request-link">
-          Request Artist Role
-        </Link>
+        <button 
+          onClick={handleLogout}
+          className="logout-btn"
+        >
+          Logout
+        </button>
       </div>
     );
   }
@@ -159,16 +174,10 @@ const ArtistMusicPage: React.FC = () => {
             Views {getSortIcon('views')}
           </button>
           <button
-            className={`sort-btn ${sortBy === 'ratings' ? 'active' : ''}`}
-            onClick={() => handleSort('ratings')}
+            className={`sort-btn ${sortBy === 'rating' ? 'active' : ''}`}
+            onClick={() => handleSort('rating')}
           >
-            Ratings {getSortIcon('ratings')}
-          </button>
-          <button
-            className={`sort-btn ${sortBy === 'title' ? 'active' : ''}`}
-            onClick={() => handleSort('title')}
-          >
-            Title {getSortIcon('title')}
+            Rating {getSortIcon('rating')}
           </button>
         </div>
       </div>
@@ -191,8 +200,8 @@ const ArtistMusicPage: React.FC = () => {
             {music && music.length > 0 ? music.map((track) => (
               <div key={track.id} className="music-card">
                 <div className="music-cover">
-                  {track.cover_image ? (
-                    <img src={track.cover_image} alt={track.title} />
+                  {track.song_cover_url ? (
+                    <img src={track.song_cover_url} alt={track.title} />
                   ) : (
                     <div className="placeholder-cover">
                       🎵
@@ -208,18 +217,18 @@ const ArtistMusicPage: React.FC = () => {
                 <div className="music-info">
                   <h3>{track.title}</h3>
                   <p className="genre">{track.genre}</p>
-                  {track.description && (
-                    <p className="description">{track.description.substring(0, 100)}...</p>
-                  )}
                   
                   <div className="music-stats">
                     <div className="stat-item">
                       <span className="stat-icon">👀</span>
-                      <span>{formatNumber(track.total_plays)} plays</span>
+                      <span>{formatNumber(track.views)} views</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-icon">⭐</span>
-                      <span>{track.average_rating.toFixed(1)}/5 ({track.total_ratings})</span>
+                      <span>
+                        {track.ratings_avg_rating ? track.ratings_avg_rating.toFixed(1) : '0.0'}/5 
+                        ({track.ratings_count || 0})
+                      </span>
                     </div>
                   </div>
 
@@ -227,11 +236,6 @@ const ArtistMusicPage: React.FC = () => {
                     <span className="upload-date">
                       Uploaded: {new Date(track.created_at).toLocaleDateString()}
                     </span>
-                    {track.release_date && (
-                      <span className="release-date">
-                        Released: {new Date(track.release_date).toLocaleDateString()}
-                      </span>
-                    )}
                   </div>
 
                   <div className="music-actions">
@@ -329,33 +333,6 @@ const ArtistMusicPage: React.FC = () => {
                   value={editingTrack.genre}
                   onChange={(e) => setEditingTrack({ ...editingTrack, genre: e.target.value })}
                   required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  value={editingTrack.description || ''}
-                  onChange={(e) => setEditingTrack({ ...editingTrack, description: e.target.value })}
-                  rows={4}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Lyrics</label>
-                <textarea
-                  value={editingTrack.lyrics || ''}
-                  onChange={(e) => setEditingTrack({ ...editingTrack, lyrics: e.target.value })}
-                  rows={6}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Release Date</label>
-                <input
-                  type="date"
-                  value={editingTrack.release_date || ''}
-                  onChange={(e) => setEditingTrack({ ...editingTrack, release_date: e.target.value })}
                 />
               </div>
 

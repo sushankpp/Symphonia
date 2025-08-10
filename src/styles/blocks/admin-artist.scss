@@ -954,7 +954,7 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #ffffff;
+  color: #000;
   font-weight: 500;
 }
 
@@ -966,7 +966,7 @@
   border: 1px solid #444;
   border-radius: 6px;
   padding: 0.75rem;
-  color: #ffffff;
+  color: #000;
   font-size: 1rem;
   box-sizing: border-box;
 }
@@ -1113,7 +1113,6 @@
   color: #b0b0b0;
 }
 
-/* Role Request Details */
 .request-details {
   color: #ffffff;
 }
@@ -1824,7 +1823,6 @@
   color: #ffffff;
 }
 
-/* Tab Content */
 .tab-content {
   background: #2a2a2a;
   border-radius: 12px;
@@ -1833,7 +1831,6 @@
   margin-bottom: 2rem;
 }
 
-/* Ratings Breakdown */
 .ratings-breakdown {
   margin-bottom: 3rem;
 }

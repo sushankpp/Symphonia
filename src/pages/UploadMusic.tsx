@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import { useAuth } from "../contexts/AuthContext";
+import { makeAuthenticatedRequest } from "../services/apiService";
 import {
   FileUpload,
   SongDetailsForm,
@@ -64,39 +65,77 @@ const UploadMusic: React.FC = () => {
     lyrics: "",
   });
 
-  // Artist form state
-  const [artistForm, setArtistForm] = useState({
-    artistName: "",
-    email: "",
-    phone: "",
-    genre: "",
-    description: "",
-    socialMedia: "",
-    website: "",
-  });
+  // Note: Artist form state removed as artists now upload to their own profile only
 
   useEffect(() => {
-    const fetchArtists = async () => {
+    const fetchArtistData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/artists`);
-        if (response.ok) {
-          const data = await response.json();
-          setArtists(data);
-        } else {
-          console.error("Failed to fetch artists");
+        if (user?.role === 'artist') {
+          // For artists, fetch all artists and find the one that matches the current user
+          const response = await fetch(`${API_URL}/api/artists`);
+          
+          if (response.ok) {
+            const allArtists = await response.json();
+            console.log("All artists data:", allArtists);
+            
+            // Find the artist that matches the current user
+            const currentArtist = allArtists.find((artist: any) => 
+              artist.email === user.email || 
+              artist.artist_name === user.name ||
+              artist.user_id === user.id
+            );
+            
+            if (currentArtist) {
+              console.log("Found current artist:", currentArtist);
+              
+              const artist = {
+                id: currentArtist.id,
+                artist_name: currentArtist.artist_name,
+                email: currentArtist.email || user.email
+              };
+              
+              setArtists([artist]);
+              setSongForm(prev => ({
+                ...prev,
+                selectedArtistId: artist.id.toString()
+              }));
+              console.log("Using artist data from backend:", artist);
+            } else {
+              console.error("Could not find artist record for current user");
+              console.log("User data:", user);
+              console.log("Available artists:", allArtists);
+              setUploadMessage("Unable to find your artist profile. Please contact support.");
+            }
+          } else {
+            console.error("Failed to fetch artists");
+            setUploadMessage("Failed to load artists list");
+          }
+        } else if (user?.role === 'admin') {
+          // For admins, fetch all artists (existing behavior)
+          const response = await fetch(`${API_URL}/api/artists`);
+          if (response.ok) {
+            const data = await response.json();
+            setArtists(data);
+          } else {
+            console.error("Failed to fetch artists");
+            setUploadMessage("Failed to load artists list");
+          }
         }
       } catch (error) {
-        console.error("Error fetching artists:", error);
+        console.error("Error fetching artist data:", error);
+        setUploadMessage("Error loading artist information");
       } finally {
         setIsLoadingArtists(false);
       }
     };
 
-    // Only fetch artists if user can upload music
-    if (canUploadMusic) {
-      fetchArtists();
+    // Only fetch artists if user can upload music and user data is available
+    if (canUploadMusic && user) {
+      fetchArtistData();
+    } else if (canUploadMusic) {
+      setIsLoadingArtists(false);
     }
-  }, [API_URL, canUploadMusic]);
+  }, [API_URL, canUploadMusic, user?.role, user?.id, user?.name, user?.email]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -160,17 +199,7 @@ const UploadMusic: React.FC = () => {
     }));
   };
 
-  const handleArtistFormChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setArtistForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  // handleArtistFormChange removed as artists now upload to their own profile only
 
   // Helper to format bytes for display (only for selected file)
   const formatFileSize = (bytes: number): string => {
@@ -241,12 +270,15 @@ const UploadMusic: React.FC = () => {
         formData.append("cover_image", selectedCoverImage);
       }
 
+      // For FormData uploads, we need to handle headers differently
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_URL}/api/upload-music`, {
         method: "POST",
         body: formData,
-        credentials: "include",
         headers: {
-          "X-Custom-Header": "trigger-preflight",
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          // Don't set Content-Type - let browser set it with boundary for FormData
         },
       });
 

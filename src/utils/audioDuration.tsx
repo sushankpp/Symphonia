@@ -19,6 +19,32 @@ export const formatTime = (timeInSeconds: number): string => {
   return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 };
 
+export const convertProfilePictureUrl = (url: string, apiUrl: string): string => {
+  if (!url) return "/uploads/pig.png";
+
+  if (!apiUrl) {
+    console.log("API URL is undefined, returning fallback image");
+    return "/uploads/pig.png";
+  }
+
+  // If the URL is already a full URL (starts with http:// or https://), return it as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // If it's a relative path, convert it to a full URL
+  if (url.startsWith('images/') || url.startsWith('profile_pictures/')) {
+    return `${apiUrl}/storage/${url}`;
+  }
+
+  // If it doesn't start with storage/, add it
+  if (!url.startsWith('storage/')) {
+    return `${apiUrl}/storage/${url}`;
+  }
+
+  return `${apiUrl}/${url}`;
+};
+
 export const convertStorageUrl = (url: string, apiUrl: string): string => {
   if (!url) return url;
 
@@ -27,7 +53,10 @@ export const convertStorageUrl = (url: string, apiUrl: string): string => {
     return url;
   }
 
-
+  // If the URL is already a full URL (starts with http:// or https://), return it as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
 
   // Handle audio files that start with "audios/" (from API response)
   if (url.startsWith("audios/")) {

@@ -58,7 +58,7 @@ const SongDetailsForm: React.FC<SongDetailsFormProps> = ({
           value={songForm.selectedArtistId}
           onChange={onSongFormChange}
           required
-          disabled={isLoadingArtists}
+          disabled={isLoadingArtists || artists.length === 1}
         >
           <option value="">
             {isLoadingArtists ? "Loading artists..." : "Select an artist"}
@@ -69,6 +69,11 @@ const SongDetailsForm: React.FC<SongDetailsFormProps> = ({
             </option>
           ))}
         </select>
+        {artists.length === 1 && songForm.selectedArtistId && (
+          <p className="form-helper-text">
+            Music will be uploaded to your artist profile: {artists[0].artist_name}
+          </p>
+        )}
       </div>
 
       <div className="form-group">
