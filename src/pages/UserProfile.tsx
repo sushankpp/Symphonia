@@ -14,6 +14,7 @@ import {
 import TopHeader from "../components/ui/headers/TopHeader";
 import SidebarHeader from "../components/ui/headers/SidebarHeader";
 import { authService } from "../services/authService";
+import { convertProfilePictureUrl } from "../utils/audioDuration";
 
 interface UserProfileData {
   id: number;
@@ -280,10 +281,20 @@ const UserProfile = () => {
                       <img
                         src={
                           previewImage ||
-                          profileData?.profile_picture ||
+                          convertProfilePictureUrl(
+                            profileData?.profile_picture || "",
+                            import.meta.env.VITE_API_URL
+                          ) ||
                           "/uploads/pig.png"
                         }
                         alt={profileData?.name || "Profile"}
+                        onError={(e) => {
+                          console.error(
+                            "UserProfile - Profile picture failed to load:",
+                            e.currentTarget.src
+                          );
+                          e.currentTarget.src = "/uploads/pig.png";
+                        }}
                       />
                       {isEditing && (
                         <button
