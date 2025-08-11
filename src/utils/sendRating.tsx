@@ -13,7 +13,6 @@ export const sendRating = async ({
 }: RatingProps): Promise<any> => {
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Validate required fields
   if (!rateableId) {
     throw new Error("rateableId is required");
   }
@@ -41,10 +40,9 @@ export const sendRating = async ({
 
     console.log("Request body:", requestBody);
 
-    // Get authentication headers
     const authHeaders = authService.getAuthHeaders();
     console.log("🔐 Rating auth headers:", authHeaders);
-    
+
     const response = await fetch(`${API_URL}/api/ratings`, {
       method: "POST",
       headers: {

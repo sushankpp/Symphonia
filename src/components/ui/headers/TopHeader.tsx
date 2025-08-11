@@ -94,7 +94,7 @@ const TopHeader = () => {
             >
               <figure className="header__media">
                 <img
-                  src={convertProfilePictureUrl(user?.profile_picture || "", apiURL)}
+                  src={convertProfilePictureUrl(user?.profile_picture || "/uploads/pig.png", apiURL)}
                   alt={user?.name || "user image"}
                 />
               </figure>

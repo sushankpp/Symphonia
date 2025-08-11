@@ -30,7 +30,6 @@ const AdminUsers: React.FC = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  // Pagination and filters
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -56,8 +55,7 @@ const AdminUsers: React.FC = () => {
 
       const response = await adminService.getUsers(params);
       console.log("Full response:", response);
-      
-      // Handle the actual API response structure
+
       if (response.success && response.users) {
         const users = response.users.data || [];
         setUsers(users);
@@ -73,7 +71,7 @@ const AdminUsers: React.FC = () => {
     } catch (err) {
       console.error("Error fetching users:", err);
       setError(err instanceof Error ? err.message : "Failed to load users");
-      setUsers([]); // Ensure users is always an array
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -137,13 +135,12 @@ const AdminUsers: React.FC = () => {
 
     try {
       await adminService.deleteUser(userId);
-      fetchUsers(); // Refresh the list
+      fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete user");
     }
   };
 
-  // Show loading while authentication is being checked
   if (authLoading) {
     return (
       <div className="loading-container">
@@ -153,13 +150,11 @@ const AdminUsers: React.FC = () => {
     );
   }
 
-  // Redirect to home if not authenticated
   if (!isAuthenticated) {
-    window.location.href = '/';
+    window.location.href = "/";
     return null;
   }
 
-  // Check if user has admin role
   if (user?.role !== "admin") {
     return (
       <div className="access-denied">
@@ -181,7 +176,6 @@ const AdminUsers: React.FC = () => {
               <p>Manage all users in the system</p>
             </div>
 
-            {/* Filters and Search */}
             <div className="filters-section">
               <form onSubmit={handleSearch} className="search-form">
                 <input
@@ -250,19 +244,23 @@ const AdminUsers: React.FC = () => {
                   {users && users.length > 0
                     ? users.map((user) => (
                         <div key={user.id} className="table-row">
-                                                     <div className="cell user-cell">
-                             <div className="user-avatar">
-                               {user.profile_picture ? (
-                                 <img
-                                   src={convertProfilePictureUrl(user.profile_picture, import.meta.env.VITE_API_URL || 'http://localhost:8000')}
-                                   alt={user.name}
-                                 />
-                               ) : (
-                                 <div className="avatar-placeholder">
-                                   {user.name.charAt(0).toUpperCase()}
-                                 </div>
-                               )}
-                             </div>
+                          <div className="cell user-cell">
+                            <div className="user-avatar">
+                              {user.profile_picture ? (
+                                <img
+                                  src={convertProfilePictureUrl(
+                                    user.profile_picture,
+                                    import.meta.env.VITE_API_URL ||
+                                      "http://localhost:8000"
+                                  )}
+                                  alt={user.name}
+                                />
+                              ) : (
+                                <div className="avatar-placeholder">
+                                  {user.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
                             <div className="user-info">
                               <h4>{user.name}</h4>
                               <p>{user.email}</p>
@@ -307,7 +305,6 @@ const AdminUsers: React.FC = () => {
                     : null}
                 </div>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="pagination">
                     <button
@@ -338,7 +335,6 @@ const AdminUsers: React.FC = () => {
               </>
             )}
 
-            {/* User Details Modal */}
             {showUserModal && selectedUser && (
               <div
                 className="modal-overlay"
@@ -396,7 +392,15 @@ const AdminUsers: React.FC = () => {
                                   <div key={rating.id} className="rating-item">
                                     <div className="rating-info">
                                       <strong>{rating.song.title}</strong>
-                                      <span>by {rating.song.artist.name}</span>
+                                      <span>
+                                        by{" "}
+                                        {typeof rating.song.artist === "string"
+                                          ? rating.song.artist
+                                          : (rating.song.artist as any)?.name ||
+                                            (rating.song.artist as any)
+                                              ?.artist_name ||
+                                            "Unknown Artist"}
+                                      </span>
                                     </div>
                                     <div className="rating-score">
                                       ⭐ {rating.rating}/5
@@ -438,7 +442,6 @@ const AdminUsers: React.FC = () => {
               </div>
             )}
 
-            {/* Edit User Modal */}
             {editingUser && (
               <div
                 className="modal-overlay"

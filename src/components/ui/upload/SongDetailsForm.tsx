@@ -2,7 +2,7 @@ import React from "react";
 
 interface Artist {
   id: number;
-  artist_name: string;
+  artist_name: string | object;
   email: string;
 }
 
@@ -65,13 +65,17 @@ const SongDetailsForm: React.FC<SongDetailsFormProps> = ({
           </option>
           {artists.map((artist) => (
             <option key={artist.id} value={artist.id}>
-              {artist.artist_name}
+              {typeof artist.artist_name === 'string' 
+                ? artist.artist_name 
+                : JSON.stringify(artist.artist_name)}
             </option>
           ))}
         </select>
         {artists.length === 1 && songForm.selectedArtistId && (
           <p className="form-helper-text">
-            Music will be uploaded to your artist profile: {artists[0].artist_name}
+            Music will be uploaded to your artist profile: {typeof artists[0].artist_name === 'string' 
+              ? artists[0].artist_name 
+              : JSON.stringify(artists[0].artist_name)}
           </p>
         )}
       </div>

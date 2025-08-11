@@ -10,11 +10,13 @@ import {
   Save,
   X,
   Camera,
+  Lock,
 } from "lucide-react";
 import TopHeader from "../components/ui/headers/TopHeader";
 import SidebarHeader from "../components/ui/headers/SidebarHeader";
 import { authService } from "../services/authService";
 import { convertProfilePictureUrl } from "../utils/audioDuration";
+import ChangePassword from "../components/ui/forms/ChangePassword";
 
 interface UserProfileData {
   id: number;
@@ -43,6 +45,7 @@ const UserProfile = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const [editForm, setEditForm] = useState({
     name: "",
@@ -236,10 +239,19 @@ const UserProfile = () => {
                   <h1>User Profile</h1>
                   <div className="profile-actions">
                     {!isEditing ? (
-                      <button onClick={handleEdit} className="edit-btn">
-                        <Edit size={16} />
-                        Edit Profile
-                      </button>
+                      <>
+                        <button onClick={handleEdit} className="edit-btn">
+                          <Edit size={16} />
+                          Edit Profile
+                        </button>
+                        <button 
+                          onClick={() => setShowChangePassword(true)} 
+                          className="change-password-btn"
+                        >
+                          <Lock size={16} />
+                          Change Password
+                        </button>
+                      </>
                     ) : (
                       <div className="edit-actions">
                         <button 
@@ -475,6 +487,25 @@ const UserProfile = () => {
           </div>
         </div>
       </main>
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="modal-overlay" onClick={() => setShowChangePassword(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <ChangePassword
+              email={profileData?.email}
+              title="Reset Password"
+              showCancelButton={true}
+              onSuccess={() => {
+                setShowChangePassword(false);
+                setSuccessMessage("Password reset email sent successfully!");
+                setTimeout(() => setSuccessMessage(""), 3000);
+              }}
+              onCancel={() => setShowChangePassword(false)}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };

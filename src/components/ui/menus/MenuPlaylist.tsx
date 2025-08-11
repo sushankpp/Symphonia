@@ -17,13 +17,14 @@ const MenuPlaylist = () => {
 
   useEffect(() => {
     const fetchPlaylists = async () => {
-      // Only fetch if user is authenticated
       if (!isAuthenticated) {
         return;
       }
 
       try {
-        const response = await makeAuthenticatedRequest(`${apiURL}/api/playlists`);
+        const response = await makeAuthenticatedRequest(
+          `${apiURL}/api/playlists`
+        );
         if (!response.ok) throw new Error("Failed to fetch playlists");
         const data = await response.json();
         setPlaylists(data);
@@ -47,7 +48,7 @@ const MenuPlaylist = () => {
         </li>
         {!isAuthenticated ? (
           <li>
-            <span style={{ color: '#6b7280', fontSize: '14px' }}>
+            <span style={{ color: "#6b7280", fontSize: "14px" }}>
               Please log in to view playlists
             </span>
           </li>

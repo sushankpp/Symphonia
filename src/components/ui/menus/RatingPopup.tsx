@@ -46,7 +46,6 @@ const RatingPopup: React.FC<RatingPopupProps> = ({
       onClose();
     } catch (error) {
       console.error("Failed to send rating:", error);
-      // Show user-friendly error message
       alert(
         `Failed to submit rating. Please try again. Error: ${error instanceof Error ? error.message : "Unknown error"}`
       );

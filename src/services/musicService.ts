@@ -1,27 +1,25 @@
 // import { authService } from './authService';
 
 class MusicService {
-  private baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-
+  private baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   async getAllSongs(): Promise<any[]> {
     try {
       const response = await fetch(`${this.baseURL}/api/music`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Accept': 'application/json',
+          Accept: "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch songs');
+        throw new Error("Failed to fetch songs");
       }
 
       const data = await response.json();
       return data.songs || data;
     } catch (error) {
-      console.error('Error fetching songs:', error);
+      console.error("Error fetching songs:", error);
       throw error;
     }
   }
@@ -29,38 +27,38 @@ class MusicService {
   async recordSongPlay(songId: number, authHeaders: HeadersInit): Promise<any> {
     try {
       const response = await fetch(`${this.baseURL}/api/recently-played`, {
-        method: 'POST',
+        method: "POST",
         headers: authHeaders,
         body: JSON.stringify({ song_id: songId }),
       });
 
-      console.log('Record play response status:', response.status);
-      
+      console.log("Record play response status:", response.status);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Record play error response:', errorData);
-        throw new Error(`Failed to record song play: ${response.status} ${response.statusText}`);
+        console.error("Record play error response:", errorData);
+        throw new Error(
+          `Failed to record song play: ${response.status} ${response.statusText}`
+        );
       }
 
       const result = await response.json();
-      console.log('Record play success:', result);
+      console.log("Record play success:", result);
       return result;
     } catch (error) {
-      console.error('Error recording song play:', error);
-      // Don't throw error for recording plays - it's not critical
-      return { success: false, message: 'Failed to record play' };
+      console.error("Error recording song play:", error);
+      return { success: false, message: "Failed to record play" };
     }
   }
 
   async getRecommendations(authHeaders: HeadersInit): Promise<any[]> {
     try {
-      // Add timeout and better error handling
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       try {
         const response = await fetch(`${this.baseURL}/api/recommendations`, {
-          method: 'GET',
+          method: "GET",
           headers: authHeaders,
           signal: controller.signal,
         });
@@ -68,87 +66,112 @@ class MusicService {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          console.error('Recommendations response not ok:', response.status, response.statusText);
-          // Try to get error details
+          console.error(
+            "Recommendations response not ok:",
+            response.status,
+            response.statusText
+          );
+
           try {
             const errorData = await response.text();
-            console.error('Recommendations error details:', errorData);
+            console.error("Recommendations error details:", errorData);
           } catch (e) {
-            console.error('Could not read error response');
+            console.error("Could not read error response");
           }
-          throw new Error('Failed to fetch recommendations');
+          throw new Error("Failed to fetch recommendations");
         }
 
         const data = await response.json();
         return data.recommendations || data;
       } catch (fetchError: unknown) {
         clearTimeout(timeoutId);
-        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-          console.log('Recommendations request timed out');
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          console.log("Recommendations request timed out");
         }
         throw fetchError;
       }
     } catch (error) {
-      if (error instanceof TypeError && error.message.includes('NetworkError')) {
-        console.log('Network error when fetching recommendations - API server may not be running');
+      if (
+        error instanceof TypeError &&
+        error.message.includes("NetworkError")
+      ) {
+        console.log(
+          "Network error when fetching recommendations - API server may not be running"
+        );
       } else {
-        console.error('Error fetching recommendations:', error);
+        console.error("Error fetching recommendations:", error);
       }
-      // Return empty array instead of throwing - API endpoint might not exist yet
-      console.log('Recommendations API not available, returning empty array');
+
+      console.log("Recommendations API not available, returning empty array");
       return [];
     }
   }
 
-  async getTopRecommendations(authHeaders: HeadersInit, limit: number = 5): Promise<any[]> {
+  async getTopRecommendations(
+    authHeaders: HeadersInit,
+    limit: number = 5
+  ): Promise<any[]> {
     try {
-      // Add timeout and better error handling
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       try {
-        // Try the dedicated top-recommendations endpoint first
         let response = await fetch(`${this.baseURL}/api/top-recommendations`, {
-          method: 'GET',
+          method: "GET",
           headers: authHeaders,
           signal: controller.signal,
         });
 
-        // If that fails, try the recommendations endpoint with query params
         if (!response.ok) {
-          console.log('Top recommendations endpoint not found, trying recommendations with query params...');
-          response = await fetch(`${this.baseURL}/api/recommendations?top=true&limit=${limit}`, {
-            method: 'GET',
-            headers: authHeaders,
-            signal: controller.signal,
-          });
+          console.log(
+            "Top recommendations endpoint not found, trying recommendations with query params..."
+          );
+          response = await fetch(
+            `${this.baseURL}/api/recommendations?top=true&limit=${limit}`,
+            {
+              method: "GET",
+              headers: authHeaders,
+              signal: controller.signal,
+            }
+          );
         }
 
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          console.error('Top recommendations response not ok:', response.status, response.statusText);
-          throw new Error('Failed to fetch top recommendations');
+          console.error(
+            "Top recommendations response not ok:",
+            response.status,
+            response.statusText
+          );
+          throw new Error("Failed to fetch top recommendations");
         }
 
         const data = await response.json();
-        // Handle both new structure (with top_recommendations property) and old structure
+
         return data.top_recommendations || data.recommendations || data;
       } catch (fetchError: unknown) {
         clearTimeout(timeoutId);
-        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-          console.log('Top recommendations request timed out');
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          console.log("Top recommendations request timed out");
         }
         throw fetchError;
       }
     } catch (error) {
-      if (error instanceof TypeError && error.message.includes('NetworkError')) {
-        console.log('Network error when fetching top recommendations - API server may not be running');
+      if (
+        error instanceof TypeError &&
+        error.message.includes("NetworkError")
+      ) {
+        console.log(
+          "Network error when fetching top recommendations - API server may not be running"
+        );
       } else {
-        console.error('Error fetching top recommendations:', error);
+        console.error("Error fetching top recommendations:", error);
       }
-      // Return empty array instead of throwing - API endpoint might not exist yet
-      console.log('Top recommendations API not available, returning empty array');
+
+      console.log(
+        "Top recommendations API not available, returning empty array"
+      );
       return [];
     }
   }
@@ -156,21 +179,21 @@ class MusicService {
   async getPopularSongs(): Promise<any[]> {
     try {
       const response = await fetch(`${this.baseURL}/api/music?popular=true`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Accept': 'application/json',
+          Accept: "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch popular songs');
+        throw new Error("Failed to fetch popular songs");
       }
 
       const data = await response.json();
       return data.songs || data;
     } catch (error) {
-      console.error('Error fetching popular songs:', error);
-      // Return empty array instead of throwing
+      console.error("Error fetching popular songs:", error);
+
       return [];
     }
   }
@@ -178,24 +201,26 @@ class MusicService {
   async getRecentlyPlayed(authHeaders: HeadersInit): Promise<any[]> {
     try {
       const response = await fetch(`${this.baseURL}/api/recently-played`, {
-        method: 'GET',
+        method: "GET",
         headers: authHeaders,
       });
 
-      console.log('Recently played response status:', response.status);
-      
+      console.log("Recently played response status:", response.status);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Recently played error response:', errorData);
-        throw new Error(`Failed to fetch recently played: ${response.status} ${response.statusText}`);
+        console.error("Recently played error response:", errorData);
+        throw new Error(
+          `Failed to fetch recently played: ${response.status} ${response.statusText}`
+        );
       }
 
       const data = await response.json();
-      console.log('Recently played data:', data);
+      console.log("Recently played data:", data);
       return data.recently_played || data;
     } catch (error) {
-      console.error('Error fetching recently played:', error);
-      // Return empty array instead of throwing
+      console.error("Error fetching recently played:", error);
+
       return [];
     }
   }
@@ -203,24 +228,25 @@ class MusicService {
   async getTopArtists(authHeaders: HeadersInit): Promise<any[]> {
     try {
       const response = await fetch(`${this.baseURL}/api/top-artists`, {
-        method: 'GET',
+        method: "GET",
         headers: authHeaders,
       });
 
-      console.log('Top artists response status:', response.status);
-      
+      console.log("Top artists response status:", response.status);
+
       if (!response.ok) {
-        // If top-artists endpoint doesn't exist, fallback to regular artists
-        console.log('Top artists endpoint not found, falling back to regular artists...');
+        console.log(
+          "Top artists endpoint not found, falling back to regular artists..."
+        );
         const fallbackResponse = await fetch(`${this.baseURL}/api/artists`, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Accept': 'application/json',
+            Accept: "application/json",
           },
         });
 
         if (!fallbackResponse.ok) {
-          throw new Error('Failed to fetch artists');
+          throw new Error("Failed to fetch artists");
         }
 
         const fallbackData = await fallbackResponse.json();
@@ -228,15 +254,15 @@ class MusicService {
       }
 
       const data = await response.json();
-      console.log('Top artists data:', data);
-      // Extract the top_artists array from the response
+      console.log("Top artists data:", data);
+
       return data.top_artists || data.artists || data;
     } catch (error) {
-      console.error('Error fetching top artists:', error);
-      // Return empty array instead of throwing
+      console.error("Error fetching top artists:", error);
+
       return [];
     }
   }
 }
 
-export const musicService = new MusicService(); 
+export const musicService = new MusicService();

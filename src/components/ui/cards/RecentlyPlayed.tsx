@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { convertStorageUrl, formatTime, getAudioDuration } from "../../../utils/audioDuration.tsx";
+import {
+  convertStorageUrl,
+  formatTime,
+  getAudioDuration,
+} from "../../../utils/audioDuration";
 import { useRecommendation } from "../../../contexts/RecommendationContext";
 import { useAuth } from "../../../contexts/AuthContext";
 
-// Helper function to safely render text
 const safeRenderText = (content: any): string => {
-  if (typeof content === 'string') return content;
-  if (typeof content === 'number') return content.toString();
-  if (content === null || content === undefined) return '';
-  if (typeof content === 'object') {
-    console.warn('Attempting to render object as text:', content);
+  if (typeof content === "string") return content;
+  if (typeof content === "number") return content.toString();
+  if (content === null || content === undefined) return "";
+  if (typeof content === "object") {
+    console.warn("Attempting to render object as text:", content);
     return JSON.stringify(content);
   }
   return String(content);
@@ -57,7 +60,6 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
   const apiURL = import.meta.env.VITE_API_URL;
 
   const fetchRecentlyPlayed = useCallback(async () => {
-    // Only fetch if user is authenticated
     if (!isAuthenticated) {
       setLoading(false);
       return;
@@ -78,54 +80,78 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
     fetchRecentlyPlayed();
   }, [fetchRecentlyPlayed, isAuthenticated]);
 
-  // Debug: Log the recently played data
-  console.log('RecentlyPlayed component - recentlyPlayed data:', recentlyPlayed);
-  console.log('RecentlyPlayed component - recentlyPlayed length:', recentlyPlayed.length);
+  console.log(
+    "RecentlyPlayed component - recentlyPlayed data:",
+    recentlyPlayed
+  );
+  console.log(
+    "RecentlyPlayed component - recentlyPlayed length:",
+    recentlyPlayed.length
+  );
 
-  // Convert the recentlyPlayed from context to the format expected by this component
-  const convertedRecentlyPlayed: RecentlyPlayedItem[] = recentlyPlayed.map((song: any) => {
-    // Get duration from state or calculate it
-    let formattedDuration = durations[song.id] || '--:--';
-    
-    if (!durations[song.id] && song.duration) {
-      formattedDuration = formatTime(song.duration);
-    } else if (!durations[song.id] && (song.file_path || song.audio_url)) {
-      // Calculate duration if not already calculated
-      const audioUrl = convertStorageUrl(song.file_path || song.audio_url, apiURL);
-      getAudioDuration(audioUrl).then(duration => {
-        if (duration > 0) {
-          setDurations(prev => ({
-            ...prev,
-            [song.id]: formatTime(duration)
-          }));
-        }
-      }).catch(error => {
-        console.error(`Error calculating duration for ${song.title}:`, error);
-      });
-    }
+  const convertedRecentlyPlayed: RecentlyPlayedItem[] = recentlyPlayed.map(
+    (song: any) => {
+      let formattedDuration = durations[song.id] || "--:--";
 
-    return {
-      id: song.id,
-      song: {
-        id: song.id,
-        title: song.title,
-        file_path: song.file_path || song.audio_url || '',
-        song_cover_path: song.song_cover_path || song.cover_image || '',
-        duration: formattedDuration,
-        artist: {
-          id: typeof song.artist === 'object' ? song.artist?.id || song.artist_id || 0 : 0,
-          artist_name: typeof song.artist === 'string' ? song.artist : song.artist?.artist_name || 'Unknown Artist',
-          artist_image: typeof song.artist === 'object' ? song.artist?.artist_image || song.song_cover_path || '' : ''
-        },
-        artist_id: typeof song.artist === 'object' ? song.artist?.id || song.artist_id : song.artist_id,
-        album_id: song.album_id,
-        genre: song.genre,
-        description: song.description,
-        views: song.views,
-        released_date: song.release_date || song.released_date
+      if (!durations[song.id] && song.duration) {
+        formattedDuration = formatTime(song.duration);
+      } else if (!durations[song.id] && (song.file_path || song.audio_url)) {
+        const audioUrl = convertStorageUrl(
+          song.file_path || song.audio_url,
+          apiURL
+        );
+        getAudioDuration(audioUrl)
+          .then((duration) => {
+            if (duration > 0) {
+              setDurations((prev) => ({
+                ...prev,
+                [song.id]: formatTime(duration),
+              }));
+            }
+          })
+          .catch((error) => {
+            console.error(
+              `Error calculating duration for ${song.title}:`,
+              error
+            );
+          });
       }
-    };
-  });
+
+      return {
+        id: song.id,
+        song: {
+          id: song.id,
+          title: song.title,
+          file_path: song.file_path || song.audio_url || "",
+          song_cover_path: song.song_cover_path || song.cover_image || "",
+          duration: formattedDuration,
+          artist: {
+            id:
+              typeof song.artist === "object"
+                ? song.artist?.id || song.artist_id || 0
+                : 0,
+            artist_name:
+              typeof song.artist === "string"
+                ? song.artist
+                : song.artist?.artist_name || "Unknown Artist",
+            artist_image:
+              typeof song.artist === "object"
+                ? song.artist?.artist_image || song.song_cover_path || ""
+                : "",
+          },
+          artist_id:
+            typeof song.artist === "object"
+              ? song.artist?.id || song.artist_id
+              : song.artist_id,
+          album_id: song.album_id,
+          genre: song.genre,
+          description: song.description,
+          views: song.views,
+          released_date: song.release_date || song.released_date,
+        },
+      };
+    }
+  );
 
   const displayedItems = limit
     ? convertedRecentlyPlayed.slice(0, limit)
@@ -159,12 +185,18 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
             <div
               className="recently-played__item"
               key={item.song.id}
-              onClick={() => handleSongClick(item.song.artist?.id || 0, item.song.id)}
+              onClick={() =>
+                handleSongClick(item.song.artist?.id || 0, item.song.id)
+              }
               style={{ cursor: "pointer" }}
             >
               <figure className="recently-played__media">
                 <img
-                  src={item.song.song_cover_path ? convertStorageUrl(item.song.song_cover_path, apiURL) : "/uploads/pig.png"}
+                  src={
+                    item.song.song_cover_path
+                      ? convertStorageUrl(item.song.song_cover_path, apiURL)
+                      : "/uploads/pig.png"
+                  }
                   alt={item.song.title}
                   onError={(e) => {
                     e.currentTarget.src = "/uploads/pig.png";
@@ -176,9 +208,11 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
                   {safeRenderText(item.song.title)}
                 </h3>
                 <p className="recently-played__artist">
-                  {safeRenderText(typeof item.song.artist === 'string' 
-                    ? item.song.artist 
-                    : item.song.artist?.artist_name || 'Unknown Artist')}
+                  {safeRenderText(
+                    typeof item.song.artist === "string"
+                      ? item.song.artist
+                      : item.song.artist?.artist_name || "Unknown Artist"
+                  )}
                 </p>
                 <div className="recently-played__details">
                   <span className="recently-played__duration">
@@ -186,7 +220,9 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
                   </span>
                   {item.song.released_date && (
                     <span className="recently-played__year">
-                      {safeRenderText(new Date(item.song.released_date).getFullYear())}
+                      {safeRenderText(
+                        new Date(item.song.released_date).getFullYear()
+                      )}
                     </span>
                   )}
                   {item.song.genre && (

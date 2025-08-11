@@ -9,7 +9,39 @@ interface AuthHeaders {
 }
 
 export const useAuthHeaders = () => {
-  const { user, isAuthenticated } = useAuth();
+  let authContext;
+  try {
+    authContext = useAuth();
+  } catch (error) {
+    console.warn("AuthProvider not available, using default auth headers");
+    return {
+      getAuthHeaders: async (): Promise<AuthHeaders> => ({
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        isAuthenticated: false,
+        user: null,
+      }),
+      makeAuthenticatedRequest: async (
+        url: string,
+        options: RequestInit = {}
+      ) => {
+        return fetch(url, {
+          ...options,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            ...options.headers,
+          },
+        });
+      },
+      isAuthenticated: false,
+      user: null,
+    };
+  }
+
+  const { user, isAuthenticated } = authContext;
 
   const getAuthHeaders = useCallback(async (): Promise<AuthHeaders> => {
     try {
@@ -26,7 +58,6 @@ export const useAuthHeaders = () => {
       }
 
       const token = authService.getToken();
-      console.log("Bearer Token obtained:", token ? "Yes" : "No");
       console.log(
         "Bearer Token value:",
         token ? token.substring(0, 20) + "..." : "None"
@@ -78,11 +109,6 @@ export const useAuthHeaders = () => {
           ...options.headers,
         },
       };
-
-      console.log(`Making ${options.method || "GET"} request to ${url}`, {
-        isAuthenticated,
-        headers: requestOptions.headers,
-      });
 
       return fetch(url, requestOptions);
     },

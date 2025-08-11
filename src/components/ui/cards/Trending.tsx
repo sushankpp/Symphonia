@@ -4,14 +4,13 @@ import {
   formatTime,
   getAudioDuration,
   convertStorageUrl,
-} from "../../../utils/audioDuration.tsx";
+  getAudioUrlFromSong,
+} from "../../../utils/audioDuration";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
 
 const Trending = () => {
   const { topRecommendations, recordPlay } = useRecommendation();
@@ -22,7 +21,6 @@ const Trending = () => {
 
   const handlePlay = async (song: any) => {
     await recordPlay(song.song.id);
-    // Navigate to music player
     const artistId =
       typeof song.song.artist === "object" ? song.song.artist?.id : 0;
     const targetUrl = `/player/${artistId || 0}/${song.song.id}`;
@@ -30,11 +28,9 @@ const Trending = () => {
   };
 
   const handleAddToPlaylist = () => {
-    // TODO: Implement add to playlist functionality
     console.log("Add to playlist clicked");
   };
 
-  // Get the top recommendation (highest similarity score)
   const topSong =
     topRecommendations.length > 0
       ? topRecommendations.reduce((prev, current) =>
@@ -42,38 +38,54 @@ const Trending = () => {
         )
       : null;
 
-  // Debug logging
   console.log("Trending - topRecommendations:", topRecommendations);
   console.log("Trending - topSong:", topSong);
+  console.log("Trending - topRecommendations length:", topRecommendations.length);
 
-  // Calculate duration for top song if needed
   useEffect(() => {
-    if (
-      topSong &&
-      !durations[topSong.song.id] &&
-      (topSong.song.file_path || topSong.song.audio_url)
-    ) {
-      const audioUrl = convertStorageUrl(
-        topSong.song.file_path || topSong.song.audio_url,
-        apiURL
-      );
-      getAudioDuration(audioUrl)
-        .then((duration) => {
-          if (duration > 0) {
-            setDurations((prev) => ({
-              ...prev,
-              [topSong.song.id]: formatTime(duration),
-            }));
-          }
-        })
-        .catch((error) => {
-          console.error(
-            `Error calculating duration for ${topSong.song.title}:`,
-            error
-          );
-        });
-    }
-  }, [topSong, durations, apiURL]);
+    console.log("Trending useEffect triggered");
+    console.log("Current durations state:", durations);
+    console.log("topRecommendations:", topRecommendations);
+    
+    // Fetch durations for all songs in topRecommendations
+    topRecommendations.forEach((recommendation) => {
+      const song = recommendation.song;
+      console.log(`Processing song: ${song.title}, ID: ${song.id}`);
+      console.log(`Song audio_url: ${song.audio_url}`);
+      console.log(`Song file_path: ${song.file_path}`);
+      console.log(`Duration already exists: ${!!durations[song.id]}`);
+      
+      if (
+        song &&
+        !durations[song.id] &&
+        (song.audio_url || song.file_path)
+      ) {
+        const audioUrl = getAudioUrlFromSong(song, apiURL);
+        console.log(`Converted audio URL: ${audioUrl}`);
+        
+        getAudioDuration(audioUrl)
+          .then((duration) => {
+            console.log(`Duration calculated for ${song.title}: ${duration}`);
+            if (duration > 0) {
+              setDurations((prev) => {
+                const newDurations = {
+                  ...prev,
+                  [song.id]: formatTime(duration),
+                };
+                console.log("Updated durations:", newDurations);
+                return newDurations;
+              });
+            }
+          })
+          .catch((error) => {
+            console.error(
+              `Error calculating duration for ${song.title}:`,
+              error
+            );
+          });
+      }
+    });
+  }, [topRecommendations, durations, apiURL]);
 
   if (!isAuthenticated && !topSong) {
     return (
@@ -164,15 +176,19 @@ const Trending = () => {
           delay: 5000,
           disableOnInteraction: false,
         }}
-        loop={true}
+        loop={topRecommendations.length > 1}
         className="trending-swiper"
+        style={{ width: '100%', height: '300px' }}
       >
-        {topRecommendations.map((recommendation, index) => (
+        {topRecommendations.map((recommendation, index) => {
+          const imageUrl = convertStorageUrl((recommendation.song as any).song_cover_path || recommendation.song.cover_image || "", apiURL) || "/uploads/pig-nobg.png";
+          console.log(`Slide ${index} image URL:`, imageUrl);
+          return (
           <SwiperSlide key={recommendation.song.id}>
             <div
               className="trending-slide"
               style={{
-                backgroundImage: `url(${convertStorageUrl(recommendation.song.song_cover_path || recommendation.song.cover_image || "", apiURL) || "/uploads/pig-nobg.png"})`,
+                backgroundImage: `url(${convertStorageUrl((recommendation.song as any).song_cover_path || recommendation.song.cover_image || "", apiURL) || "/uploads/pig-nobg.png"})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
@@ -189,10 +205,9 @@ const Trending = () => {
                     {recommendation.song.title}
                   </h3>
                   <div className="trending-slide__artist">
-                    {typeof recommendation.song.artist === "string"
-                      ? recommendation.song.artist
-                      : recommendation.song.artist?.artist_name ||
-                        "Unknown Artist"}
+                    {typeof recommendation.song.artist === 'string' 
+                      ? recommendation.song.artist 
+                      : (recommendation.song.artist as any)?.artist_name || 'Unknown Artist'}
                   </div>
                   <div className="trending-slide__details">
                     {recommendation.song.genre && (
@@ -200,10 +215,10 @@ const Trending = () => {
                         {recommendation.song.genre}
                       </span>
                     )}
-                    {recommendation.song.released_date && (
+                    {recommendation.song.release_date && (
                       <span className="trending-slide__year">
                         {new Date(
-                          recommendation.song.released_date
+                          recommendation.song.release_date
                         ).getFullYear()}
                       </span>
                     )}
@@ -233,7 +248,8 @@ const Trending = () => {
               </div>
             </div>
           </SwiperSlide>
-        ))}
+        );
+        })}
       </Swiper>
     </section>
   );

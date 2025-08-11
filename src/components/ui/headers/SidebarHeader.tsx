@@ -71,15 +71,6 @@ const SidebarHeader = () => {
                   Artists
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/record"
-                  className={isActive("/record") ? "active" : ""}
-                >
-                  <Mic2 size={20} />
-                  Record
-                </Link>
-              </li>
             </ul>
           </div>
           <div className="header-navigation__items">
@@ -114,9 +105,9 @@ const SidebarHeader = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Artist Section */}
-          {user?.role === 'artist' && (
+          {user?.role === "artist" && (
             <div className="header-navigation__items">
               <h2 className="header-navigation__title">Artist</h2>
               <ul className="header-navigation__item">
@@ -141,9 +132,9 @@ const SidebarHeader = () => {
               </ul>
             </div>
           )}
-          
+
           {/* Admin Section */}
-          {user?.role === 'admin' && (
+          {user?.role === "admin" && (
             <div className="header-navigation__items">
               <h2 className="header-navigation__title">Admin</h2>
               <ul className="header-navigation__item">
@@ -177,9 +168,9 @@ const SidebarHeader = () => {
               </ul>
             </div>
           )}
-          
+
           {/* Role Request Section for Users */}
-          {user && user.role !== 'admin' && (
+          {user && user.role !== "admin" && (
             <div className="header-navigation__items">
               <h2 className="header-navigation__title">Account</h2>
               <ul className="header-navigation__item">
@@ -195,7 +186,7 @@ const SidebarHeader = () => {
               </ul>
             </div>
           )}
-          
+
           <MenuPlaylist />
         </div>
       </header>

@@ -4,7 +4,7 @@ import SidebarHeader from "../components/ui/headers/SidebarHeader.tsx";
 import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import SongsList from "../components/ui/layouts/SongsList.tsx";
 import { playSong } from "../utils/playSong";
-import { convertStorageUrl } from "../utils/audioDuration.tsx";
+import { convertStorageUrl } from "../utils/audioDuration";
 
 type Song = {
   id: number;

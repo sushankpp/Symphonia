@@ -2,33 +2,31 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./styles/style.scss";
 import { AuthProvider } from "./contexts/AuthContext";
 import { RecommendationProvider } from "./contexts/RecommendationContext";
-import Music from "./pages/Music.tsx";
-import Artists from "./pages/Artists.tsx";
-import Home from "./pages/Home.tsx";
-import SongListings from "./pages/SongListings.tsx";
-import MusicPlayer from "./pages/MusicPlayer.tsx";
-import Recent from "./pages/Recent.tsx";
-import Albums from "./pages/Albums.tsx";
-import Album from "./pages/Album.tsx";
-import { CreatePlaylist } from "./pages/CreatePlaylist.tsx";
-import UploadMusic from "./pages/UploadMusic.tsx";
-import UserProfile from "./pages/UserProfile.tsx";
-import Settings from "./pages/Settings.tsx";
-import Notifications from "./pages/Notifications.tsx";
-import AuthCallback from "./pages/AuthCallback.tsx";
-import AdminDashboard from "./pages/AdminDashboard.tsx";
-import AdminUsers from "./pages/AdminUsers.tsx";
-import AdminRoleRequests from "./pages/AdminRoleRequests.tsx";
-import ArtistDashboard from "./pages/ArtistDashboard.tsx";
-import ArtistMusic from "./pages/ArtistMusic.tsx";
-import ArtistSongStats from "./pages/ArtistSongStats.tsx";
-import RoleRequests from "./pages/RoleRequests.tsx";
-import ArtistUploadRequests from "./pages/ArtistUploadRequests.tsx";
+import Music from "./pages/Music";
+import Artists from "./pages/Artists";
+import Home from "./pages/Home";
+import SongListings from "./pages/SongListings";
+import MusicPlayer from "./pages/MusicPlayer";
+import Recent from "./pages/Recent";
+import Albums from "./pages/Albums";
+import Album from "./pages/Album";
+import { CreatePlaylist } from "./pages/CreatePlaylist";
+import UploadMusic from "./pages/UploadMusic";
+import UserProfile from "./pages/UserProfile";
+import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
+import AuthCallback from "./pages/AuthCallback";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminRoleRequests from "./pages/AdminRoleRequests";
+import ArtistDashboard from "./pages/ArtistDashboard";
+import ArtistMusic from "./pages/ArtistMusic";
+import ArtistSongStats from "./pages/ArtistSongStats";
+import RoleRequests from "./pages/RoleRequests";
+import ArtistUploadRequests from "./pages/ArtistUploadRequests";
 
-// Simple Login redirect component
 const LoginRedirect = () => {
-  // Redirect to home page where users can access the login popup
-  window.location.href = '/';
+  window.location.href = "/";
   return null;
 };
 
@@ -61,21 +59,30 @@ function App() {
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/notification" element={<Notifications />} />
-            
+
             {/*auth*/}
             <Route path="/auth/callback" element={<AuthCallback />} />
-            
+
             {/*admin routes*/}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/role-requests" element={<AdminRoleRequests />} />
-            
+            <Route
+              path="/admin/role-requests"
+              element={<AdminRoleRequests />}
+            />
+
             {/*artist routes*/}
             <Route path="/artist/dashboard" element={<ArtistDashboard />} />
             <Route path="/artist/music" element={<ArtistMusic />} />
-            <Route path="/artist/music/:songId/stats" element={<ArtistSongStats />} />
-            <Route path="/artist/upload-requests" element={<ArtistUploadRequests />} />
-            
+            <Route
+              path="/artist/music/:songId/stats"
+              element={<ArtistSongStats />}
+            />
+            <Route
+              path="/artist/upload-requests"
+              element={<ArtistUploadRequests />}
+            />
+
             {/*role requests*/}
             <Route path="/role-requests" element={<RoleRequests />} />
           </Routes>

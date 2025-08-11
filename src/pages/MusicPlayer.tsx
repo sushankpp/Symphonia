@@ -7,7 +7,7 @@ import { addToRecentlyPlayed } from "../utils/recentlyPlayed.tsx";
 import OptionsMenu from "../components/ui/menus/OptionsMenu.tsx";
 import AddToPlaylistModal from "../utils/addToPlaylist.tsx";
 import RatingPopup from "../components/ui/menus/RatingPopup.tsx";
-import { convertStorageUrl } from "../utils/audioDuration.tsx";
+import { convertStorageUrl, getAudioUrlFromSong } from "../utils/audioDuration.tsx";
 import { sendRating } from "../utils/sendRating";
 import { getRating } from "../utils/getRating";
 import { playSong } from "../utils/playSong";
@@ -28,7 +28,7 @@ type Song = {
 
 type Artist = {
   id: number;
-  artist_name: string;
+  artist_name: string | object;
   artist_image: string;
   song_count: number;
 };
@@ -93,7 +93,7 @@ function MusicPlayer() {
             released_date: song.release_date,
           });
 
-          const audioUrl = convertStorageUrl(song.file_path, apiURL);
+          const audioUrl = getAudioUrlFromSong(song, apiURL);
           const audio = new Audio(audioUrl);
           audio.addEventListener("loadedmetadata", () => {
             const minutes = Math.floor(audio.duration / 60);
@@ -104,7 +104,9 @@ function MusicPlayer() {
           const albumsResponse = await fetch(`${apiURL}/api/albums`);
           if (albumsResponse.ok) {
             const albumsData = await albumsResponse.json();
-            const albumWithSong = albumsData.find((album: Album) =>
+            // Extract albums from the correct response structure
+            const albumsArray = albumsData.albums?.data || albumsData.data || [];
+            const albumWithSong = albumsArray.find((album: Album) =>
               album.songs.some((song: Song) => song.id === foundSong.id)
             );
             if (albumWithSong) {
@@ -367,7 +369,7 @@ function MusicPlayer() {
 
               <div className="music-player__audio-container">
                 <CustomAudioPlayer
-                  src={convertStorageUrl(song.file_path, apiURL)}
+                  src={getAudioUrlFromSong(song, apiURL)}
                   title={song.title}
                   artist={typeof artist.artist_name === 'string' 
                     ? artist.artist_name 

@@ -237,6 +237,7 @@
           background: rgba(255, 255, 255, 0.8);
           transition: all 0.3s ease;
           box-sizing: border-box;
+          color: $black;
 
           &:focus {
             outline: none;
@@ -665,8 +666,6 @@
   gap: 12px;
   flex-wrap: wrap;
 }
-
-
 
 // Upload Success Actions
 .upload-success-actions {

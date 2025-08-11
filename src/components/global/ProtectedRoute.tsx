@@ -17,7 +17,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner while checking authentication
   if (isLoading) {
     return (
       <div className="loading-container">
@@ -27,26 +26,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If authentication is not required, render children
   if (!requireAuth) {
     return <>{children}</>;
   }
 
-  // If user is not authenticated, redirect to home
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  // If no specific roles are required, just check if user is authenticated
   if (allowedRoles.length === 0) {
     return <>{children}</>;
   }
 
-  // Check if user has required role
   const hasRequiredRole = allowedRoles.includes(user?.role || "");
 
   if (!hasRequiredRole) {
-    // Show access denied message instead of redirecting
     return (
       <AccessDenied
         requiredRole={allowedRoles.join(" or ")}

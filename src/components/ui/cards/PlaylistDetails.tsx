@@ -62,7 +62,6 @@ export const PlaylistDetails: React.FC<PlaylistDetailsProps> = ({
     } else {
       setExpandedPlaylist(playlistId);
 
-      // Fetch songs for this playlist if not already loaded
       if (!playlistSongs[playlistId] && !loadingSongs[playlistId]) {
         await fetchPlaylistSongs(playlistId);
       }

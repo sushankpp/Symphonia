@@ -29,7 +29,8 @@
 
 .edit-btn,
 .save-btn,
-.cancel-btn {
+.cancel-btn,
+.change-password-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -71,6 +72,15 @@
 
   &:hover {
     background-color: #4b5563;
+  }
+}
+
+.change-password-btn {
+  background-color: #667eea;
+  color: white;
+
+  &:hover {
+    background-color: #5a67d8;
   }
 }
 

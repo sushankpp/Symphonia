@@ -3,7 +3,7 @@ import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
 
 interface Artist {
   id: number;
-  artist_name: string;
+  artist_name: string | object;
 }
 
 interface CompressionStats {

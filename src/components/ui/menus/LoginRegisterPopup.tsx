@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { authService } from "../../../services/authService";
-
+import ChangePassword from "../forms/ChangePassword";
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -54,6 +54,7 @@ const LoginRegisterPopup = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -85,30 +86,28 @@ const LoginRegisterPopup = ({
 
     try {
       if (isLogin) {
-        // Handle Login with Bearer token authentication
-        const result = await authService.login(formData.email, formData.password);
-        
-        console.log("✅ Login successful:", result);
+        const result = await authService.login(
+          formData.email,
+          formData.password
+        );
 
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(result.user));
+        console.log("Login successful:", result);
 
-        // Use the auth context to login
+        localStorage.setItem("user", JSON.stringify(result.user));
+
         login(result.user);
 
         if (onLoginSuccess) {
           onLoginSuccess(result.user);
         }
 
-        // Close the popup after successful login
         onClose();
       } else {
-        // Handle Register
         const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: "POST",
           headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
+            Accept: "application/json",
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             name: formData.name,
@@ -128,10 +127,7 @@ const LoginRegisterPopup = ({
           throw new Error(data.message || "Registration failed");
         }
 
-        // For registration, we might need to handle email verification
-        alert(
-          "Registration successful! Please check your email for verification."
-        );
+        alert("Registration successful!");
         onClose();
       }
     } catch (err: any) {
@@ -142,15 +138,12 @@ const LoginRegisterPopup = ({
   };
 
   const handleGoogleAuth = () => {
-    // Store current URL for redirect after OAuth
-    localStorage.setItem('oauth_redirect_url', window.location.href);
-    
-    // Redirect to Laravel Google OAuth route
-    // Make sure your Laravel route redirects back to your frontend callback URL
+    localStorage.setItem("oauth_redirect_url", window.location.href);
+
     const callbackUrl = `${window.location.origin}/auth/callback`;
     const googleAuthUrl = `${API_BASE_URL}/api/auth/google?redirect_uri=${encodeURIComponent(callbackUrl)}`;
-    
-    console.log('Redirecting to Google OAuth:', googleAuthUrl);
+
+    console.log("Redirecting to Google OAuth:", googleAuthUrl);
     window.location.href = googleAuthUrl;
   };
 
@@ -179,7 +172,23 @@ const LoginRegisterPopup = ({
         </div>
 
         <div className="login-popup__content">
-          {error && <div className="login-popup__error">{error}</div>}
+          {showChangePassword ? (
+            <ChangePassword
+              email={formData.email}
+              title="Reset Password"
+              showCancelButton={true}
+              onSuccess={() => {
+                setShowChangePassword(false);
+                setError("");
+              }}
+              onCancel={() => {
+                setShowChangePassword(false);
+                setError("");
+              }}
+            />
+          ) : (
+            <>
+              {error && <div className="login-popup__error">{error}</div>}
 
           <div className="login-popup__tabs">
             <button
@@ -406,6 +415,16 @@ const LoginRegisterPopup = ({
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {isLogin && (
+                <button
+                  type="button"
+                  className="login-popup__forgot-password"
+                  onClick={() => setShowChangePassword(true)}
+                  disabled={isLoading}
+                >
+                  Forgot Password?
+                </button>
+              )}
             </div>
 
             {!isLogin && (
@@ -451,6 +470,8 @@ const LoginRegisterPopup = ({
               </button>
             </div>
           </form>
+            </>
+          )}
         </div>
       </div>
     </div>

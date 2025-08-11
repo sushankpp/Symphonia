@@ -263,6 +263,30 @@
   background-color: #f3f4f6;
 }
 
+.login-popup__forgot-password {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 8px;
+  text-decoration: underline;
+  transition: all 0.2s ease;
+}
+
+.login-popup__forgot-password:hover {
+  color: #5a67d8;
+  text-decoration: none;
+}
+
+.login-popup__forgot-password:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
 .login-popup__actions {
   margin-top: 8px;
 }

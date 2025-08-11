@@ -18,7 +18,7 @@ type MusicPlayerProps = {
 
 interface Artist {
   id: number;
-  artist_name: string;
+  artist_name: string | object;
   artist_image: string;
   music_count: number;
 }
@@ -102,8 +102,8 @@ export default function Home({ src }: MusicPlayerProps) {
                 />
               )}
             </ErrorBoundary>
+            <MusicPlayer src="" />
             <RecentlyPlayed limit={2} />
-            <MusicPlayer />
           </div>
         </div>
       </main>

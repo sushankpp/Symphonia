@@ -13,6 +13,7 @@ import {
 import * as React from "react";
 import { addToRecentlyPlayed } from "../../../utils/recentlyPlayed.tsx";
 import { useRecommendation } from "../../../contexts/RecommendationContext";
+import { getAudioUrlFromSong } from "../../../utils/audioDuration.tsx";
 
 type CustomAudioPlayerProps = {
   src: string;
@@ -43,7 +44,7 @@ function CustomAudioPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.7);
+  const [volume, setVolume] = useState(0.5);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,6 +55,7 @@ function CustomAudioPlayer({
   const { recordPlay } = useRecommendation();
 
   useEffect(() => {
+    console.log("CustomAudioPlayer: src changed to:", src);
     setIsLoading(true);
     setMetadataLoaded(false);
     setCurrentTime(0);
@@ -77,18 +79,33 @@ function CustomAudioPlayer({
     const audio = audioRef.current;
     if (!audio) return;
 
-    //Initial setup
+    console.log("Setting up audio element with src:", src);
+    
+    // Check if src is valid
+    if (!src || src === "/uploads/pig.png" || src.includes("pig.png")) {
+      console.error("Invalid audio source:", src);
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if src is a valid audio URL
+    if (!src.startsWith("http") && !src.startsWith("blob:") && !src.startsWith("data:")) {
+      console.error("Invalid audio URL format:", src);
+      setIsLoading(false);
+      return;
+    }
+
     audio.volume = volume;
     audio.muted = isMuted;
     audio.playbackRate = playbackRate;
 
     if (autoPlay) {
-      audio.play().catch(() => {
+      audio.play().catch((error) => {
+        console.error("Auto-play failed:", error);
         setIsPlaying(false);
       });
     }
 
-    //audio events
     const onTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
       updateProgressBar();
@@ -107,13 +124,39 @@ function CustomAudioPlayer({
     const onPlaying = () => setIsBuffering(false);
     const onError = () => {
       console.error("Audio error:", audio.error);
+      console.error("Audio error code:", audio.error?.code);
+      console.error("Audio error message:", audio.error?.message);
+      console.error("Audio src:", audio.src);
+      console.error("Audio networkState:", audio.networkState);
+      console.error("Audio readyState:", audio.readyState);
+      
+      // Provide user-friendly error message based on error type
+      if (audio.error) {
+        switch (audio.error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            console.error("Audio loading was aborted by user");
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            console.error("Network error - audio file may not be accessible");
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            console.error("Audio decoding error - file may be corrupted or in unsupported format");
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            console.error("Audio format not supported by browser");
+            break;
+          default:
+            console.error("Unknown audio error occurred");
+        }
+      }
+      
       setIsLoading(false);
       setIsPlaying(false);
     };
 
     const updateProgressBar = () => {
-      if (progressFillRef.current && duration > 0) {
-        const progress = (currentTime / duration) * 100;
+      if (progressFillRef.current && audio.duration > 0) {
+        const progress = (audio.currentTime / audio.duration) * 100;
         progressFillRef.current.style.width = `${progress}%`;
       }
     };
@@ -146,14 +189,12 @@ function CustomAudioPlayer({
 
     if (songId) {
       try {
-        // Record play for recommendations
         await recordPlay(songId);
         console.log("Song play recorded for recommendations");
       } catch (error) {
         console.error("Failed to record play for recommendations:", error);
       }
 
-      // Also add to recently played (existing functionality)
       addToRecentlyPlayed(songId)
         .then(() => console.log("Added to recently played"))
         .catch((error) =>
@@ -166,7 +207,6 @@ function CustomAudioPlayer({
     if (!audio) return;
 
     if (audio.paused) {
-      // Only show loading if metadata hasn't been loaded yet
       if (!metadataLoaded) {
         setIsLoading(true);
       }
@@ -201,7 +241,6 @@ function CustomAudioPlayer({
     setCurrentTime(newTime);
   };
 
-  //toggle mute
   const toggleMute = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -227,7 +266,6 @@ function CustomAudioPlayer({
     }
   };
 
-  // Skip forward 10 seconds
   const skipForward = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -235,7 +273,6 @@ function CustomAudioPlayer({
     audio.currentTime = Math.min(audio.currentTime + 10, duration);
   };
 
-  // skip backward 10 seconds
   const skipBackward = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -243,7 +280,6 @@ function CustomAudioPlayer({
     audio.currentTime = Math.max(audio.currentTime - 10, 0);
   };
 
-  //change playback rate
   const changePlaybackRate = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -257,7 +293,6 @@ function CustomAudioPlayer({
     audio.playbackRate = newRate;
   };
 
-  // Handle mouse events for volume controls
   const handleMouseEnter = () => {
     setIsHovering(true);
   };

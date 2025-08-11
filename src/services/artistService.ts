@@ -1,9 +1,8 @@
-import { makeAuthenticatedRequest } from './apiService';
+import { makeAuthenticatedRequest } from "./apiService";
 
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const API_BASE_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = baseUrl.endsWith("/api") ? baseUrl : `${baseUrl}/api`;
 
-// Updated interfaces to match the API response format
 export interface ArtistDashboardStats {
   total_tracks: number;
   total_views: number;
@@ -83,7 +82,6 @@ export interface ArtistMusic {
   };
 }
 
-// New interfaces for upload approval system
 export interface MusicUploadRequest {
   id: number;
   title: string;
@@ -96,8 +94,8 @@ export interface MusicUploadRequest {
   song_cover_path?: string;
   file_url: string;
   file_path?: string;
-  upload_status: 'pending' | 'approved' | 'rejected';
-  status?: 'pending' | 'approved' | 'rejected';
+  upload_status: "pending" | "approved" | "rejected";
+  status?: "pending" | "approved" | "rejected";
   admin_notes?: string;
   created_at: string;
   updated_at: string;
@@ -112,11 +110,11 @@ export interface MusicUploadRequest {
 }
 
 export interface MusicItem {
-  id: string; // "request_X" for requests, number for approved
+  id: string;
   title: string;
   genre: string;
-  upload_status: 'pending' | 'approved' | 'rejected';
-  request_id?: number; // null for approved music
+  upload_status: "pending" | "approved" | "rejected";
+  request_id?: number;
   admin_notes?: string;
   song_cover_url: string;
   file_url: string;
@@ -191,21 +189,20 @@ export interface MusicResponse {
 export interface DashboardResponse {
   success: boolean;
   stats: ArtistDashboardStats;
-  recent_activity: ArtistDashboardStats['recent_activity'];
-  top_rated_tracks: ArtistDashboardStats['top_rated_tracks'];
-  most_viewed_tracks: ArtistDashboardStats['most_viewed_tracks'];
+  recent_activity: ArtistDashboardStats["recent_activity"];
+  top_rated_tracks: ArtistDashboardStats["top_rated_tracks"];
+  most_viewed_tracks: ArtistDashboardStats["most_viewed_tracks"];
 }
 
 export interface SongStatsResponse {
   success: boolean;
-  song: SongStats['song'];
-  ratings_breakdown: SongStats['ratings_breakdown'];
-  recent_plays: SongStats['recent_plays'];
-  daily_plays: SongStats['daily_plays'];
-  all_ratings: SongStats['all_ratings'];
+  song: SongStats["song"];
+  ratings_breakdown: SongStats["ratings_breakdown"];
+  recent_plays: SongStats["recent_plays"];
+  daily_plays: SongStats["daily_plays"];
+  all_ratings: SongStats["all_ratings"];
 }
 
-// New response interfaces for upload approval system
 export interface UploadRequestsResponse {
   success: boolean;
   requests: {
@@ -239,83 +236,92 @@ export interface AdminUploadRequestsResponse {
 }
 
 class ArtistService {
-  // Dashboard
   async getDashboardStats(): Promise<DashboardResponse> {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/artist/dashboard`);
-    
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/artist/dashboard`
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch artist dashboard stats');
+      throw new Error("Failed to fetch artist dashboard stats");
     }
-    
+
     return await response.json();
   }
 
-  // Music Management
-  async getMusic(params: {
-    per_page?: number;
-    sort_by?: 'created_at' | 'views' | 'rating';
-    sort_order?: 'asc' | 'desc';
-  } = {}): Promise<MusicResponse> {
+  async getMusic(
+    params: {
+      per_page?: number;
+      sort_by?: "created_at" | "views" | "rating";
+      sort_order?: "asc" | "desc";
+    } = {}
+  ): Promise<MusicResponse> {
     const queryParams = new URLSearchParams();
-    
-    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params.sort_by) queryParams.append('sort_by', params.sort_by);
-    if (params.sort_order) queryParams.append('sort_order', params.sort_order);
+
+    if (params.per_page)
+      queryParams.append("per_page", params.per_page.toString());
+    if (params.sort_by) queryParams.append("sort_by", params.sort_by);
+    if (params.sort_order) queryParams.append("sort_order", params.sort_order);
 
     const response = await makeAuthenticatedRequest(
       `${API_BASE_URL}/artist/music?${queryParams.toString()}`
     );
-    
+
     if (!response.ok) {
-      throw new Error('Failed to fetch artist music');
+      throw new Error("Failed to fetch artist music");
     }
-    
+
     return await response.json();
   }
 
-  // New method to get music with upload requests
-  async getMusicWithRequests(params: {
-    per_page?: number;
-    sort_by?: 'created_at' | 'views' | 'rating';
-    sort_order?: 'asc' | 'desc';
-    status?: 'all' | 'pending' | 'approved' | 'rejected';
-  } = {}): Promise<MusicWithRequestsResponse> {
+  async getMusicWithRequests(
+    params: {
+      per_page?: number;
+      sort_by?: "created_at" | "views" | "rating";
+      sort_order?: "asc" | "desc";
+      status?: "all" | "pending" | "approved" | "rejected";
+    } = {}
+  ): Promise<MusicWithRequestsResponse> {
     const queryParams = new URLSearchParams();
-    
-    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params.sort_by) queryParams.append('sort_by', params.sort_by);
-    if (params.sort_order) queryParams.append('sort_order', params.sort_order);
-    if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+
+    if (params.per_page)
+      queryParams.append("per_page", params.per_page.toString());
+    if (params.sort_by) queryParams.append("sort_by", params.sort_by);
+    if (params.sort_order) queryParams.append("sort_order", params.sort_order);
+    if (params.status && params.status !== "all")
+      queryParams.append("status", params.status);
 
     const response = await makeAuthenticatedRequest(
       `${API_BASE_URL}/artist/music?${queryParams.toString()}`
     );
-    
+
     if (!response.ok) {
-      throw new Error('Failed to fetch artist music with requests');
+      throw new Error("Failed to fetch artist music with requests");
     }
-    
+
     return await response.json();
   }
 
-  // Upload Requests Management
-  async getUploadRequests(params: {
-    per_page?: number;
-    status?: 'all' | 'pending' | 'approved' | 'rejected';
-  } = {}): Promise<UploadRequestsResponse> {
+  async getUploadRequests(
+    params: {
+      per_page?: number;
+      status?: "all" | "pending" | "approved" | "rejected";
+    } = {}
+  ): Promise<UploadRequestsResponse> {
     const queryParams = new URLSearchParams();
-    
-    if (params.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+
+    if (params.per_page)
+      queryParams.append("per_page", params.per_page.toString());
+    if (params.status && params.status !== "all")
+      queryParams.append("status", params.status);
 
     const response = await makeAuthenticatedRequest(
       `${API_BASE_URL}/music-upload-requests?${queryParams.toString()}`
     );
-    
+
     if (!response.ok) {
-      throw new Error('Failed to fetch upload requests');
+      throw new Error("Failed to fetch upload requests");
     }
-    
+
     return await response.json();
   }
 
@@ -323,58 +329,69 @@ class ArtistService {
     const response = await makeAuthenticatedRequest(
       `${API_BASE_URL}/music-upload-requests/${requestId}`,
       {
-        method: 'DELETE',
+        method: "DELETE",
       }
     );
-    
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to cancel upload request');
+      throw new Error(error.message || "Failed to cancel upload request");
     }
   }
 
   async getSongStats(id: number): Promise<SongStatsResponse> {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/artist/music/${id}/stats`);
-    
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/artist/music/${id}/stats`
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch song statistics');
+      throw new Error("Failed to fetch song statistics");
     }
-    
+
     return await response.json();
   }
 
-  async updateSong(id: number, data: {
-    title?: string;
-    genre?: string;
-    description?: string;
-    lyrics?: string;
-    release_date?: string;
-  }): Promise<ArtistMusic> {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/artist/music/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    
+  async updateSong(
+    id: number,
+    data: {
+      title?: string;
+      genre?: string;
+      description?: string;
+      lyrics?: string;
+      release_date?: string;
+    }
+  ): Promise<ArtistMusic> {
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/artist/music/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to update song');
+      throw new Error(error.message || "Failed to update song");
     }
-    
+
     const result = await response.json();
     return result.data;
   }
 
   async deleteSong(id: number): Promise<void> {
-    const response = await makeAuthenticatedRequest(`${API_BASE_URL}/artist/music/${id}`, {
-      method: 'DELETE',
-    });
-    
+    const response = await makeAuthenticatedRequest(
+      `${API_BASE_URL}/artist/music/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to delete song');
+      throw new Error(error.message || "Failed to delete song");
     }
   }
 }

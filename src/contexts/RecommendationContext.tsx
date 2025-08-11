@@ -16,7 +16,8 @@ interface Song {
   album?: string;
   duration: number;
   cover_image?: string;
-  audio_url: string;
+  audio_url?: string;
+  file_path?: string;
   genre?: string;
   release_date?: string;
 }
@@ -66,7 +67,26 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getAuthHeaders, isAuthenticated } = useAuthHeaders();
+  
+  let authHeaders;
+  try {
+    authHeaders = useAuthHeaders();
+  } catch (error) {
+    console.warn("useAuthHeaders not available, using default values");
+    authHeaders = {
+      getAuthHeaders: async () => ({
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        isAuthenticated: false,
+        user: null,
+      }),
+      isAuthenticated: false,
+    };
+  }
+  
+  const { getAuthHeaders, isAuthenticated } = authHeaders;
 
   const loadRecommendations = useCallback(async () => {
     try {
@@ -125,10 +145,7 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
       //   "First top recommendation song file_path:",
       //   data[0]?.song?.file_path
       // );
-      // console.log(
-      //   "First top recommendation song audio_url:",
-      //   data[0]?.song?.audio_url
-      // );
+      // console.log("First top recommendation song audio_url:", data[0]?.song?.audio_url);
       // console.log("=== END TOP RECOMMENDATIONS API RESPONSE ===");
 
       if (data.length === 0) {

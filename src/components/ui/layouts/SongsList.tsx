@@ -39,8 +39,6 @@ const SongsList: React.FC<SongsListProps> = ({
   onRemoveSong,
 }) => {
   const handleSongClick = async (songId: number) => {
-    // Just call the original onSongClick handler
-    // The playSong API will be called in MusicPlayer when audio starts
     onSongClick(songId);
   };
   const navigate = useNavigate();
@@ -61,11 +59,9 @@ const SongsList: React.FC<SongsListProps> = ({
     setLocalActiveMenuId(localActiveMenuId === songId ? null : songId);
   };
 
-  // Use local state if no activeMenuId is passed from parent
   const currentActiveMenuId =
     activeMenuId !== null ? activeMenuId : localActiveMenuId;
 
-  // Handle clicking outside to close menu
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as HTMLElement;
@@ -83,27 +79,26 @@ const SongsList: React.FC<SongsListProps> = ({
   const handleRate = async (song: Song) => {
     setSelectedSong(song);
     setRatingType("song");
-    
-    // Fetch current rating for this song if not already loaded
+
     if (!songRatings[song.id]) {
       try {
         const rating = await getRating({
           rateableId: song.id,
           rateableType: "song",
         });
-        setSongRatings(prev => ({
+        setSongRatings((prev) => ({
           ...prev,
-          [song.id]: rating
+          [song.id]: rating,
         }));
       } catch (error) {
         console.error("Error fetching song rating:", error);
-        setSongRatings(prev => ({
+        setSongRatings((prev) => ({
           ...prev,
-          [song.id]: 0
+          [song.id]: 0,
         }));
       }
     }
-    
+
     setShowRatingPopup(true);
   };
 
@@ -119,9 +114,9 @@ const SongsList: React.FC<SongsListProps> = ({
 
       console.log("Song rated successfully:", rating);
       if (selectedSong) {
-        setSongRatings(prev => ({
+        setSongRatings((prev) => ({
           ...prev,
-          [selectedSong.id]: rating
+          [selectedSong.id]: rating,
         }));
       }
     } catch (error) {
@@ -140,9 +135,8 @@ const SongsList: React.FC<SongsListProps> = ({
   ) => {
     try {
       const apiURL = import.meta.env.VITE_API_URL;
-      // Get authentication headers
       const authHeaders = authService.getAuthHeaders();
-      
+
       const response = await fetch(
         `${apiURL}/api/playlists/${playlistId}/songs`,
         {
@@ -169,9 +163,8 @@ const SongsList: React.FC<SongsListProps> = ({
   const handleCreatePlaylist = async (playlistName: string, songId: number) => {
     try {
       const apiURL = import.meta.env.VITE_API_URL;
-      // Get authentication headers
       const authHeaders = authService.getAuthHeaders();
-      
+
       const response = await fetch(`${apiURL}/api/playlists`, {
         method: "POST",
         headers: {
@@ -208,7 +201,6 @@ const SongsList: React.FC<SongsListProps> = ({
   };
 
   const handleShare = (song: Song) => {
-    // Share functionality - you can implement this based on your needs
     console.log("Share song:", song.title);
   };
 
@@ -262,8 +254,8 @@ const SongsList: React.FC<SongsListProps> = ({
                   </h3>
                   {song.artist_name && (
                     <p className="song-card__artist">
-                      {typeof song.artist_name === 'string' 
-                        ? song.artist_name 
+                      {typeof song.artist_name === "string"
+                        ? song.artist_name
                         : JSON.stringify(song.artist_name)}
                     </p>
                   )}
@@ -315,7 +307,9 @@ const SongsList: React.FC<SongsListProps> = ({
                       className="song-card__action-btn song-card__remove-btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm(`Remove "${song.title}" from this album?`)) {
+                        if (
+                          confirm(`Remove "${song.title}" from this album?`)
+                        ) {
                           onRemoveSong(song.id);
                         }
                       }}
@@ -374,7 +368,7 @@ const SongsList: React.FC<SongsListProps> = ({
         onClose={() => setShowRatingPopup(false)}
         onRate={handleRatingSubmit}
         title={selectedSong?.title || ""}
-                    currentRating={selectedSong ? songRatings[selectedSong.id] || 0 : 0}
+        currentRating={selectedSong ? songRatings[selectedSong.id] || 0 : 0}
         type={ratingType}
         rateableId={selectedSong?.id || 0}
       />

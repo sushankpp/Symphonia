@@ -6,7 +6,7 @@ import {
   formatTime,
   getAudioDuration,
   convertStorageUrl,
-} from "../utils/audioDuration.tsx";
+} from "../utils/audioDuration";
 import { useNavigate } from "react-router-dom";
 import { playSong } from "../utils/playSong";
 import { useAuth } from "../contexts/AuthContext";

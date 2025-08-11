@@ -43,7 +43,6 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
-  // Upload requests state
   const [requests, setRequests] = useState<MusicUploadRequest[]>([]);
   const [selectedRequest, setSelectedRequest] =
     useState<MusicUploadRequest | null>(null);
@@ -51,7 +50,6 @@ const AdminDashboard: React.FC = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectNotes, setRejectNotes] = useState("");
 
-  // Pagination and filtering for upload requests
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -74,7 +72,6 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch both dashboard stats and role requests
       const [dashboardResponse, roleRequestsResponse] = await Promise.all([
         adminService.getDashboardStats(),
         adminService.getRoleRequests(),
@@ -83,22 +80,19 @@ const AdminDashboard: React.FC = () => {
       console.log("Dashboard response:", dashboardResponse);
       console.log("Role requests response:", roleRequestsResponse);
 
-      // Handle the correct API response structure
       if (dashboardResponse.success && dashboardResponse.stats) {
         const stats = dashboardResponse.stats;
 
-        // Handle role requests data
         let pending_role_requests = 0;
         let recent_role_requests: any[] = [];
 
-                 if (roleRequestsResponse.success && roleRequestsResponse.requests) {
-           const requests = roleRequestsResponse.requests.data || [];
-           pending_role_requests = requests.filter(
-             (req: any) => req.status === "pending"
-           ).length;
+        if (roleRequestsResponse.success && roleRequestsResponse.requests) {
+          const requests = roleRequestsResponse.requests.data || [];
+          pending_role_requests = requests.filter(
+            (req: any) => req.status === "pending"
+          ).length;
 
-                     // Get recent role requests (first 5)
-           recent_role_requests = requests.slice(0, 5).map((request: any) => ({
+          recent_role_requests = requests.slice(0, 5).map((request: any) => ({
             id: request.id,
             user: {
               id: request.user.id,
@@ -121,7 +115,6 @@ const AdminDashboard: React.FC = () => {
           recent_role_requests,
         });
       } else {
-        // Fallback to default stats
         setStats({
           total_users: 0,
           total_artists: 0,
@@ -136,7 +129,6 @@ const AdminDashboard: React.FC = () => {
       setError(
         err instanceof Error ? err.message : "Failed to load dashboard stats"
       );
-      // Set default stats if API fails
       setStats({
         total_users: 0,
         total_artists: 0,
@@ -171,22 +163,8 @@ const AdminDashboard: React.FC = () => {
 
       if (response.success && response.requests) {
         const requests = response.requests.data || [];
-        console.log('AdminDashboard - Requests data:', requests);
-        
-        // Debug: Check the structure of the first request
-        if (requests.length > 0) {
-          const firstRequest = requests[0];
-          console.log('AdminDashboard - First request structure:', firstRequest);
-          console.log('AdminDashboard - Available fields:', Object.keys(firstRequest));
-          console.log('AdminDashboard - Cover path field:', firstRequest.song_cover_path);
-          console.log('AdminDashboard - All cover-related fields:', {
-            song_cover_path: firstRequest.song_cover_path,
-            song_cover_url: (firstRequest as any).song_cover_url,
-            cover_path: (firstRequest as any).cover_path,
-            cover_url: (firstRequest as any).cover_url
-          });
-        }
-        
+        console.log("AdminDashboard - Requests data:", requests);
+
         setRequests(requests);
         setTotal(response.requests.total || 0);
         setTotalPages(response.requests.last_page || 1);
@@ -215,18 +193,17 @@ const AdminDashboard: React.FC = () => {
 
     try {
       await adminService.approveUploadRequest(requestId);
-             setRequests(
-         requests.map((req) =>
-           req.id === requestId
-             ? {
-                 ...req,
-                 status: "approved" as const,
-                 upload_status: "approved" as const,
-               } as MusicUploadRequest
-             : req
-         )
-       );
-      // Also update selectedRequest if it's the same one
+      setRequests(
+        requests.map((req) =>
+          req.id === requestId
+            ? ({
+                ...req,
+                status: "approved" as const,
+                upload_status: "approved" as const,
+              } as MusicUploadRequest)
+            : req
+        )
+      );
       if (selectedRequest && selectedRequest.id === requestId) {
         setSelectedRequest({
           ...selectedRequest,
@@ -250,19 +227,18 @@ const AdminDashboard: React.FC = () => {
 
     try {
       await adminService.rejectUploadRequest(requestId, rejectNotes);
-             setRequests(
-         requests.map((req) =>
-           req.id === requestId
-             ? {
-                 ...req,
-                 status: "rejected" as const,
-                 upload_status: "rejected" as const,
-                 admin_notes: rejectNotes,
-               } as MusicUploadRequest
-             : req
-         )
-       );
-      // Also update selectedRequest if it's the same one
+      setRequests(
+        requests.map((req) =>
+          req.id === requestId
+            ? ({
+                ...req,
+                status: "rejected" as const,
+                upload_status: "rejected" as const,
+                admin_notes: rejectNotes,
+              } as MusicUploadRequest)
+            : req
+        )
+      );
       if (selectedRequest && selectedRequest.id === requestId) {
         setSelectedRequest({
           ...selectedRequest,
@@ -285,7 +261,6 @@ const AdminDashboard: React.FC = () => {
       const details = await adminService.getUploadRequestDetails(requestId);
       console.log("Received details:", details);
 
-      // More detailed validation
       if (!details) {
         console.error("No details received");
         setError("No request details received from server");
@@ -300,7 +275,6 @@ const AdminDashboard: React.FC = () => {
         fullDetails: details,
       });
 
-      // Use fallback data if API doesn't return complete data
       const fallbackRequest = requests.find((req) => req.id === requestId);
       if (fallbackRequest && (!details.title || !details.artist)) {
         console.log(
@@ -318,7 +292,6 @@ const AdminDashboard: React.FC = () => {
     } catch (err) {
       console.error("Error fetching request details:", err);
 
-      // Fallback: try to find the request in the current list
       const fallbackRequest = requests.find((req) => req.id === requestId);
       if (fallbackRequest) {
         console.log(
@@ -336,7 +309,6 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Show loading while authentication is being checked
   if (authLoading) {
     return (
       <div className="loading-container">
@@ -346,13 +318,11 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // Redirect to home if not authenticated
   if (!isAuthenticated) {
     window.location.href = "/";
     return null;
   }
 
-  // Check if user has admin role
   if (user?.role !== "admin") {
     return (
       <div className="access-denied">
@@ -524,9 +494,9 @@ const AdminDashboard: React.FC = () => {
           <div className="stat-item">
             <span className="stat-number">
               {
-                                 requests.filter(
-                   (r) => (r.status === "pending" || r.upload_status === "pending")
-                 ).length
+                requests.filter(
+                  (r) => r.status === "pending" || r.upload_status === "pending"
+                ).length
               }
             </span>
             <span className="stat-label">Pending</span>
@@ -534,7 +504,6 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Controls */}
       <div className="controls-section">
         <div className="search-controls">
           <input
@@ -637,12 +606,12 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="request-info">
-                                         <h3>{(request as any).song_title || request.title}</h3>
-                                         <p className="artist">
-                       by{" "}
-                       {request.artist?.artist_name ||
-                         (request as any).song_artist?.artist_name}
-                     </p>
+                    <h3>{(request as any).song_title || request.title}</h3>
+                    <p className="artist">
+                      by{" "}
+                      {request.artist?.artist_name ||
+                        (request as any).song_artist?.artist_name}
+                    </p>
                     <p className="genre">{request.genre}</p>
 
                     {request.description && (
@@ -664,8 +633,8 @@ const AdminDashboard: React.FC = () => {
                         View Details
                       </button>
 
-                                             {((request as any).status === "pending" ||
-                         request.upload_status === "pending") && (
+                      {((request as any).status === "pending" ||
+                        request.upload_status === "pending") && (
                         <>
                           <button
                             onClick={() => handleApproveRequest(request.id)}
@@ -770,7 +739,7 @@ const AdminDashboard: React.FC = () => {
               </button>
             </div>
             <div className="modal-body">
-              <div className="request-details">
+              <div className="upload-request-details">
                 <div className="detail-row">
                   <strong>Title:</strong>{" "}
                   <span style={{ color: "#1f2937" }}>
@@ -873,7 +842,6 @@ const AdminDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Reject Modal */}
       {showRejectModal && selectedRequest && (
         <div className="modal-overlay">
           <div className="modal-content">

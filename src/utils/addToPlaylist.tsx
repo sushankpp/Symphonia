@@ -1,5 +1,5 @@
 import React from "react";
-import { PlaylistLists } from "../components/ui/cards/PlaylistsLists.tsx";
+import { PlaylistLists } from "../components/ui/cards/PlaylistsLists";
 import { useFetchPlaylists } from "../hooks/useFetchPlaylists";
 
 type AddToPlaylistProps = {

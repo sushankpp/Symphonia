@@ -104,13 +104,10 @@ const RoleRequests: React.FC = () => {
   };
 
   const canSubmitNewRequest = () => {
-    // Return false if still loading or if requests is undefined/null
     if (loading || !requests || !Array.isArray(requests)) {
       return false;
     }
 
-    // Check if user already has a pending request
-    // Filter out any null/undefined items and then check for pending status
     const hasPendingRequest = requests.some(
       (req) => req && req.status === "pending"
     );
@@ -148,7 +145,6 @@ const RoleRequests: React.FC = () => {
               </div>
             )}
 
-            {/* Submit New Request */}
             {user?.role !== "admin" && canSubmitNewRequest() && (
               <div className="submit-request-section">
                 {!showRequestForm ? (
@@ -259,7 +255,6 @@ const RoleRequests: React.FC = () => {
               </div>
             )}
 
-            {/* Pending Request Notice */}
             {!canSubmitNewRequest() && (
               <div className="pending-request-notice">
                 <div className="notice-content">
@@ -279,7 +274,6 @@ const RoleRequests: React.FC = () => {
               </div>
             )}
 
-            {/* Request History */}
             <div className="requests-history">
               <h3>Your Request History</h3>
 
@@ -351,7 +345,6 @@ const RoleRequests: React.FC = () => {
               )}
             </div>
 
-            {/* Help Section */}
             <div className="help-section">
               <h3>Need Help?</h3>
               <div className="help-content">
@@ -366,7 +359,7 @@ const RoleRequests: React.FC = () => {
                   <h4>What happens after approval?</h4>
                   <p>
                     Once approved, your role will be automatically updated and
-                    you'll have access to new features.
+                    you&apos;ll have access to new features.
                   </p>
                 </div>
                 <div className="help-item">

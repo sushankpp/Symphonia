@@ -3,7 +3,7 @@ import TopHeader from "../components/ui/headers/TopHeader.tsx";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { playSong } from "../utils/playSong";
-import { convertStorageUrl } from "../utils/audioDuration.tsx";
+import { convertStorageUrl } from "../utils/audioDuration";
 
 type Song = {
   id: number;

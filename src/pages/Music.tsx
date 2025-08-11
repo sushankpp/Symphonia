@@ -9,7 +9,7 @@ import { Star, Play } from "lucide-react";
 
 type Artist = {
   id: number;
-  artist_name: string;
+  artist_name: string | object;
   artist_image: string;
   song_count: number;
 };
@@ -151,7 +151,7 @@ function Music() {
                   <div key={recommendation.song.id} className="music-recommendation-card">
                     <div className="music-recommendation-card__image">
                       <img 
-                        src={convertStorageUrl((recommendation.song as any).song_cover_path || recommendation.song.cover_image || "", apiURL) || "/uploads/pig.png"} 
+                        src={convertStorageUrl((recommendation.song as any).song_cover_path || recommendation.song.cover_image || "/uploads/pig.png", apiURL)} 
                         alt={`${typeof recommendation.song.artist === 'string' 
                           ? recommendation.song.artist 
                           : (recommendation.song.artist as any)?.artist_name || 'Unknown Artist'} - ${recommendation.song.title}`}

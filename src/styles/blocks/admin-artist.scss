@@ -299,6 +299,7 @@
 /* Request Details */
 .request-details {
   margin-top: 0.5rem;
+  color: #ffffff;
 }
 
 .role-change {
@@ -954,7 +955,7 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #000;
+  color: #ffffff;
   font-weight: 500;
 }
 
@@ -966,7 +967,7 @@
   border: 1px solid #444;
   border-radius: 6px;
   padding: 0.75rem;
-  color: #000;
+  color: #ffffff;
   font-size: 1rem;
   box-sizing: border-box;
 }
@@ -1113,70 +1114,70 @@
   color: #b0b0b0;
 }
 
-.request-details {
+.modal-content .request-details {
   color: #ffffff;
 }
 
-.user-info-section,
-.request-info-section,
-.admin-actions-section {
+.modal-content .user-info-section,
+.modal-content .request-info-section,
+.modal-content .admin-actions-section {
   margin-bottom: 2rem;
 }
 
-.user-info-section h4,
-.request-info-section h4,
-.admin-actions-section h4 {
+.modal-content .user-info-section h4,
+.modal-content .request-info-section h4,
+.modal-content .admin-actions-section h4 {
   margin: 0 0 1rem 0;
   color: #ffffff;
   font-size: 1.2rem;
 }
 
-.user-details p,
-.request-meta p {
+.modal-content .user-details p,
+.modal-content .request-meta p {
   margin: 0.5rem 0;
-  color: #b0b0b0;
+  color: #e0e0e0;
 }
 
-.user-details strong,
-.request-meta strong {
+.modal-content .user-details strong,
+.modal-content .request-meta strong {
   color: #ffffff;
 }
 
-.reason-section,
-.admin-notes-section {
+.modal-content .reason-section,
+.modal-content .admin-notes-section {
   margin-top: 1.5rem;
 }
 
-.reason-section h5,
-.admin-notes-section h5 {
+.modal-content .reason-section h5,
+.modal-content .admin-notes-section h5 {
   margin: 0 0 0.5rem 0;
   color: #ffffff;
 }
 
-.reason-text,
-.admin-notes-text {
-  background: #333;
+.modal-content .reason-text,
+.modal-content .admin-notes-text {
+  background: #2a2a2a;
   padding: 1rem;
   border-radius: 6px;
-  color: #b0b0b0;
+  color: #e0e0e0;
   border: 1px solid #444;
   line-height: 1.6;
 }
 
-.admin-notes-input {
+.modal-content .admin-notes-input {
   margin-bottom: 1.5rem;
 }
 
-.admin-notes-input label {
+.modal-content .admin-notes-input label {
   display: block;
   margin-bottom: 0.5rem;
   color: #ffffff;
   font-weight: 500;
 }
 
-.admin-notes-input textarea {
+.modal-content .admin-notes-input textarea {
   width: 100%;
-  background: #333;
+  background: #2a2a2a;
   border: 1px solid #444;
   border-radius: 6px;
   padding: 0.75rem;
@@ -1186,7 +1187,7 @@
   resize: vertical;
 }
 
-.action-buttons {
+.modal-content .action-buttons {
   display: flex;
   gap: 1rem;
 }

@@ -20,7 +20,7 @@ const ArtistDashboard: React.FC = () => {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      
+
       const data = await artistService.getDashboardStats();
       console.log("Dashboard API Response:", data);
       setDashboardData(data);
@@ -46,13 +46,12 @@ const ArtistDashboard: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (error) {
-      console.error('Logout failed:', error);
-      // Fallback: clear localStorage and redirect
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
-      window.location.href = '/';
+      console.error("Logout failed:", error);
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user");
+      window.location.href = "/";
     }
   };
 
@@ -61,10 +60,7 @@ const ArtistDashboard: React.FC = () => {
       <div className="access-denied">
         <h2>Access Denied</h2>
         <p>You need to be an artist to access this page.</p>
-        <button 
-          onClick={handleLogout}
-          className="logout-btn"
-        >
+        <button onClick={handleLogout} className="logout-btn">
           Logout
         </button>
       </div>
@@ -106,7 +102,6 @@ const ArtistDashboard: React.FC = () => {
 
             {dashboardData && (
               <>
-                {/* Main Stats Grid */}
                 <div className="stats-grid">
                   <div className="stat-card primary">
                     <div className="stat-icon">🎵</div>
@@ -147,7 +142,6 @@ const ArtistDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Charts and Analytics */}
                 <div className="analytics-section">
                   <div className="chart-container">
                     <h3>Monthly Analytics (Last 6 Months)</h3>
@@ -208,7 +202,6 @@ const ArtistDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Top Tracks */}
                 <div className="top-tracks-section">
                   <div className="top-rated-tracks">
                     <div className="section-header">
@@ -227,9 +220,13 @@ const ArtistDashboard: React.FC = () => {
                             <h4>{track.title}</h4>
                             <div className="track-stats">
                               <span className="rating">
-                                ⭐ {track.avg_rating ? parseFloat(track.avg_rating).toFixed(1) : 
-                                    track.rating_details?.average ? track.rating_details.average.toFixed(1) : 
-                                    '0.0'}/5 ({track.ratings_count || 0} ratings)
+                                ⭐{" "}
+                                {track.avg_rating
+                                  ? parseFloat(track.avg_rating).toFixed(1)
+                                  : track.rating_details?.average
+                                    ? track.rating_details.average.toFixed(1)
+                                    : "0.0"}
+                                /5 ({track.ratings_count || 0} ratings)
                               </span>
                               <span className="views">
                                 👀 {formatNumber(track.views)} views
@@ -270,9 +267,13 @@ const ArtistDashboard: React.FC = () => {
                                   👀 {formatNumber(track.views)} views
                                 </span>
                                 <span className="rating">
-                                  ⭐ {track.avg_rating ? parseFloat(track.avg_rating).toFixed(1) : 
-                                      track.rating_details?.average ? track.rating_details.average.toFixed(1) : 
-                                      '0.0'}/5 ({track.ratings_count || 0} ratings)
+                                  ⭐{" "}
+                                  {track.avg_rating
+                                    ? parseFloat(track.avg_rating).toFixed(1)
+                                    : track.rating_details?.average
+                                      ? track.rating_details.average.toFixed(1)
+                                      : "0.0"}
+                                  /5 ({track.ratings_count || 0} ratings)
                                 </span>
                               </div>
                             </div>
@@ -291,41 +292,50 @@ const ArtistDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Recent Activity */}
                 <div className="recent-activity-section">
                   <h3>Recent Activity</h3>
                   <div className="activity-list">
                     {dashboardData.recent_activity.map((activity) => (
                       <div key={activity.id} className="activity-item">
                         <div className="activity-icon">
-                          {activity.type === 'play' ? '▶️' : 
-                           activity.type === 'rating' ? '⭐' : 
-                           activity.type === 'artist_rating' ? '👤⭐' : '👤'}
+                          {activity.type === "play"
+                            ? "▶️"
+                            : activity.type === "rating"
+                              ? "⭐"
+                              : activity.type === "artist_rating"
+                                ? "👤⭐"
+                                : "👤"}
                         </div>
                         <div className="activity-content">
                           <div className="activity-description">
-                            {activity.type === 'play' && activity.song && (
+                            {activity.type === "play" && activity.song && (
                               <>
-                                <strong>{activity.user?.name || 'User'}</strong> played{" "}
-                                <strong>{activity.song.title}</strong>
+                                <strong>{activity.user?.name || "User"}</strong>{" "}
+                                played <strong>{activity.song.title}</strong>
                               </>
                             )}
-                            {activity.type === 'rating' && activity.song && (
+                            {activity.type === "rating" && activity.song && (
                               <>
-                                <strong>{activity.user?.name || 'User'}</strong> rated{" "}
-                                <strong>{activity.song.title}</strong> ⭐ {activity.rating}/5
+                                <strong>{activity.user?.name || "User"}</strong>{" "}
+                                rated <strong>{activity.song.title}</strong> ⭐{" "}
+                                {activity.rating}/5
                               </>
                             )}
-                            {activity.type === 'artist_rating' && (
+                            {activity.type === "artist_rating" && (
                               <>
-                                <strong>{activity.user?.name || 'User'}</strong> rated you ⭐ {activity.rating}/5
+                                <strong>{activity.user?.name || "User"}</strong>{" "}
+                                rated you ⭐ {activity.rating}/5
                               </>
                             )}
-                            {!activity.song && activity.type !== 'artist_rating' && (
-                              <>
-                                <strong>{activity.user?.name || 'User'}</strong> {activity.action || 'interacted'}
-                              </>
-                            )}
+                            {!activity.song &&
+                              activity.type !== "artist_rating" && (
+                                <>
+                                  <strong>
+                                    {activity.user?.name || "User"}
+                                  </strong>{" "}
+                                  {activity.action || "interacted"}
+                                </>
+                              )}
                           </div>
                           <div className="activity-time">
                             {new Date(activity.created_at).toLocaleString()}
@@ -336,7 +346,6 @@ const ArtistDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Quick Actions */}
                 <div className="quick-actions">
                   <h3>Quick Actions</h3>
                   <div className="actions-grid">
