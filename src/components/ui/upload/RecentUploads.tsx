@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { convertStorageUrl } from "../../../utils/audioDuration.tsx";
+import { formatFileSizeFromString, calculateCompressionPercentage } from "../../../utils/fileSize";
 
 interface Artist {
   id: number;
@@ -34,21 +35,19 @@ interface RecentUploadsProps {
 const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads, onRefresh }) => {
   const [durations, setDurations] = useState<{ [key: number]: string }>({});
 
-  // Debug: Log the uploads data to see what we're receiving
-  useEffect(() => {
-    console.log('RecentUploads received data:', uploads);
-    uploads.forEach((track, index) => {
-      console.log(`Track ${index}:`, {
-        id: track.id,
-        title: track.title,
-        status: track.status,
-        artist: track.artist
-      });
+  // Filter out duplicates based on title and artist
+  const uniqueUploads = uploads.filter((track, index, self) => {
+    const trackKey = `${track.title}-${typeof track.artist.artist_name === 'string' ? track.artist.artist_name : JSON.stringify(track.artist.artist_name)}`;
+    return index === self.findIndex(t => {
+      const tKey = `${t.title}-${typeof t.artist.artist_name === 'string' ? t.artist.artist_name : JSON.stringify(t.artist.artist_name)}`;
+      return tKey === trackKey;
     });
-  }, [uploads]);
+  });
+
+
 
   useEffect(() => {
-    uploads.forEach((track) => {
+    uniqueUploads.forEach((track) => {
       if (track.file_path) {
         const audioUrl = convertStorageUrl(
           track.file_path,
@@ -65,6 +64,30 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads, onRefresh }) => 
         });
       }
     });
+  }, [uniqueUploads]);
+
+  // Debug: Log approved uploads data when it changes
+  useEffect(() => {
+    if (uploads.length > 0) {
+      console.log("=== APPROVED UPLOADS DATA ===");
+      console.log("Total uploads:", uploads.length);
+      uploads.forEach((track, index) => {
+        console.log(`Upload ${index + 1}:`, {
+          id: track.id,
+          title: track.title,
+          artist: track.artist?.artist_name,
+          file_size: (track as any).file_size,
+          compressed_size: (track as any).compressed_size,
+          file_size_bytes: (track as any).file_size_bytes,
+          original_size: (track as any).original_size,
+          compression_stats: (track as any).compression_stats,
+          compression_data: (track as any).compression_data,
+          file_stats: (track as any).file_stats,
+          size: (track as any).size,
+          fileSize: (track as any).fileSize
+        });
+      });
+    }
   }, [uploads]);
 
   return (
@@ -90,7 +113,7 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads, onRefresh }) => 
             <p>Check your <strong>Upload Requests</strong> page to track the status of your submissions.</p>
           </div>
         ) : (
-          uploads.map((track) => (
+          uniqueUploads.map((track) => (
           <div key={track.id} className="upload-item">
             <div className="upload-info">
               <div className="track-cover">
@@ -122,18 +145,43 @@ const RecentUploads: React.FC<RecentUploadsProps> = ({ uploads, onRefresh }) => 
                 <span className="duration">
                   {durations[track.id] || "--:--"}
                 </span>
-                <span className="file-size">{track.file_size || "--"}</span>
+                <span className="file-size">
+                  {/* Display original and compressed file sizes */}
+                  {(track as any).compression_stats && 
+                   (track as any).compression_stats.original_size !== "Unknown" && 
+                   (track as any).compression_stats.compressed_size ? (
+                    <>
+                      <span className="original-size">
+                        {(track as any).compression_stats.original_size}
+                      </span>
+                      <span className="arrow">→</span>
+                      <span className="compressed-size">
+                        {(track as any).compression_stats.compressed_size}
+                      </span>
+                    </>
+                  ) : (
+                    (track as any).file_size && (track as any).file_size !== "Unknown" 
+                      ? (track as any).file_size 
+                      : "--"
+                  )}
+                </span>
                 <span className="upload-date">
                   {track.uploaded_at
                     ? new Date(track.uploaded_at).toLocaleString()
                     : ""}
                 </span>
-                {track.compression_stats && (
+
+                {((track as any).compression_stats && 
+                  (track as any).compression_stats.original_size !== "Unknown" && 
+                  (track as any).compression_stats.compressed_size) && (
                   <span
                     className="compression-info"
-                    title={`Original: ${track.compression_stats.original_size} | Saved: ${track.compression_stats.space_saved}`}
+                    title={`Original: ${(track as any).compression_stats.original_size} | Compressed: ${(track as any).compression_stats.compressed_size} | Saved: ${(track as any).compression_stats.space_saved || "Unknown"}`}
                   >
-                    {track.compression_stats.compression_ratio}% smaller
+                    {calculateCompressionPercentage(
+                      (track as any).compression_stats.original_size,
+                      (track as any).compression_stats.compressed_size
+                    )}% smaller
                   </span>
                 )}
                 <span className={`status status-${track.status || track.upload_status || 'pending'}`}>

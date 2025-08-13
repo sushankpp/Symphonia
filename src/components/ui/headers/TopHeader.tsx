@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
-import { Music, Upload, Search, LogIn, Bell, Settings } from "lucide-react";
+import { Music, Upload, Search, LogIn, Bell, Settings, Star } from "lucide-react";
 import LoginRegisterPopup from "../menus/LoginRegisterPopup";
 import UserDropdown from "../menus/UserDropdown";
 import { convertProfilePictureUrl } from "../../../utils/audioDuration.tsx";
@@ -82,6 +82,9 @@ const TopHeader = () => {
           <>
             <Link to="/notification" className="header__link">
               <Bell size={24} />
+            </Link>
+            <Link to="/ratings" className="header__link">
+              <Star size={24} />
             </Link>
             <Link to="/settings" className="header__link">
               <Settings size={24} />

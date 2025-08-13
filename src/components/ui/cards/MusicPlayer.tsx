@@ -10,6 +10,7 @@ import {
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { RatingDisplay } from "../rating";
 
 type MusicPlayerProps = {
   src: string;
@@ -38,14 +39,12 @@ const MusicPlayer = ({ src }: MusicPlayerProps) => {
       setCurrentSong(recommendation.song);
       setCurrentArtist(recommendation.song.artist);
       setPlayingSongId(songId);
-      console.log("Updated current song:", recommendation.song);
-      console.log("Updated current artist:", recommendation.song.artist);
+      
     } else if (songFromAllSongs) {
       setCurrentSong(songFromAllSongs);
       setCurrentArtist(songFromAllSongs.artist);
       setPlayingSongId(songId);
-      console.log("Updated current song:", songFromAllSongs);
-      console.log("Updated current artist:", songFromAllSongs.artist);
+      
     }
   };
 
@@ -105,6 +104,14 @@ const MusicPlayer = ({ src }: MusicPlayerProps) => {
                 ? currentArtist
                 : currentArtist?.artist_name || "Unknown Artist"}
             </p>
+            <div className="music-player__rating">
+              <RatingDisplay 
+                itemId={currentSong.id} 
+                itemType="song" 
+                showDistribution={false}
+                compact={true}
+              />
+            </div>
           </div>
           {(currentSong.audio_url || currentSong.file_path) && (
             <CustomAudioPlayer
@@ -254,6 +261,14 @@ const MusicPlayer = ({ src }: MusicPlayerProps) => {
                           match
                         </span>
                       )}
+                    </div>
+                    <div className="music-player__suggested-rating">
+                      <RatingDisplay 
+                        itemId={recommendation.song.id} 
+                        itemType="song" 
+                        showDistribution={false}
+                        compact={true}
+                      />
                     </div>
                   </div>
                 </div>

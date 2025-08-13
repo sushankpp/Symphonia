@@ -23,6 +23,8 @@ import ArtistDashboard from "./pages/ArtistDashboard";
 import ArtistMusic from "./pages/ArtistMusic";
 import ArtistSongStats from "./pages/ArtistSongStats";
 import RoleRequests from "./pages/RoleRequests";
+import UserRatings from "./pages/UserRatings";
+import ArtistRatingsDashboard from "./pages/ArtistRatingsDashboard";
 import ArtistUploadRequests from "./pages/ArtistUploadRequests";
 
 const LoginRedirect = () => {
@@ -59,6 +61,7 @@ function App() {
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/notification" element={<Notifications />} />
+            <Route path="/ratings" element={<UserRatings />} />
 
             {/*auth*/}
             <Route path="/auth/callback" element={<AuthCallback />} />
@@ -81,6 +84,10 @@ function App() {
             <Route
               path="/artist/upload-requests"
               element={<ArtistUploadRequests />}
+            />
+            <Route
+              path="/artist/ratings"
+              element={<ArtistRatingsDashboard />}
             />
 
             {/*role requests*/}

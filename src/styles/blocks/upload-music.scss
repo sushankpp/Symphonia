@@ -517,6 +517,24 @@
           &.file-size {
             background: rgba($primary-color, 0.1);
             color: $primary-color;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            
+            .original-size {
+              color: $grey-100;
+              font-size: 11px;
+            }
+            
+            .arrow {
+              color: $secondary-color;
+              font-weight: bold;
+            }
+            
+            .compressed-size {
+              color: $primary-color;
+              font-weight: 600;
+            }
           }
 
           &.duration {
@@ -656,6 +674,23 @@
 
 .compression-info:hover {
   background: linear-gradient(135deg, #45a049, #4caf50);
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
+.file-size {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+  margin-left: 8px;
+}
+
+.file-size:hover {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   transform: scale(1.05);
   transition: all 0.2s ease;
 }

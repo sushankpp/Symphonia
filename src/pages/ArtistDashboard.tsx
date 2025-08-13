@@ -372,6 +372,12 @@ const ArtistDashboard: React.FC = () => {
                       <h4>Edit Profile</h4>
                       <p>Update your artist information</p>
                     </Link>
+
+                    <Link to="/artist/ratings" className="action-card">
+                      <div className="action-icon">⭐</div>
+                      <h4>View Ratings</h4>
+                      <p>See detailed ratings and feedback</p>
+                    </Link>
                   </div>
                 </div>
               </>

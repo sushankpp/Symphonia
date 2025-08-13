@@ -341,6 +341,15 @@
         overflow-y: auto;
         color: #1f2937;
       }
+
+      // File size information styling
+      &.file-size-row {
+        background: #f8fafc;
+        padding: 0.75rem;
+        border-radius: 6px;
+        border-left: 3px solid #3b82f6;
+        margin-bottom: 0.75rem;
+      }
     }
   }
 

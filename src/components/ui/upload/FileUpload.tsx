@@ -1,4 +1,5 @@
 import React from "react";
+import { formatFileSize } from "../../../utils/fileSize";
 
 interface FileUploadProps {
   selectedFile: File | null;
@@ -8,7 +9,6 @@ interface FileUploadProps {
   onDrop: (e: React.DragEvent) => void;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
-  formatFileSize: (bytes: number) => string;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -19,7 +19,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   onDrop,
   onFileSelect,
   fileInputRef,
-  formatFileSize,
 }) => (
   <div className="upload-section">
     <h3>Upload Your Music</h3>

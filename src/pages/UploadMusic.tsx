@@ -11,6 +11,7 @@ import {
   RecentUploads,
   UploadActions,
 } from "../components/ui/upload";
+import { formatFileSize } from "../utils/fileSize";
 
 interface Artist {
   id: number;
@@ -78,8 +79,6 @@ const UploadMusic: React.FC = () => {
           
           if (response.ok) {
             const allArtists = await response.json();
-            console.log("All artists data:", allArtists);
-            
             // Find the artist that matches the current user
             const currentArtist = allArtists.find((artist: any) => 
               artist.email === user.email || 
@@ -88,8 +87,6 @@ const UploadMusic: React.FC = () => {
             );
             
             if (currentArtist) {
-              console.log("Found current artist:", currentArtist);
-              
               const artist = {
                 id: currentArtist.id,
                 artist_name: currentArtist.artist_name,
@@ -101,11 +98,8 @@ const UploadMusic: React.FC = () => {
                 ...prev,
                 selectedArtistId: artist.id.toString()
               }));
-              console.log("Using artist data from backend:", artist);
             } else {
               console.error("Could not find artist record for current user");
-              console.log("User data:", user);
-              console.log("Available artists:", allArtists);
               setUploadMessage("Unable to find your artist profile. Please contact support.");
             }
           } else {
@@ -203,15 +197,6 @@ const UploadMusic: React.FC = () => {
 
   // handleArtistFormChange removed as artists now upload to their own profile only
 
-  // Helper to format bytes for display (only for selected file)
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
   const [recentUploads, setRecentUploads] = useState<UploadedTrack[]>([]);
 
   useEffect(() => {
@@ -220,24 +205,11 @@ const UploadMusic: React.FC = () => {
         const res = await fetch(`${API_URL}/api/uploaded-music`);
         const data = await res.json();
 
-        console.log("Recent uploads fetched:", data);
-        console.log("First upload item structure:", data[0]);
-        
-        // Debug: Check what fields are available
-        if (data && data.length > 0) {
-          const firstItem = data[0];
-          console.log("Available fields in first item:", Object.keys(firstItem));
-          console.log("Status field value:", firstItem.status);
-          console.log("Upload status field value:", firstItem.upload_status);
-        }
-
         // Filter to only show approved uploads
         const approvedUploads = data.filter((upload: UploadedTrack) => {
           const status = upload.status || upload.upload_status;
           return status === 'approved' || status === 'uploaded';
         });
-
-        console.log("Filtered approved uploads:", approvedUploads);
         setRecentUploads(approvedUploads);
       } catch (err) {
         console.error("Failed to fetch recent uploads:", err);
@@ -306,14 +278,7 @@ const UploadMusic: React.FC = () => {
       formData.append("release_date", songForm.releaseDate);
       formData.append("lyrics", songForm.lyrics);
 
-      console.log("Uploading with data:", {
-        song_title: songForm.songTitle,
-        artist_id: songForm.selectedArtistId,
-        genre: songForm.genre,
-        description: songForm.description,
-        release_date: songForm.releaseDate,
-        lyrics: songForm.lyrics,
-      });
+
 
       if (selectedCoverImage) {
         formData.append("cover_image", selectedCoverImage);
@@ -333,13 +298,20 @@ const UploadMusic: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Upload response:", result);
+        
+        // Get file size information
+        const fileSizeInBytes = selectedFile.size;
+        const fileSizeInMB = (fileSizeInBytes / (1024 * 1024)).toFixed(2);
+        
+        // Show approval message with file size information
+        const approvalMessage = `🎵 Music uploaded successfully! 
 
-        // Show approval message instead of compression stats
-        const approvalMessage = `🎵 Music uploaded successfully! Your upload is now pending admin approval. You'll be notified once it's reviewed. You can track the status of your upload requests in your artist dashboard.`;
+📁 File Size: ${fileSizeInMB} MB
+⏳ Status: Pending admin approval
+
+You'll be notified once it's reviewed. You can track the status of your upload requests in your artist dashboard.`;
 
         setUploadMessage(approvalMessage);
-        console.log(approvalMessage);
 
         setSelectedFile(null);
         setSelectedCoverImage(null);
@@ -353,7 +325,7 @@ const UploadMusic: React.FC = () => {
         });
         if (fileInputRef.current) fileInputRef.current.value = "";
         if (coverInputRef.current) coverInputRef.current.value = "";
-        console.log("Upload result:", result);
+
 
         // Redirect to upload requests page after 3 seconds
         setTimeout(() => {
@@ -387,16 +359,15 @@ const UploadMusic: React.FC = () => {
               </div>
             ) : canUploadMusic ? (
               <>
-                <FileUpload
-                  selectedFile={selectedFile}
-                  isDragOver={isDragOver}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onFileSelect={handleFileSelect}
-                  fileInputRef={fileInputRef}
-                  formatFileSize={formatFileSize}
-                />
+                            <FileUpload
+              selectedFile={selectedFile}
+              isDragOver={isDragOver}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onFileSelect={handleFileSelect}
+              fileInputRef={fileInputRef}
+            />
 
                 <SongDetailsForm
                   songForm={songForm}

@@ -19,6 +19,27 @@
     height: 2px;
     background: linear-gradient(90deg, #fbbf24, #f59e0b, #d97706);
   }
+
+  // Rating styles
+  .music-player__rating {
+    margin-top: 12px;
+    
+    .rating-container {
+      border: none;
+      background: none;
+      padding: 0;
+    }
+  }
+
+  .music-player__suggested-rating {
+    margin-top: 8px;
+    
+    .rating-container {
+      border: none;
+      background: none;
+      padding: 0;
+    }
+  }
 }
 
 .music-player__title {

@@ -11,7 +11,6 @@ export const getRating = async ({
 }: GetRatingProps): Promise<number> => {
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Validate required fields
   if (!rateableId) {
     console.warn("rateableId is required for getting rating");
     return 0;
@@ -23,7 +22,6 @@ export const getRating = async ({
   }
 
   try {
-    // Get authentication headers
     const authHeaders = authService.getAuthHeaders();
     
     const response = await fetch(`${API_URL}/api/ratings/${rateableId}?type=${rateableType}`, {
@@ -36,7 +34,6 @@ export const getRating = async ({
 
     if (!response.ok) {
       if (response.status === 404) {
-        // No rating found for this item
         return 0;
       }
       console.error("Failed to get rating:", response.status, response.statusText);

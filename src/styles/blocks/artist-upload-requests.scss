@@ -223,6 +223,28 @@
   margin-bottom: 0.25rem;
 }
 
+.artist-upload-requests .request-card .request-info .request-meta .file-size,
+.artist-upload-requests .request-card .request-info .request-meta .compression-info {
+  display: inline-block;
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+.artist-upload-requests .request-card .request-info .request-meta .file-size {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.artist-upload-requests .request-card .request-info .request-meta .compression-info {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  cursor: help;
+}
+
 .artist-upload-requests .request-card .request-info .request-status {
   margin-bottom: 1rem;
 }

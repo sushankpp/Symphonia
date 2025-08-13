@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import SidebarHeader from "../components/ui/headers/SidebarHeader";
 import TopHeader from "../components/ui/headers/TopHeader";
 import { convertStorageUrl } from "../utils/audioDuration";
+import { formatFileSizeFromString, calculateCompressionPercentage } from "../utils/fileSize";
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
@@ -33,20 +34,8 @@ const ArtistUploadRequests: React.FC = () => {
         status: statusFilter,
       });
       
-      console.log('Upload requests response:', response);
-      
       if (response.success && response.requests) {
         const requests = response.requests.data || [];
-        console.log('Upload requests data:', requests);
-        
-                 // Debug: Check the structure of the first request
-         if (requests.length > 0) {
-           const firstRequest = requests[0];
-           console.log('First request structure:', firstRequest);
-           console.log('Available fields:', Object.keys(firstRequest));
-           console.log('Status field:', firstRequest.upload_status);
-           console.log('Cover path field:', firstRequest.song_cover_path);
-         }
         
         setUploadRequests(requests);
         setTotal(response.requests.total || 0);
@@ -241,6 +230,19 @@ const ArtistUploadRequests: React.FC = () => {
                             {request.updated_at !== request.created_at && (
                               <span className="update-date">
                                 Updated: {formatDate(request.updated_at)}
+                              </span>
+                            )}
+                            {(request as any).file_size && (
+                              <span className="file-size">
+                                Size: {formatFileSizeFromString((request as any).file_size)}
+                              </span>
+                            )}
+                            {(request as any).compression_stats && (
+                              <span className="compression-info" title={`Original: ${formatFileSizeFromString((request as any).compression_stats.original_size)} | Compressed: ${formatFileSizeFromString((request as any).compression_stats.compressed_size)} | Saved: ${formatFileSizeFromString((request as any).compression_stats.space_saved)}`}>
+                                {calculateCompressionPercentage(
+                                  (request as any).compression_stats.original_size,
+                                  (request as any).compression_stats.compressed_size
+                                )}% smaller
                               </span>
                             )}
                           </div>

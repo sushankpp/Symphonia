@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import SidebarHeader from "../components/ui/headers/SidebarHeader";
 import TopHeader from "../components/ui/headers/TopHeader";
 import { convertStorageUrl } from "../utils/audioDuration";
+import { formatFileSizeFromString, calculateCompressionPercentage } from "../utils/fileSize";
 
 type TabType = "overview" | "upload-requests";
 
@@ -77,8 +78,7 @@ const AdminDashboard: React.FC = () => {
         adminService.getRoleRequests(),
       ]);
 
-      console.log("Dashboard response:", dashboardResponse);
-      console.log("Role requests response:", roleRequestsResponse);
+
 
       if (dashboardResponse.success && dashboardResponse.stats) {
         const stats = dashboardResponse.stats;
@@ -147,23 +147,14 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      console.log("Fetching upload requests with params:", {
-        per_page: perPage,
-        status: statusFilter,
-        search: searchQuery,
-      });
-
       const response = await adminService.getUploadRequests({
         per_page: perPage,
         status: statusFilter,
         search: searchQuery,
       });
 
-      console.log("Upload requests response:", response);
-
       if (response.success && response.requests) {
         const requests = response.requests.data || [];
-        console.log("AdminDashboard - Requests data:", requests);
 
         setRequests(requests);
         setTotal(response.requests.total || 0);
@@ -257,9 +248,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleViewDetails = async (requestId: number) => {
     try {
-      console.log("Fetching details for request ID:", requestId);
       const details = await adminService.getUploadRequestDetails(requestId);
-      console.log("Received details:", details);
 
       if (!details) {
         console.error("No details received");
@@ -267,20 +256,11 @@ const AdminDashboard: React.FC = () => {
         return;
       }
 
-      console.log("Details validation:", {
-        hasTitle: !!details.title,
-        hasArtist: !!details.artist,
-        title: details.title,
-        artist: details.artist,
-        fullDetails: details,
-      });
+
 
       const fallbackRequest = requests.find((req) => req.id === requestId);
       if (fallbackRequest && (!details.title || !details.artist)) {
-        console.log(
-          "Using fallback request data due to incomplete API response:",
-          fallbackRequest
-        );
+
         setSelectedRequest(fallbackRequest);
         setShowDetailsModal(true);
         setError(null);
@@ -294,10 +274,7 @@ const AdminDashboard: React.FC = () => {
 
       const fallbackRequest = requests.find((req) => req.id === requestId);
       if (fallbackRequest) {
-        console.log(
-          "Using fallback request data due to API error:",
-          fallbackRequest
-        );
+
         setSelectedRequest(fallbackRequest);
         setShowDetailsModal(true);
         setError(null);
@@ -562,16 +539,7 @@ const AdminDashboard: React.FC = () => {
               requests.map((request) => (
                 <div key={request.id} className="request-card">
                   <div className="request-cover">
-                    {(() => {
-                      console.log("AdminDashboard - Request cover fields:", {
-                        id: request.id,
-                        song_cover_path: request.song_cover_path,
-                        song_cover_url: (request as any).song_cover_url,
-                        cover_path: (request as any).cover_path,
-                        cover_url: (request as any).cover_url,
-                      });
-                      return null;
-                    })()}
+
 
                     {request.song_cover_path ||
                     (request as any).song_cover_url ||
@@ -814,6 +782,47 @@ const AdminDashboard: React.FC = () => {
                       </span>
                     </div>
                   )}
+                
+
+                
+                {/* File Size - backend already sends formatted sizes */}
+                {(selectedRequest as any).file_size && (selectedRequest as any).file_size !== "Unknown" && (
+                  <div className="detail-row file-size-row">
+                    <strong>File Size:</strong>{" "}
+                    <span style={{ color: "#1f2937" }}>
+                      {(selectedRequest as any).file_size}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Compression Stats - only show if we have valid data */}
+                {(selectedRequest as any).compression_stats && 
+                 (selectedRequest as any).compression_stats.original_size !== "Unknown" && 
+                 (selectedRequest as any).compression_stats.compressed_size && (
+                  <>
+                    <div className="detail-row file-size-row">
+                      <strong>Original Size:</strong>{" "}
+                      <span style={{ color: "#1f2937" }}>
+                        {(selectedRequest as any).compression_stats.original_size}
+                      </span>
+                    </div>
+                    <div className="detail-row file-size-row">
+                      <strong>Compressed Size:</strong>{" "}
+                      <span style={{ color: "#1f2937" }}>
+                        {(selectedRequest as any).compression_stats.compressed_size}
+                      </span>
+                    </div>
+                    <div className="detail-row file-size-row">
+                      <strong>Compression:</strong>{" "}
+                      <span style={{ color: "#1f2937" }}>
+                        {calculateCompressionPercentage(
+                          (selectedRequest as any).compression_stats.original_size,
+                          (selectedRequest as any).compression_stats.compressed_size
+                        )}% smaller ({(selectedRequest as any).compression_stats.space_saved || "Unknown"} saved)
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Action buttons for pending requests */}

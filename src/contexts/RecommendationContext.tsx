@@ -116,6 +116,23 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
       } else {
         setRecommendations(data);
       }
+
+      // Debug: Log recommendations data
+      console.log("=== RECOMMENDATIONS DATA ===");
+      console.log("Total recommendations:", data.length);
+      data.forEach((rec, index) => {
+        console.log(`Recommendation ${index + 1}:`, {
+          id: rec.song?.id,
+          title: rec.song?.title,
+          artist: rec.song?.artist?.artist_name,
+          similarity_score: rec.similarity_score,
+          file_path: rec.song?.file_path,
+          audio_url: rec.song?.audio_url,
+          file_size: (rec.song as any)?.file_size,
+          compressed_size: (rec.song as any)?.compressed_size,
+          compression_stats: (rec.song as any)?.compression_stats
+        });
+      });
     } catch (error) {
       console.error("Error loading recommendations:", error);
       setError("Failed to load recommendations");
@@ -154,6 +171,23 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
       } else {
         setTopRecommendations(data);
       }
+
+      // Debug: Log top recommendations data
+      console.log("=== TOP RECOMMENDATIONS DATA ===");
+      console.log("Total top recommendations:", data.length);
+      data.forEach((rec, index) => {
+        console.log(`Top Recommendation ${index + 1}:`, {
+          id: rec.song?.id,
+          title: rec.song?.title,
+          artist: rec.song?.artist?.artist_name,
+          similarity_score: rec.similarity_score,
+          file_path: rec.song?.file_path,
+          audio_url: rec.song?.audio_url,
+          file_size: (rec.song as any)?.file_size,
+          compressed_size: (rec.song as any)?.compressed_size,
+          compression_stats: (rec.song as any)?.compression_stats
+        });
+      });
     } catch (error) {
       console.error("Error loading top recommendations:", error);
       // No fallback data
