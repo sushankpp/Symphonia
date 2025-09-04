@@ -32,7 +32,9 @@ class MusicService {
         body: JSON.stringify({ song_id: songId }),
       });
 
-      console.log("Record play response status:", response.status);
+      if (import.meta.env.DEV) {
+        console.log("Record play response status:", response.status);
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -43,7 +45,9 @@ class MusicService {
       }
 
       const result = await response.json();
-      console.log("Record play success:", result);
+              if (import.meta.env.DEV) {
+          console.log("Record play success:", result);
+        }
       return result;
     } catch (error) {
       console.error("Error recording song play:", error);
@@ -54,7 +58,7 @@ class MusicService {
   async getRecommendations(authHeaders: HeadersInit): Promise<any[]> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30 seconds
 
       try {
         const response = await fetch(`${this.baseURL}/api/recommendations`, {
@@ -86,7 +90,7 @@ class MusicService {
       } catch (fetchError: unknown) {
         clearTimeout(timeoutId);
         if (fetchError instanceof Error && fetchError.name === "AbortError") {
-          console.log("Recommendations request timed out");
+          console.warn("Recommendations request timed out after 30 seconds");
         }
         throw fetchError;
       }
@@ -95,14 +99,16 @@ class MusicService {
         error instanceof TypeError &&
         error.message.includes("NetworkError")
       ) {
-        console.log(
+        console.warn(
           "Network error when fetching recommendations - API server may not be running"
         );
+      } else if (error instanceof Error && error.name === "AbortError") {
+        console.warn("Recommendations request was aborted due to timeout");
       } else {
         console.error("Error fetching recommendations:", error);
       }
 
-      console.log("Recommendations API not available, returning empty array");
+      console.warn("Recommendations API not available, returning empty array");
       return [];
     }
   }
@@ -113,7 +119,7 @@ class MusicService {
   ): Promise<any[]> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30 seconds
 
       try {
         let response = await fetch(`${this.baseURL}/api/top-recommendations`, {
@@ -153,7 +159,7 @@ class MusicService {
       } catch (fetchError: unknown) {
         clearTimeout(timeoutId);
         if (fetchError instanceof Error && fetchError.name === "AbortError") {
-          console.log("Top recommendations request timed out");
+          console.warn("Top recommendations request timed out after 30 seconds");
         }
         throw fetchError;
       }
@@ -162,16 +168,16 @@ class MusicService {
         error instanceof TypeError &&
         error.message.includes("NetworkError")
       ) {
-        console.log(
+        console.warn(
           "Network error when fetching top recommendations - API server may not be running"
         );
+      } else if (error instanceof Error && error.name === "AbortError") {
+        console.warn("Top recommendations request was aborted due to timeout");
       } else {
         console.error("Error fetching top recommendations:", error);
       }
 
-      console.log(
-        "Top recommendations API not available, returning empty array"
-      );
+      // Return empty array instead of throwing to prevent app crashes
       return [];
     }
   }
@@ -205,7 +211,9 @@ class MusicService {
         headers: authHeaders,
       });
 
-      console.log("Recently played response status:", response.status);
+              if (import.meta.env.DEV) {
+          console.log("Recently played response status:", response.status);
+        }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -216,7 +224,9 @@ class MusicService {
       }
 
       const data = await response.json();
-      console.log("Recently played data:", data);
+              if (import.meta.env.DEV) {
+          console.log("Recently played data:", data);
+        }
       return data.recently_played || data;
     } catch (error) {
       console.error("Error fetching recently played:", error);

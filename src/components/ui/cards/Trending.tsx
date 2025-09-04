@@ -38,54 +38,48 @@ const Trending = () => {
         )
       : null;
 
-  console.log("Trending - topRecommendations:", topRecommendations);
-  console.log("Trending - topSong:", topSong);
-  console.log("Trending - topRecommendations length:", topRecommendations.length);
+  // Only log in development mode and only when there are recommendations
+  if (import.meta.env.DEV && topRecommendations && topRecommendations.length > 0) {
+    console.log("Trending: Loaded recommendations");
+  }
 
   useEffect(() => {
-    console.log("Trending useEffect triggered");
-    console.log("Current durations state:", durations);
-    console.log("topRecommendations:", topRecommendations);
+    if (!topRecommendations || topRecommendations.length === 0) return;
+    
+    // Only log in development mode and only when processing recommendations
+    if (import.meta.env.DEV && topRecommendations && topRecommendations.length > 0) {
+      console.log("Trending: Processing recommendations");
+    }
     
     // Fetch durations for all songs in topRecommendations
     topRecommendations.forEach((recommendation) => {
       const song = recommendation.song;
-      console.log(`Processing song: ${song.title}, ID: ${song.id}`);
-      console.log(`Song audio_url: ${song.audio_url}`);
-      console.log(`Song file_path: ${song.file_path}`);
-      console.log(`Duration already exists: ${!!durations[song.id]}`);
+      if (!song || durations[song.id]) return; // Skip if already processed
       
-      if (
-        song &&
-        !durations[song.id] &&
-        (song.audio_url || song.file_path)
-      ) {
+      if (song.audio_url || song.file_path) {
         const audioUrl = getAudioUrlFromSong(song, apiURL);
-        console.log(`Converted audio URL: ${audioUrl}`);
         
         getAudioDuration(audioUrl)
           .then((duration) => {
-            console.log(`Duration calculated for ${song.title}: ${duration}`);
             if (duration > 0) {
-              setDurations((prev) => {
-                const newDurations = {
-                  ...prev,
-                  [song.id]: formatTime(duration),
-                };
-                console.log("Updated durations:", newDurations);
-                return newDurations;
-              });
+              setDurations((prev) => ({
+                ...prev,
+                [song.id]: formatTime(duration),
+              }));
             }
           })
           .catch((error) => {
-            console.error(
-              `Error calculating duration for ${song.title}:`,
-              error
-            );
+            // Only log errors in development mode
+            if (import.meta.env.DEV) {
+              console.error(
+                `Error calculating duration for ${song.title}:`,
+                error
+              );
+            }
           });
       }
     });
-  }, [topRecommendations, durations, apiURL]);
+  }, [topRecommendations, apiURL]); // Removed 'durations' from dependencies
 
   if (!isAuthenticated && !topSong) {
     return (

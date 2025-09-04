@@ -1,5 +1,5 @@
 export const getAudioDuration = (url: string): Promise<number> => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     // Check if URL is valid
     if (!url || url === "/uploads/pig.png" || url.trim() === "") {
       resolve(0);
@@ -7,14 +7,58 @@ export const getAudioDuration = (url: string): Promise<number> => {
     }
 
     const audio = new Audio(url);
+    let isResolved = false;
 
-    audio.addEventListener("loadedmetadata", () => {
-      resolve(audio.duration);
-    });
+    const cleanup = () => {
+      if (!isResolved) {
+        isResolved = true;
+        audio.removeEventListener("loadedmetadata", handleLoad);
+        audio.removeEventListener("error", handleError);
+        audio.removeEventListener("abort", handleAbort);
+        audio.src = ""; // Stop loading
+      }
+    };
 
-    audio.addEventListener("error", () => {
-      resolve(0);
-    });
+    const handleLoad = () => {
+      if (!isResolved) {
+        isResolved = true;
+        resolve(audio.duration);
+        cleanup();
+      }
+    };
+
+    const handleError = () => {
+      if (!isResolved) {
+        isResolved = true;
+        resolve(0);
+        cleanup();
+      }
+    };
+
+    const handleAbort = () => {
+      if (!isResolved) {
+        isResolved = true;
+        reject(new Error("Audio request aborted"));
+        cleanup();
+      }
+    };
+
+    audio.addEventListener("loadedmetadata", handleLoad);
+    audio.addEventListener("error", handleError);
+    audio.addEventListener("abort", handleAbort);
+
+    // Set a timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      if (!isResolved) {
+        isResolved = true;
+        resolve(0);
+        cleanup();
+      }
+    }, 10000); // 10 second timeout
+
+    // Clean up timeout when resolved
+    audio.addEventListener("loadedmetadata", () => clearTimeout(timeout), { once: true });
+    audio.addEventListener("error", () => clearTimeout(timeout), { once: true });
   });
 };
 
@@ -89,36 +133,33 @@ export const convertStorageUrl = (url: string, apiUrl: string): string => {
 
   if (url.startsWith("audios/")) {
     const filename = url.replace("audios/", "");
-    const result = `${apiUrl}/audio.php?file=${filename}&type=audio`;
+    const result = `${apiUrl}/api/audio-file?file=${encodeURIComponent(filename)}&type=audio`;
     return result;
   }
 
   if (url.includes("/storage/audios/")) {
     const filename = url.split("/storage/audios/")[1];
-    const result = `${apiUrl}/audio.php?file=${filename}&type=audio`;
+    const result = `${apiUrl}/api/audio-file?file=${encodeURIComponent(filename)}&type=audio`;
     return result;
   } else if (url.includes("/storage/audios/compressed/")) {
     const filename = url.split("/storage/audios/compressed/")[1];
-    const result = `${apiUrl}/audio.php?file=${filename}&type=compressed`;
+    const result = `${apiUrl}/api/audio-file?file=${encodeURIComponent(filename)}&type=compressed`;
     return result;
   }
 
   if (url.startsWith("songs_cover/")) {
-    const filename = url.replace("songs_cover/", "");
-    const result = `${apiUrl}/audio.php?file=${filename}&type=cover`;
-    return result;
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   if (url.startsWith("artist_image/")) {
-    const filename = url.replace("artist_image/", "");
-    const result = `${apiUrl}/audio.php?file=${filename}&type=artist`;
-    return result;
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   if (url.startsWith("albums_cover/")) {
-    const filename = url.replace("albums_cover/", "");
-    const result = `${apiUrl}/audio.php?file=${filename}&type=album`;
-    return result;
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   if (url.startsWith("temp_uploads/")) {
@@ -127,39 +168,28 @@ export const convertStorageUrl = (url: string, apiUrl: string): string => {
   }
 
   if (url.includes("/storage/songs_cover/")) {
-    const filename = url.split("/storage/songs_cover/")[1];
-    const result = `${apiUrl}/audio.php?file=${filename}&type=cover`;
-    return result;
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   if (url.includes("/storage/artists/")) {
-    const filename = url.split("/storage/artists/")[1];
-    const result = `${apiUrl}/audio.php?file=${filename}&type=artist`;
-    return result;
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   if (url.includes("/storage/artist_images/")) {
-    const filename = url.split("/storage/artist_images/")[1];
-    const result = `${apiUrl}/audio.php?file=${filename}&type=artist`;
-    return result;
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   if (url.includes("/storage/albums/")) {
-    const filename = url.split("/storage/albums/")[1];
-    const result = `${apiUrl}/audio.php?file=${filename}&type=album`;
-    return result;
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   if (url.includes("/storage/")) {
-    const pathParts = url.split("/storage/");
-    if (pathParts.length > 1) {
-      const fullPath = pathParts[1];
-      const pathSegments = fullPath.split("/");
-      const type = pathSegments[0];
-      const filename = pathSegments[pathSegments.length - 1];
-      const result = `${apiUrl}/audio.php?file=${filename}&type=${type}`;
-      return result;
-    }
+    // Images use /storage/ path
+    return `${apiUrl}/storage/${url}`;
   }
 
   return url;

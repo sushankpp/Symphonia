@@ -59,6 +59,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
+  // Ensure isAuthenticated is never undefined during loading
+  useEffect(() => {
+    if (!isLoading && !user && authService.isAuthenticated()) {
+      // Force a re-render with the correct authentication state
+      checkAuth();
+    }
+  }, [isLoading, user]);
+
   const login = (userData: User) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
@@ -93,7 +101,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const isAuthenticated = !!user && authService.isAuthenticated();
+  // Ensure isAuthenticated is always a boolean, not undefined
+  const isAuthenticated = Boolean(user && authService.isAuthenticated());
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, checkAuth }}>

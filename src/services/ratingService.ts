@@ -162,8 +162,21 @@ class RatingService {
    * Get ratings for a specific item (song, artist, or album)
    */
   async getItemRatings(id: number, type: 'song' | 'artist' | 'album'): Promise<ItemRatingsResponse> {
-    const response = await makeAuthenticatedRequest(`${this.baseUrl}/api/ratings/${id}?type=${type}`);
-    return response.json();
+    try {
+      const response = await makeAuthenticatedRequest(`${this.baseUrl}/api/ratings/${id}?type=${type}`);
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Authentication required');
+        }
+        throw new Error(`Failed to fetch ratings: ${response.status}`);
+      }
+      
+      return response.json();
+    } catch (error) {
+      console.error('Rating service error:', error);
+      throw error;
+    }
   }
 
   /**

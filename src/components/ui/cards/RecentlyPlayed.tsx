@@ -80,14 +80,10 @@ const RecentlyPlayed = ({ limit }: RecentlyPlayedProps) => {
     fetchRecentlyPlayed();
   }, [fetchRecentlyPlayed, isAuthenticated]);
 
-  console.log(
-    "RecentlyPlayed component - recentlyPlayed data:",
-    recentlyPlayed
-  );
-  console.log(
-    "RecentlyPlayed component - recentlyPlayed length:",
-    recentlyPlayed.length
-  );
+  // Only log in development mode and only when there are items
+  if (import.meta.env.DEV && recentlyPlayed.length > 0) {
+    console.log(`RecentlyPlayed: Loaded ${recentlyPlayed.length} items`);
+  }
 
   const convertedRecentlyPlayed: RecentlyPlayedItem[] = recentlyPlayed.map(
     (song: any) => {

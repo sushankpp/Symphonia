@@ -6,6 +6,7 @@ import CardListings from "../components/ui/cards/CardListings";
 import RecentlyPlayed from "../components/ui/cards/RecentlyPlayed";
 import MusicPlayer from "../components/ui/cards/MusicPlayer";
 import ErrorBoundary from "../components/global/ErrorBoundary";
+import ApiHealthCheck from "../components/ui/global/ApiHealthCheck";
 import { useRecommendation } from "../contexts/RecommendationContext";
 import { useNavigate } from "react-router-dom";
 import { musicService } from "../services/musicService";
@@ -76,6 +77,7 @@ export default function Home({ src }: MusicPlayerProps) {
   return (
     <>
       <SidebarHeader />
+      <ApiHealthCheck />
       <main className="page__home" id="primary">
         <div className="container">
           <TopHeader />

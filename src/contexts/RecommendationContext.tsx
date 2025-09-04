@@ -117,22 +117,10 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
         setRecommendations(data);
       }
 
-      // Debug: Log recommendations data
-      console.log("=== RECOMMENDATIONS DATA ===");
-      console.log("Total recommendations:", data.length);
-      data.forEach((rec, index) => {
-        console.log(`Recommendation ${index + 1}:`, {
-          id: rec.song?.id,
-          title: rec.song?.title,
-          artist: rec.song?.artist?.artist_name,
-          similarity_score: rec.similarity_score,
-          file_path: rec.song?.file_path,
-          audio_url: rec.song?.audio_url,
-          file_size: (rec.song as any)?.file_size,
-          compressed_size: (rec.song as any)?.compressed_size,
-          compression_stats: (rec.song as any)?.compression_stats
-        });
-      });
+      // Debug: Log recommendations data (only in development, limited output)
+      if (import.meta.env.DEV && data.length > 0) {
+        console.log(`Loaded ${data.length} recommendations`);
+      }
     } catch (error) {
       console.error("Error loading recommendations:", error);
       setError("Failed to load recommendations");
@@ -172,22 +160,10 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
         setTopRecommendations(data);
       }
 
-      // Debug: Log top recommendations data
-      console.log("=== TOP RECOMMENDATIONS DATA ===");
-      console.log("Total top recommendations:", data.length);
-      data.forEach((rec, index) => {
-        console.log(`Top Recommendation ${index + 1}:`, {
-          id: rec.song?.id,
-          title: rec.song?.title,
-          artist: rec.song?.artist?.artist_name,
-          similarity_score: rec.similarity_score,
-          file_path: rec.song?.file_path,
-          audio_url: rec.song?.audio_url,
-          file_size: (rec.song as any)?.file_size,
-          compressed_size: (rec.song as any)?.compressed_size,
-          compression_stats: (rec.song as any)?.compression_stats
-        });
-      });
+      // Debug: Log top recommendations data (only in development, limited output)
+      if (import.meta.env.DEV && data.length > 0) {
+        console.log(`Loaded ${data.length} top recommendations`);
+      }
     } catch (error) {
       console.error("Error loading top recommendations:", error);
       // No fallback data
@@ -304,13 +280,7 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     loadInitialData();
-  }, [
-    isAuthenticated,
-    loadRecommendations,
-    loadTopRecommendations,
-    loadAllSongs,
-    loadRecentlyPlayed,
-  ]); // Include all dependencies
+  }, [isAuthenticated]); // Only depend on authentication state
 
   // Refresh recently played data periodically only if authenticated
   useEffect(() => {
@@ -321,7 +291,7 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
     }, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, loadRecentlyPlayed]);
+  }, [isAuthenticated]); // Only depend on authentication state
 
   return (
     <RecommendationContext.Provider

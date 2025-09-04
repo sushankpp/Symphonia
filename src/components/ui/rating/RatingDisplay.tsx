@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ratingService, ItemRatingsResponse } from '../../../services/ratingService';
+import { useAuth } from '../../../contexts/AuthContext';
 import './RatingDisplay.scss';
 
 interface RatingDisplayProps {
@@ -15,23 +16,62 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({
   showDistribution = true,
   compact = false 
 }) => {
+  let isAuthenticated: boolean | undefined;
+  
+  try {
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+  } catch (error) {
+    // If useAuth fails, assume not authenticated
+    isAuthenticated = false;
+    if (import.meta.env.DEV) {
+      console.warn('RatingDisplay: useAuth failed, assuming not authenticated:', error);
+    }
+  }
   const [ratingData, setRatingData] = useState<ItemRatingsResponse | null>(null);
   const [userRating, setUserRating] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Debug logging for authentication state (development only)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log(`RatingDisplay [${itemType}:${itemId}] - Auth state:`, {
+        isAuthenticated,
+        itemId,
+        itemType
+      });
+    }
+  }, [isAuthenticated, itemId, itemType]);
 
   useEffect(() => {
-    fetchRatingData();
-  }, [itemId, itemType]);
+    // Only fetch ratings if user is authenticated
+    if (isAuthenticated) {
+      fetchRatingData();
+    }
+  }, [itemId, itemType, isAuthenticated]);
 
   const fetchRatingData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await ratingService.getItemRatings(itemId, itemType);
       setRatingData(data);
       setUserRating(data.user_rating || 0);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching ratings:', error);
+      
+      // Handle specific error types
+      if (error.message === 'Authentication required') {
+        setError('Please log in to view ratings');
+      } else if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+        setError('Network error - please check your connection');
+      } else if (error.message.includes('Failed to fetch')) {
+        setError('Cannot connect to server - check if backend is running');
+      } else {
+        setError('Unable to load ratings');
+      }
     } finally {
       setLoading(false);
     }
@@ -55,10 +95,39 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({
     }
   };
 
+  // Show loading state while determining authentication
+  if (isAuthenticated === undefined) {
+    return (
+      <div className={`rating-container ${compact ? 'compact' : ''}`}>
+        <div className="rating-loading">Checking auth...</div>
+      </div>
+    );
+  }
+
+  // Show login prompt if user is not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className={`rating-container ${compact ? 'compact' : ''}`}>
+        <div className="rating-login-prompt">
+          <span>⭐</span>
+          <small>Login to rate</small>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className={`rating-container ${compact ? 'compact' : ''}`}>
         <div className="rating-loading">Loading ratings...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`rating-container ${compact ? 'compact' : ''}`}>
+        <div className="rating-error">{error}</div>
       </div>
     );
   }
@@ -68,7 +137,7 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({
       <div className={`rating-container ${compact ? 'compact' : ''}`}>
         <div className="rating-error">Unable to load ratings</div>
       </div>
-    );
+ );
   }
 
   return (
