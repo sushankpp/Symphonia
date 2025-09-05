@@ -176,8 +176,11 @@ function Music() {
                           : (recommendation.song.artist as any)?.artist_name || 'Unknown Artist'}
                       </p>
                       <div className="music-recommendation-card__meta">
-                        <span className="music-recommendation-card__similarity">
-                          {Math.round(recommendation.similarity_score * 100)}% match
+                        <span className="music-player__suggested-similarity">
+                          {recommendation.similarity_score 
+                            ? `${Math.round(recommendation.similarity_score * 100)}% match`
+                            : '0% match'
+                          }
                         </span>
                       </div>
                     </div>

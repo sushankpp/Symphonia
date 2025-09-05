@@ -174,7 +174,6 @@ class RatingService {
       
       return response.json();
     } catch (error) {
-      console.error('Rating service error:', error);
       throw error;
     }
   }

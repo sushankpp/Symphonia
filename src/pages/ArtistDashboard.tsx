@@ -131,7 +131,7 @@ const ArtistDashboard: React.FC = () => {
                     <div className="stat-icon">📊</div>
                     <div className="stat-content">
                       <h3>
-                        {dashboardData.stats.average_rating
+                        {dashboardData.stats.average_rating && dashboardData.stats.average_rating > 0
                           ? dashboardData.stats.average_rating.toFixed(1)
                           : "0.0"}
                         /5
@@ -221,9 +221,9 @@ const ArtistDashboard: React.FC = () => {
                             <div className="track-stats">
                               <span className="rating">
                                 ⭐{" "}
-                                {track.avg_rating
+                                {track.avg_rating && track.avg_rating !== '0' && track.avg_rating !== '0.0'
                                   ? parseFloat(track.avg_rating).toFixed(1)
-                                  : track.rating_details?.average
+                                  : track.rating_details?.average && track.rating_details.average > 0
                                     ? track.rating_details.average.toFixed(1)
                                     : "0.0"}
                                 /5 ({track.ratings_count || 0} ratings)
@@ -268,9 +268,9 @@ const ArtistDashboard: React.FC = () => {
                                 </span>
                                 <span className="rating">
                                   ⭐{" "}
-                                  {track.avg_rating
+                                  {track.avg_rating && track.avg_rating !== '0' && track.avg_rating !== '0.0'
                                     ? parseFloat(track.avg_rating).toFixed(1)
-                                    : track.rating_details?.average
+                                    : track.rating_details?.average && track.rating_details.average > 0
                                       ? track.rating_details.average.toFixed(1)
                                       : "0.0"}
                                   /5 ({track.ratings_count || 0} ratings)

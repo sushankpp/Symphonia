@@ -37,8 +37,9 @@ export default function Home({ src }: MusicPlayerProps) {
         setLoading(true);
         setError(null);
 
-        // Get authentication headers - use empty headers for non-authenticated users
-        const authHeaders = isAuthenticated ? authService.getAuthHeaders() : {
+        // Get authentication headers - always try to get auth headers if token exists
+        const token = authService.getToken();
+        const authHeaders = token ? authService.getAuthHeaders() : {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         };
@@ -46,7 +47,7 @@ export default function Home({ src }: MusicPlayerProps) {
         // Fetch top artists (personalized if logged in, global if not)
         const topArtistsData = await musicService.getTopArtists(authHeaders);
         
-        console.log("Top artists fetched:", topArtistsData);
+        console.log("Top Artists:", topArtistsData);
         
         // Extract artist objects from the response structure
         const extractedArtists = topArtistsData.map((item: any) => {
@@ -57,7 +58,6 @@ export default function Home({ src }: MusicPlayerProps) {
           return item;
         });
         
-        console.log("Extracted artists:", extractedArtists);
         setArtists(extractedArtists);
       } catch (error) {
         console.error("Error fetching top artists:", error);

@@ -57,58 +57,18 @@ class MusicService {
 
   async getRecommendations(authHeaders: HeadersInit): Promise<any[]> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30 seconds
+      const response = await fetch(`${this.baseURL}/api/recommendations`, {
+        method: "GET",
+        headers: authHeaders,
+      });
 
-      try {
-        const response = await fetch(`${this.baseURL}/api/recommendations`, {
-          method: "GET",
-          headers: authHeaders,
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          console.error(
-            "Recommendations response not ok:",
-            response.status,
-            response.statusText
-          );
-
-          try {
-            const errorData = await response.text();
-            console.error("Recommendations error details:", errorData);
-          } catch (e) {
-            console.error("Could not read error response");
-          }
-          throw new Error("Failed to fetch recommendations");
-        }
-
-        const data = await response.json();
-        return data.recommendations || data;
-      } catch (fetchError: unknown) {
-        clearTimeout(timeoutId);
-        if (fetchError instanceof Error && fetchError.name === "AbortError") {
-          console.warn("Recommendations request timed out after 30 seconds");
-        }
-        throw fetchError;
+      if (!response.ok) {
+        throw new Error("Failed to fetch recommendations");
       }
+
+      const data = await response.json();
+      return data.recommendations || data;
     } catch (error) {
-      if (
-        error instanceof TypeError &&
-        error.message.includes("NetworkError")
-      ) {
-        console.warn(
-          "Network error when fetching recommendations - API server may not be running"
-        );
-      } else if (error instanceof Error && error.name === "AbortError") {
-        console.warn("Recommendations request was aborted due to timeout");
-      } else {
-        console.error("Error fetching recommendations:", error);
-      }
-
-      console.warn("Recommendations API not available, returning empty array");
       return [];
     }
   }
@@ -118,15 +78,10 @@ class MusicService {
     limit: number = 5
   ): Promise<any[]> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased to 30 seconds
-
-      try {
-        let response = await fetch(`${this.baseURL}/api/top-recommendations`, {
-          method: "GET",
-          headers: authHeaders,
-          signal: controller.signal,
-        });
+      let response = await fetch(`${this.baseURL}/api/top-recommendations`, {
+        method: "GET",
+        headers: authHeaders,
+      });
 
         if (!response.ok) {
           console.log(
@@ -137,47 +92,17 @@ class MusicService {
             {
               method: "GET",
               headers: authHeaders,
-              signal: controller.signal,
             }
           );
         }
 
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          console.error(
-            "Top recommendations response not ok:",
-            response.status,
-            response.statusText
-          );
-          throw new Error("Failed to fetch top recommendations");
-        }
-
-        const data = await response.json();
-
-        return data.top_recommendations || data.recommendations || data;
-      } catch (fetchError: unknown) {
-        clearTimeout(timeoutId);
-        if (fetchError instanceof Error && fetchError.name === "AbortError") {
-          console.warn("Top recommendations request timed out after 30 seconds");
-        }
-        throw fetchError;
+      if (!response.ok) {
+        throw new Error("Failed to fetch top recommendations");
       }
+
+      const data = await response.json();
+      return data.top_recommendations || data.recommendations || data;
     } catch (error) {
-      if (
-        error instanceof TypeError &&
-        error.message.includes("NetworkError")
-      ) {
-        console.warn(
-          "Network error when fetching top recommendations - API server may not be running"
-        );
-      } else if (error instanceof Error && error.name === "AbortError") {
-        console.warn("Top recommendations request was aborted due to timeout");
-      } else {
-        console.error("Error fetching top recommendations:", error);
-      }
-
-      // Return empty array instead of throwing to prevent app crashes
       return [];
     }
   }
@@ -212,7 +137,6 @@ class MusicService {
       });
 
               if (import.meta.env.DEV) {
-          console.log("Recently played response status:", response.status);
         }
 
       if (!response.ok) {
@@ -224,13 +148,8 @@ class MusicService {
       }
 
       const data = await response.json();
-              if (import.meta.env.DEV) {
-          console.log("Recently played data:", data);
-        }
       return data.recently_played || data;
     } catch (error) {
-      console.error("Error fetching recently played:", error);
-
       return [];
     }
   }
@@ -242,12 +161,8 @@ class MusicService {
         headers: authHeaders,
       });
 
-      console.log("Top artists response status:", response.status);
 
       if (!response.ok) {
-        console.log(
-          "Top artists endpoint not found, falling back to regular artists..."
-        );
         const fallbackResponse = await fetch(`${this.baseURL}/api/artists`, {
           method: "GET",
           headers: {

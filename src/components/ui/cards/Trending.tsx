@@ -28,7 +28,6 @@ const Trending = () => {
   };
 
   const handleAddToPlaylist = () => {
-    console.log("Add to playlist clicked");
   };
 
   const topSong =
@@ -38,17 +37,12 @@ const Trending = () => {
         )
       : null;
 
-  // Only log in development mode and only when there are recommendations
-  if (import.meta.env.DEV && topRecommendations && topRecommendations.length > 0) {
-    console.log("Trending: Loaded recommendations");
-  }
 
   useEffect(() => {
     if (!topRecommendations || topRecommendations.length === 0) return;
     
     // Only log in development mode and only when processing recommendations
     if (import.meta.env.DEV && topRecommendations && topRecommendations.length > 0) {
-      console.log("Trending: Processing recommendations");
     }
     
     // Fetch durations for all songs in topRecommendations
@@ -176,7 +170,6 @@ const Trending = () => {
       >
         {topRecommendations.map((recommendation, index) => {
           const imageUrl = convertStorageUrl((recommendation.song as any).song_cover_path || recommendation.song.cover_image || "", apiURL) || "/uploads/pig-nobg.png";
-          console.log(`Slide ${index} image URL:`, imageUrl);
           return (
           <SwiperSlide key={recommendation.song.id}>
             <div

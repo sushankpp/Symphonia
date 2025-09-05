@@ -34,16 +34,6 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug logging for authentication state (development only)
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log(`RatingDisplay [${itemType}:${itemId}] - Auth state:`, {
-        isAuthenticated,
-        itemId,
-        itemType
-      });
-    }
-  }, [isAuthenticated, itemId, itemType]);
 
   useEffect(() => {
     // Only fetch ratings if user is authenticated
@@ -60,7 +50,6 @@ const RatingDisplay: React.FC<RatingDisplayProps> = ({
       setRatingData(data);
       setUserRating(data.user_rating || 0);
     } catch (error: any) {
-      console.error('Error fetching ratings:', error);
       
       // Handle specific error types
       if (error.message === 'Authentication required') {

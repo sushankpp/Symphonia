@@ -148,7 +148,6 @@ function MusicPlayer() {
         });
         setArtistRating(artistRatingValue);
       } catch (error) {
-        console.error("Error fetching ratings:", error);
       }
     };
 

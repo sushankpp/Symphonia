@@ -285,7 +285,7 @@ const ArtistMusicPage: React.FC = () => {
                       <div className="stat-item">
                         <span className="stat-icon">⭐</span>
                         <span>
-                          {track.ratings_avg_rating ? track.ratings_avg_rating.toFixed(1) : '0.0'}/5 
+                          {track.ratings_avg_rating && track.ratings_avg_rating > 0 ? track.ratings_avg_rating.toFixed(1) : '0.0'}/5 
                           ({track.ratings_count || 0})
                         </span>
                       </div>

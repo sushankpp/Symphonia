@@ -94,7 +94,6 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
       setError(null);
 
       if (!isAuthenticated) {
-        console.log("User not authenticated, skipping recommendations");
         setRecommendations([]);
         return;
       }
@@ -117,12 +116,7 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
         setRecommendations(data);
       }
 
-      // Debug: Log recommendations data (only in development, limited output)
-      if (import.meta.env.DEV && data.length > 0) {
-        console.log(`Loaded ${data.length} recommendations`);
-      }
     } catch (error) {
-      console.error("Error loading recommendations:", error);
       setError("Failed to load recommendations");
       // No fallback data
       setRecommendations([]);
@@ -162,10 +156,8 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
 
       // Debug: Log top recommendations data (only in development, limited output)
       if (import.meta.env.DEV && data.length > 0) {
-        console.log(`Loaded ${data.length} top recommendations`);
       }
     } catch (error) {
-      console.error("Error loading top recommendations:", error);
       // No fallback data
       setTopRecommendations([]);
     }
@@ -174,39 +166,31 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
   const recordPlay = useCallback(
     async (songId: number) => {
       try {
-        console.log("Recording play for song:", songId);
 
         if (!isAuthenticated) {
-          console.log("User not authenticated, skipping play recording");
           return;
         }
 
         const { headers } = await getAuthHeaders();
         await musicService.recordSongPlay(songId, headers);
-        console.log("Successfully recorded play");
 
         // Refresh recommendations after recording play
         await Promise.all([loadRecommendations(), loadTopRecommendations()]);
         // Refresh recently played - call the function directly without dependency
         try {
-          console.log("Loading recently played...");
 
           if (isAuthenticated) {
             const { headers } = await getAuthHeaders();
             const data = await musicService.getRecentlyPlayed(headers);
-            console.log("Recently played data:", data);
 
             // Extract the song objects from the recently played items
             const songs = data.map((item: any) => item.song || item);
-            console.log("Extracted songs:", songs);
             setRecentlyPlayed(songs);
           }
         } catch (error) {
-          console.error("Error loading recently played:", error);
           setRecentlyPlayed([]);
         }
       } catch (error) {
-        console.error("Error recording play:", error);
         // Don't throw - just log the error
       }
     },
@@ -229,7 +213,6 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
       const data = await musicService.getAllSongs();
       setAllSongs(data);
     } catch (error) {
-      console.error("Error loading all songs:", error);
       setError("Failed to load songs");
       setAllSongs([]);
     } finally {
@@ -239,24 +222,19 @@ export const RecommendationProvider: React.FC<{ children: ReactNode }> = ({
 
   const loadRecentlyPlayed = useCallback(async () => {
     try {
-      console.log("Loading recently played...");
 
       if (!isAuthenticated) {
-        console.log("User not authenticated, returning empty recently played");
         setRecentlyPlayed([]);
         return;
       }
 
       const { headers } = await getAuthHeaders();
       const data = await musicService.getRecentlyPlayed(headers);
-      console.log("Recently played data:", data);
 
       // Extract the song objects from the recently played items
       const songs = data.map((item: any) => item.song || item);
-      console.log("Extracted songs:", songs);
       setRecentlyPlayed(songs);
     } catch (error) {
-      console.error("Error loading recently played:", error);
       setRecentlyPlayed([]);
     }
   }, [isAuthenticated, getAuthHeaders]);
