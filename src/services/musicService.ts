@@ -57,9 +57,21 @@ class MusicService {
 
   async getRecommendations(authHeaders: HeadersInit): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseURL}/api/recommendations`, {
+      // Check if we have auth token to determine endpoint
+      const hasAuth = authHeaders && Object.keys(authHeaders).some(key => 
+        key.toLowerCase() === 'authorization' && authHeaders[key as keyof HeadersInit]
+      );
+      
+      const endpoint = hasAuth 
+        ? `${this.baseURL}/api/recommendations`
+        : `${this.baseURL}/api/public/recommendations`;
+      
+      const response = await fetch(endpoint, {
         method: "GET",
-        headers: authHeaders,
+        headers: hasAuth ? authHeaders : {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -78,23 +90,35 @@ class MusicService {
     limit: number = 5
   ): Promise<any[]> {
     try {
+      // Check if we have auth token to determine endpoint
+      const hasAuth = authHeaders && Object.keys(authHeaders).some(key => 
+        key.toLowerCase() === 'authorization' && authHeaders[key as keyof HeadersInit]
+      );
+      
+      const headers = hasAuth ? authHeaders : {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+      
       let response = await fetch(`${this.baseURL}/api/top-recommendations`, {
         method: "GET",
-        headers: authHeaders,
+        headers: headers,
       });
 
-        if (!response.ok) {
-          console.log(
-            "Top recommendations endpoint not found, trying recommendations with query params..."
-          );
-          response = await fetch(
-            `${this.baseURL}/api/recommendations?top=true&limit=${limit}`,
-            {
-              method: "GET",
-              headers: authHeaders,
-            }
-          );
-        }
+      if (!response.ok) {
+        // Try public endpoint if authenticated endpoint fails
+        const publicEndpoint = hasAuth 
+          ? `${this.baseURL}/api/public/top-recommendations`
+          : `${this.baseURL}/api/public/recommendations?top=true&limit=${limit}`;
+          
+        response = await fetch(publicEndpoint, {
+          method: "GET",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+      }
 
       if (!response.ok) {
         throw new Error("Failed to fetch top recommendations");
@@ -131,20 +155,23 @@ class MusicService {
 
   async getRecentlyPlayed(authHeaders: HeadersInit): Promise<any[]> {
     try {
+      // Check if we have auth token to determine endpoint
+      const hasAuth = authHeaders && Object.keys(authHeaders).some(key => 
+        key.toLowerCase() === 'authorization' && authHeaders[key as keyof HeadersInit]
+      );
+      
+      // Recently played is only available for authenticated users
+      if (!hasAuth) {
+        return [];
+      }
+      
       const response = await fetch(`${this.baseURL}/api/recently-played`, {
         method: "GET",
         headers: authHeaders,
       });
 
-              if (import.meta.env.DEV) {
-        }
-
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Recently played error response:", errorData);
-        throw new Error(
-          `Failed to fetch recently played: ${response.status} ${response.statusText}`
-        );
+        throw new Error("Failed to fetch recently played");
       }
 
       const data = await response.json();
@@ -156,35 +183,39 @@ class MusicService {
 
   async getTopArtists(authHeaders: HeadersInit): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseURL}/api/top-artists`, {
+      // Check if we have auth token to determine endpoint
+      const hasAuth = authHeaders && Object.keys(authHeaders).some(key => 
+        key.toLowerCase() === 'authorization' && authHeaders[key as keyof HeadersInit]
+      );
+      
+      const headers = hasAuth ? authHeaders : {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+      
+      let response = await fetch(`${this.baseURL}/api/top-artists`, {
         method: "GET",
-        headers: authHeaders,
+        headers: headers,
       });
 
-
       if (!response.ok) {
-        const fallbackResponse = await fetch(`${this.baseURL}/api/artists`, {
+        // Try public endpoint if authenticated endpoint fails
+        response = await fetch(`${this.baseURL}/api/public/top-artists`, {
           method: "GET",
           headers: {
-            Accept: "application/json",
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
           },
         });
+      }
 
-        if (!fallbackResponse.ok) {
-          throw new Error("Failed to fetch artists");
-        }
-
-        const fallbackData = await fallbackResponse.json();
-        return fallbackData.artists || fallbackData;
+      if (!response.ok) {
+        throw new Error("Failed to fetch artists");
       }
 
       const data = await response.json();
-      console.log("Top artists data:", data);
-
       return data.top_artists || data.artists || data;
     } catch (error) {
-      console.error("Error fetching top artists:", error);
-
       return [];
     }
   }
